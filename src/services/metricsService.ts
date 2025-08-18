@@ -1,183 +1,170 @@
 import { Registry, Counter, Gauge, Histogram, Summary } from 'prom-client';
-import type { RPCConfig, HealthMetrics, Alert } from '../types';
+import type { RPCConfig, RPCHealthMetrics, Alert } from '../types';
 import { metricsLogger } from '../utils/logger';
 
 export class MetricsService {
   private registry: Registry;
   
-  // Counters
-  private rpcRequestsTotal!: Counter<string>;
-  private rpcErrorsTotal!: Counter<string>;
-  private alertsTotal!: Counter<string>;
-  private healthChecksTotal!: Counter<string>;
+  // RPC-specific metrics
+  private rpcRequestsTotal: Counter<string>;
+  private rpcErrorsTotal: Counter<string>;
+  private rpcResponseTime: Histogram<string>;
+  private rpcBlockNumber: Gauge<string>;
+  private rpcGasPrice: Gauge<string>;
+  private rpcPeerCount: Gauge<string>;
+  private rpcOnlineStatus: Gauge<string>;
+  private rpcSyncProgress: Gauge<string>;
   
-  // Gauges
-  private rpcStatus!: Gauge<string>;
-  private rpcResponseTime!: Gauge<string>;
-  private rpcBlockNumber!: Gauge<string>;
-  private rpcGasPrice!: Gauge<string>;
-  private rpcPeerCount!: Gauge<string>;
-  private rpcUptime!: Gauge<string>;
-  private rpcErrorCount!: Gauge<string>;
-  private systemOnlineRPCs!: Gauge;
-  private systemOfflineRPCs!: Gauge;
-  private systemTotalAlerts!: Gauge;
+  // Alert metrics
+  private alertsTotal: Counter<string>;
+  private activeAlerts: Gauge<string>;
+  private alertResolutionTime: Histogram<string>;
   
-  // Histograms
-  private rpcResponseTimeHistogram!: Histogram<string>;
-  private healthCheckDurationHistogram!: Histogram<string>;
-  
-  // Summaries
-  private rpcResponseTimeSummary!: Summary<string>;
-  private healthCheckDurationSummary!: Summary<string>;
+  // System metrics
+  private systemUptime: Gauge<string>;
+  private systemRPCsTotal: Gauge<string>;
+  private systemRPCsOnline: Gauge<string>;
+  private systemRPCsOffline: Gauge<string>;
+  private systemAlertsTotal: Gauge<string>;
 
   constructor() {
     this.registry = new Registry();
     this.initializeMetrics();
-    metricsLogger.info('Prometheus metrics service initialized');
+    metricsLogger.info('MetricsService initialized');
   }
 
-  /**
-   * Initialize all Prometheus metrics
-   */
   private initializeMetrics(): void {
-    // Counters
+    // RPC-specific metrics
     this.rpcRequestsTotal = new Counter({
-      name: 'evm_rpc_requests_total',
+      name: 'rpc_requests_total',
       help: 'Total number of RPC requests',
-      labelNames: ['rpc_name', 'network', 'chain_id', 'method'],
-      registers: [this.registry]
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'method']
     });
 
     this.rpcErrorsTotal = new Counter({
-      name: 'evm_rpc_errors_total',
+      name: 'rpc_errors_total',
       help: 'Total number of RPC errors',
-      labelNames: ['rpc_name', 'network', 'chain_id', 'error_type'],
-      registers: [this.registry]
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'error_type']
     });
 
-    this.alertsTotal = new Counter({
-      name: 'evm_rpc_alerts_total',
-      help: 'Total number of alerts generated',
-      labelNames: ['rpc_name', 'network', 'chain_id', 'alert_type', 'severity'],
-      registers: [this.registry]
-    });
-
-    this.healthChecksTotal = new Counter({
-      name: 'evm_rpc_health_checks_total',
-      help: 'Total number of health checks performed',
-      labelNames: ['rpc_name', 'network', 'chain_id', 'status'],
-      registers: [this.registry]
-    });
-
-    // Gauges
-    this.rpcStatus = new Gauge({
-      name: 'evm_rpc_status',
-      help: 'Current status of RPC endpoint (1 = online, 0 = offline)',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      registers: [this.registry]
-    });
-
-    this.rpcResponseTime = new Gauge({
-      name: 'evm_rpc_response_time_ms',
-      help: 'Current response time of RPC endpoint in milliseconds',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      registers: [this.registry]
+    this.rpcResponseTime = new Histogram({
+      name: 'rpc_response_time_seconds',
+      help: 'RPC response time in seconds',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
+      buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60]
     });
 
     this.rpcBlockNumber = new Gauge({
-      name: 'evm_rpc_block_number',
-      help: 'Current block number of RPC endpoint',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      registers: [this.registry]
+      name: 'rpc_block_number',
+      help: 'Current block number for RPC',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
     });
 
     this.rpcGasPrice = new Gauge({
-      name: 'evm_rpc_gas_price_wei',
-      help: 'Current gas price of RPC endpoint in Wei',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      registers: [this.registry]
+      name: 'rpc_gas_price_wei',
+      help: 'Current gas price in wei for RPC',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
     });
 
     this.rpcPeerCount = new Gauge({
-      name: 'evm_rpc_peer_count',
-      help: 'Current peer count of RPC endpoint',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      registers: [this.registry]
+      name: 'rpc_peer_count',
+      help: 'Current peer count for RPC',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
     });
 
-    this.rpcUptime = new Gauge({
-      name: 'evm_rpc_uptime_percentage',
-      help: 'Uptime percentage of RPC endpoint',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      registers: [this.registry]
+    this.rpcOnlineStatus = new Gauge({
+      name: 'rpc_online_status',
+      help: 'Online status of RPC (1 = online, 0 = offline)',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
     });
 
-    this.rpcErrorCount = new Gauge({
-      name: 'evm_rpc_error_count',
-      help: 'Current error count of RPC endpoint',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      registers: [this.registry]
+    this.rpcSyncProgress = new Gauge({
+      name: 'rpc_sync_progress_percent',
+      help: 'Sync progress percentage for RPC',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
     });
 
-    this.systemOnlineRPCs = new Gauge({
-      name: 'evm_system_online_rpcs',
-      help: 'Total number of online RPC endpoints',
-      registers: [this.registry]
+    // Alert metrics
+    this.alertsTotal = new Counter({
+      name: 'alerts_total',
+      help: 'Total number of alerts',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'alert_type', 'severity']
     });
 
-    this.systemOfflineRPCs = new Gauge({
-      name: 'evm_system_offline_rpcs',
-      help: 'Total number of offline RPC endpoints',
-      registers: [this.registry]
+    this.activeAlerts = new Gauge({
+      name: 'active_alerts',
+      help: 'Number of active alerts',
+      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'alert_type', 'severity']
     });
 
-    this.systemTotalAlerts = new Gauge({
-      name: 'evm_system_total_alerts',
-      help: 'Total number of active alerts',
-      registers: [this.registry]
+    this.alertResolutionTime = new Histogram({
+      name: 'alert_resolution_time_seconds',
+      help: 'Time to resolve alerts in seconds',
+      labelNames: ['alert_type', 'severity'],
+      buckets: [60, 300, 900, 1800, 3600, 7200, 14400]
     });
 
-    // Histograms
-    this.rpcResponseTimeHistogram = new Histogram({
-      name: 'evm_rpc_response_time_histogram_ms',
-      help: 'Histogram of RPC response times in milliseconds',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      buckets: [10, 50, 100, 200, 500, 1000, 2000, 5000, 10000],
-      registers: [this.registry]
+    // System metrics
+    this.systemUptime = new Gauge({
+      name: 'system_uptime_seconds',
+      help: 'System uptime in seconds'
     });
 
-    this.healthCheckDurationHistogram = new Histogram({
-      name: 'evm_rpc_health_check_duration_histogram_ms',
-      help: 'Histogram of health check durations in milliseconds',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      buckets: [100, 500, 1000, 2000, 5000, 10000, 30000],
-      registers: [this.registry]
+    this.systemRPCsTotal = new Gauge({
+      name: 'system_rpcs_total',
+      help: 'Total number of RPCs in the system'
     });
 
-    // Summaries
-    this.rpcResponseTimeSummary = new Summary({
-      name: 'evm_rpc_response_time_summary_ms',
-      help: 'Summary of RPC response times in milliseconds',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      percentiles: [0.1, 0.5, 0.9, 0.95, 0.99],
-      registers: [this.registry]
+    this.systemRPCsOnline = new Gauge({
+      name: 'system_rpcs_online',
+      help: 'Number of online RPCs'
     });
 
-    this.healthCheckDurationSummary = new Summary({
-      name: 'evm_rpc_health_check_duration_summary_ms',
-      help: 'Summary of health check durations in milliseconds',
-      labelNames: ['rpc_name', 'network', 'chain_id'],
-      percentiles: [0.1, 0.5, 0.9, 0.95, 0.99],
-      registers: [this.registry]
+    this.systemRPCsOffline = new Gauge({
+      name: 'system_rpcs_offline',
+      help: 'Number of offline RPCs'
     });
+
+    this.systemAlertsTotal = new Gauge({
+      name: 'system_alerts_total',
+      help: 'Total number of alerts in the system'
+    });
+
+    // Register all metrics
+    this.registry.registerMetric(this.rpcRequestsTotal);
+    this.registry.registerMetric(this.rpcErrorsTotal);
+    this.registry.registerMetric(this.rpcResponseTime);
+    this.registry.registerMetric(this.rpcBlockNumber);
+    this.registry.registerMetric(this.rpcGasPrice);
+    this.registry.registerMetric(this.rpcPeerCount);
+    this.registry.registerMetric(this.rpcOnlineStatus);
+    this.registry.registerMetric(this.rpcSyncProgress);
+    this.registry.registerMetric(this.alertsTotal);
+    this.registry.registerMetric(this.activeAlerts);
+    this.registry.registerMetric(this.alertResolutionTime);
+    this.registry.registerMetric(this.systemUptime);
+    this.registry.registerMetric(this.systemRPCsTotal);
+    this.registry.registerMetric(this.systemRPCsOnline);
+    this.registry.registerMetric(this.systemRPCsOffline);
+    this.registry.registerMetric(this.systemAlertsTotal);
+
+    // Start uptime tracking
+    this.startUptimeTracking();
+  }
+
+  private startUptimeTracking(): void {
+    const startTime = Date.now();
+    setInterval(() => {
+      this.systemUptime.set((Date.now() - startTime) / 1000);
+    }, 1000);
   }
 
   /**
-   * Record RPC request metrics
+   * Record an RPC request
    */
-  recordRPCRequest(config: RPCConfig, method: string): void {
+  recordRPCRequest(config: RPCConfig, method: string = 'health_check'): void {
     this.rpcRequestsTotal.inc({
+      rpc_id: config.id,
       rpc_name: config.name,
       network: config.network,
       chain_id: config.chainId.toString(),
@@ -186,10 +173,11 @@ export class MetricsService {
   }
 
   /**
-   * Record RPC error metrics
+   * Record an RPC error
    */
   recordRPCError(config: RPCConfig, errorType: string): void {
     this.rpcErrorsTotal.inc({
+      rpc_id: config.id,
       rpc_name: config.name,
       network: config.network,
       chain_id: config.chainId.toString(),
@@ -198,145 +186,188 @@ export class MetricsService {
   }
 
   /**
-   * Record alert metrics
+   * Record RPC health check metrics
+   */
+  recordHealthCheck(config: RPCConfig, healthResult: any): void {
+    const labels = {
+      rpc_id: config.id,
+      rpc_name: config.name,
+      network: config.network,
+      chain_id: config.chainId.toString()
+    };
+
+    // Record response time
+    if (healthResult.responseTime) {
+      this.rpcResponseTime.observe(labels, healthResult.responseTime / 1000);
+    }
+
+    // Record block number
+    if (healthResult.blockNumber) {
+      this.rpcBlockNumber.set(labels, healthResult.blockNumber);
+    }
+
+    // Record gas price
+    if (healthResult.gasPrice) {
+      const gasPrice = BigInt(healthResult.gasPrice);
+      this.rpcGasPrice.set(labels, Number(gasPrice));
+    }
+
+    // Record peer count
+    if (healthResult.peerCount !== undefined) {
+      this.rpcPeerCount.set(labels, healthResult.peerCount);
+    }
+
+    // Record online status
+    this.rpcOnlineStatus.set(labels, healthResult.isOnline ? 1 : 0);
+
+    // Record sync progress
+    if (healthResult.syncProgress !== undefined) {
+      this.rpcSyncProgress.set(labels, healthResult.syncProgress);
+    }
+  }
+
+  /**
+   * Record an alert
    */
   recordAlert(alert: Alert): void {
-    this.alertsTotal.inc({
-      rpc_name: alert.rpcName,
-      network: alert.network || 'unknown',
-      chain_id: alert.chainId?.toString() || 'unknown',
+    const labels = {
+      rpc_id: alert.rpcId,
+      rpc_name: 'unknown', // We don't have rpcName in the new Alert interface
+      network: alert.network,
+      chain_id: alert.chainId.toString(),
       alert_type: alert.type,
       severity: alert.severity
-    });
+    };
+
+    this.alertsTotal.inc(labels);
+    
+    if (!alert.resolved) {
+      this.activeAlerts.inc(labels);
+    } else {
+      this.activeAlerts.dec(labels);
+      
+      // Record resolution time if available
+      if (alert.resolvedAt) {
+        const resolutionTime = (alert.resolvedAt.getTime() - alert.timestamp.getTime()) / 1000;
+        this.alertResolutionTime.observe({
+          alert_type: alert.type,
+          severity: alert.severity
+        }, resolutionTime);
+      }
+    }
   }
 
   /**
-   * Record health check metrics
+   * Update RPC statistics
    */
-  recordHealthCheck(config: RPCConfig, metrics: HealthMetrics): void {
+  updateRPCStats(config: RPCConfig, status: any): void {
     const labels = {
+      rpc_id: config.id,
       rpc_name: config.name,
       network: config.network,
       chain_id: config.chainId.toString()
     };
 
-    // Record health check count
-    this.healthChecksTotal.inc({
-      ...labels,
-      status: metrics.isOnline ? 'success' : 'failure'
-    });
+    // Update online status
+    this.rpcOnlineStatus.set(labels, status.isOnline ? 1 : 0);
 
-    // Record health check duration
-    const duration = metrics.responseTime;
-    this.healthCheckDurationHistogram.observe(labels, duration);
-    this.healthCheckDurationSummary.observe(labels, duration);
-
-    // Update status gauges
-    this.rpcStatus.set({ ...labels }, metrics.isOnline ? 1 : 0);
-    this.rpcResponseTime.set({ ...labels }, metrics.responseTime);
-    
-    if (metrics.blockNumber !== null) {
-      this.rpcBlockNumber.set({ ...labels }, metrics.blockNumber);
+    // Update other metrics if available
+    if (status.blockNumber) {
+      this.rpcBlockNumber.set(labels, status.blockNumber);
     }
-    
-    if (metrics.gasPrice !== null) {
-      this.rpcGasPrice.set({ ...labels }, parseFloat(metrics.gasPrice));
-    }
-    
-    if (metrics.peerCount !== null) {
-      this.rpcPeerCount.set({ ...labels }, metrics.peerCount);
-    }
-  }
 
-  /**
-   * Update RPC uptime and error count
-   */
-  updateRPCStats(config: RPCConfig, uptime: number, errorCount: number): void {
-    const labels = {
-      rpc_name: config.name,
-      network: config.network,
-      chain_id: config.chainId.toString()
-    };
+    if (status.peerCount !== undefined) {
+      this.rpcPeerCount.set(labels, status.peerCount);
+    }
 
-    this.rpcUptime.set({ ...labels }, uptime);
-    this.rpcErrorCount.set({ ...labels }, errorCount);
+    if (status.gasPrice) {
+      const gasPrice = BigInt(status.gasPrice);
+      this.rpcGasPrice.set(labels, Number(gasPrice));
+    }
   }
 
   /**
    * Update system-wide metrics
    */
-  updateSystemMetrics(onlineRPCs: number, offlineRPCs: number, totalAlerts: number): void {
-    this.systemOnlineRPCs.set(onlineRPCs);
-    this.systemOfflineRPCs.set(offlineRPCs);
-    this.systemTotalAlerts.set(totalAlerts);
+  updateSystemMetrics(totalRPCs: number, onlineRPCs: number, totalAlerts: number): void {
+    this.systemRPCsTotal.set(totalRPCs);
+    this.systemRPCsOnline.set(onlineRPCs);
+    this.systemRPCsOffline.set(totalRPCs - onlineRPCs);
+    this.systemAlertsTotal.set(totalAlerts);
   }
 
   /**
-   * Record RPC response time for histogram and summary
+   * Record RPC response time
    */
   recordRPCResponseTime(config: RPCConfig, responseTime: number): void {
     const labels = {
+      rpc_id: config.id,
       rpc_name: config.name,
       network: config.network,
       chain_id: config.chainId.toString()
     };
 
-    this.rpcResponseTimeHistogram.observe(labels, responseTime);
-    this.rpcResponseTimeSummary.observe(labels, responseTime);
+    this.rpcResponseTime.observe(labels, responseTime / 1000);
   }
 
   /**
-   * Get metrics in Prometheus format
+   * Get all metrics as a string
    */
   async getMetrics(): Promise<string> {
-    try {
-      return await this.registry.metrics();
-    } catch (error) {
-      metricsLogger.error('Failed to generate metrics', {
-        error: error instanceof Error ? error.message : String(error)
-      });
-      throw error;
-    }
+    return await this.registry.metrics();
   }
 
   /**
-   * Get metrics registry for custom metrics
+   * Get the metrics registry
    */
   getRegistry(): Registry {
     return this.registry;
   }
 
   /**
-   * Reset all metrics (useful for testing)
+   * Reset all metrics
    */
   resetMetrics(): void {
     this.registry.clear();
     this.initializeMetrics();
-    metricsLogger.info('All metrics have been reset');
+    metricsLogger.info('Metrics reset');
   }
 
   /**
    * Get metrics metadata
    */
-  getMetricsMetadata(): {
-    totalMetrics: number;
-    counters: number;
-    gauges: number;
-    histograms: number;
-    summaries: number;
-  } {
-    const metrics = this.registry.getMetricsAsArray();
-    const counters = metrics.filter(m => m instanceof Counter).length;
-    const gauges = metrics.filter(m => m instanceof Gauge).length;
-    const histograms = metrics.filter(m => m instanceof Histogram).length;
-    const summaries = metrics.filter(m => m instanceof Summary).length;
-
+  getMetricsMetadata(): any {
     return {
-      totalMetrics: metrics.length,
-      counters,
-      gauges,
-      histograms,
-      summaries
+      rpcMetrics: [
+        'rpc_requests_total',
+        'rpc_errors_total',
+        'rpc_response_time_seconds',
+        'rpc_block_number',
+        'rpc_gas_price_wei',
+        'rpc_peer_count',
+        'rpc_online_status',
+        'rpc_sync_progress_percent'
+      ],
+      alertMetrics: [
+        'alerts_total',
+        'active_alerts',
+        'alert_resolution_time_seconds'
+      ],
+      systemMetrics: [
+        'system_uptime_seconds',
+        'system_rpcs_total',
+        'system_rpcs_online',
+        'system_rpcs_offline',
+        'system_alerts_total'
+      ]
     };
+  }
+
+  /**
+   * Cleanup service
+   */
+  cleanup(): void {
+    this.registry.clear();
+    metricsLogger.info('MetricsService cleanup completed');
   }
 }

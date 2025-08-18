@@ -1,453 +1,431 @@
-import { EventEmitter } from 'events';
-import { RPCConfig, RPCStatus, HealthMetrics, Alert, SystemMetrics, NetworkDistribution, PerformanceStats } from '../types';
+import { RPCConfig, RPCStatus, RPCHealthMetrics, Alert, HealthCheckResult } from '../types';
 import { Web3Service } from './web3Service';
 import { AlertService } from './alertService';
 import { MetricsService } from './metricsService';
-import { monitorLogger } from '../utils/logger';
-import { generateId, calculateUptime, calculateAverage } from '../utils/helpers';
-import { config } from '../config';
+import { UserService } from './userService';
+import { monitoringLogger } from '../utils/logger';
 
-export class MonitoringService extends EventEmitter {
+export class MonitoringService {
   private web3Service: Web3Service;
   private alertService: AlertService;
   private metricsService: MetricsService;
+  private userService: UserService;
   private rpcStatuses: Map<string, RPCStatus> = new Map();
-  private healthHistory: Map<string, HealthMetrics[]> = new Map();
-  private performanceStats: Map<string, PerformanceStats> = new Map();
-  private monitoringInterval?: NodeJS.Timeout;
-  private cleanupInterval?: NodeJS.Timeout;
-  private startTime: Date = new Date();
-  private isMonitoring = false;
+  private monitoringInterval: NodeJS.Timeout | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
+  private isMonitoring: boolean = false;
 
   constructor() {
-    super();
-    this.web3Service = new Web3Service(config.rpcConfigs);
+    this.web3Service = new Web3Service();
     this.metricsService = new MetricsService();
     this.alertService = new AlertService(this.metricsService);
-    this.initializeRPCStatuses();
-    this.setupCleanupInterval();
+    this.userService = new UserService();
+    
+    monitoringLogger.info('MonitoringService initialized');
   }
 
   /**
-   * Initialize RPC status objects
+   * Start monitoring for a specific user
    */
-  private initializeRPCStatuses(): void {
-    for (const rpcConfig of config.rpcConfigs) {
-      const rpcId = this.generateRPCId(rpcConfig);
-      const status: RPCStatus = {
-        id: rpcId,
-        name: rpcConfig.name,
-        url: rpcConfig.url,
-        chainId: rpcConfig.chainId,
-        network: rpcConfig.network,
-        isOnline: false,
-        responseTime: 0,
-        blockNumber: null,
-        gasPrice: null,
-        peerCount: null,
-        lastChecked: new Date(),
-        errorCount: 0,
-        uptime: 100
-      };
-      
-      this.rpcStatuses.set(rpcId, status);
-      this.healthHistory.set(rpcId, []);
-      this.initializePerformanceStats(rpcId);
-    }
-
-    monitorLogger.info('RPC statuses initialized', { count: config.rpcConfigs.length });
-  }
-
-  /**
-   * Initialize performance statistics
-   */
-  private initializePerformanceStats(rpcId: string): void {
-    this.performanceStats.set(rpcId, {
-      rpcId,
-      avgResponseTime: 0,
-      minResponseTime: 0,
-      maxResponseTime: 0,
-      successRate: 100,
-      totalRequests: 0,
-      timeframe: '1h'
-    });
-  }
-
-  /**
-   * Start monitoring all RPCs
-   */
-  async startMonitoring(): Promise<void> {
+  async startMonitoring(userId: string): Promise<void> {
     if (this.isMonitoring) {
-      monitorLogger.warn('Monitoring is already running');
+      monitoringLogger.warn('Monitoring is already active');
       return;
     }
 
-    this.isMonitoring = true;
-    monitorLogger.info('Starting RPC monitoring...', {
-      rpcCount: config.rpcConfigs.length,
-      interval: config.monitoringInterval
-    });
-    
-    // Initial health check
-    await this.performHealthChecks();
-    
-    // Set up periodic monitoring
-    this.monitoringInterval = setInterval(async () => {
-      try {
-        await this.performHealthChecks();
-      } catch (error) {
-        monitorLogger.error('Error during scheduled health check', {
-          error: error instanceof Error ? error.message : String(error)
-        });
+    const userRPCs = this.userService.getUserRPCs(userId);
+    if (userRPCs.length === 0) {
+      monitoringLogger.info('No RPCs configured for user', { userId });
+      return;
+    }
+
+    // Initialize RPC statuses for the user
+    for (const rpcConfig of userRPCs) {
+      if (rpcConfig.enabled) {
+        await this.initializeRPCStatus(rpcConfig);
       }
-    }, config.monitoringInterval);
+    }
 
-    this.emit('monitoringStarted', {
-      timestamp: new Date(),
-      rpcCount: config.rpcConfigs.length
+    this.isMonitoring = true;
+    const interval = 30000; // 30 seconds
+
+    monitoringLogger.info('Starting RPC monitoring', { 
+      userId, 
+      rpcCount: userRPCs.filter(rpc => rpc.enabled).length, 
+      interval 
     });
 
-    monitorLogger.info(`Monitoring started with ${config.monitoringInterval}ms interval`);
+    // Start monitoring interval
+    this.monitoringInterval = setInterval(async () => {
+      await this.performHealthChecks(userId);
+    }, interval);
+
+    // Start cleanup interval
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupOldData();
+    }, 3600000); // 1 hour
+
+    monitoringLogger.info('Monitoring started', { interval: `${interval}ms` });
   }
 
   /**
    * Stop monitoring
    */
   stopMonitoring(): void {
-    if (!this.isMonitoring) {
-      monitorLogger.warn('Monitoring is not running');
-      return;
-    }
-
-    this.isMonitoring = false;
-    
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
     }
-    
-    monitorLogger.info('RPC monitoring stopped');
-    this.emit('monitoringStopped', { timestamp: new Date() });
+
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+
+    this.isMonitoring = false;
+    monitoringLogger.info('RPC monitoring stopped');
   }
 
   /**
-   * Perform health checks on all RPCs
+   * Initialize RPC status for a new RPC configuration
    */
-  private async performHealthChecks(): Promise<void> {
-    const startTime = Date.now();
-    monitorLogger.debug('Starting health checks', { rpcCount: config.rpcConfigs.length });
-
-    const promises = config.rpcConfigs.map(async (rpcConfig) => {
-      try {
-        const metrics = await this.web3Service.performHealthCheck(rpcConfig);
-        
-        // Record metrics for Prometheus
-        this.metricsService.recordHealthCheck(rpcConfig, metrics);
-        
-        this.updateRPCStatus(metrics, rpcConfig);
-        this.updatePerformanceStats(metrics);
-        this.checkForAlerts(metrics, rpcConfig);
-        return { success: true, rpcId: metrics.rpcId };
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        monitorLogger.error(`Error checking ${rpcConfig.name}`, {
-          error: errorMessage,
-          rpcUrl: rpcConfig.url
-        });
-        return { success: false, rpcId: this.generateRPCId(rpcConfig), error: errorMessage };
-      }
-    });
-
-    const results = await Promise.allSettled(promises);
-    const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+  private async initializeRPCStatus(rpcConfig: RPCConfig): Promise<void> {
+    const rpcId = rpcConfig.id;
     
-    const totalTime = Date.now() - startTime;
-    monitorLogger.debug('Health checks completed', {
-      totalTime,
-      successCount,
-      totalRPCs: config.rpcConfigs.length
-    });
-
-    // Emit system metrics update
-    this.emit('healthCheck', this.getSystemMetrics());
-  }
-
-  /**
-   * Update RPC status based on health metrics
-   */
-  private updateRPCStatus(metrics: HealthMetrics, config: RPCConfig): void {
-    const rpcId = metrics.rpcId;
-    const currentStatus = this.rpcStatuses.get(rpcId);
-    
-    if (!currentStatus) {
-      monitorLogger.warn('RPC status not found for update', { rpcId });
+    // Add RPC to Web3Service
+    const success = await this.web3Service.addRPC(rpcConfig);
+    if (!success) {
+      monitoringLogger.error('Failed to add RPC to Web3Service', { 
+        rpcId, 
+        name: rpcConfig.name 
+      });
       return;
     }
 
-    // Update health history
-    const history = this.healthHistory.get(rpcId) || [];
-    history.push(metrics);
-    
-    // Keep only recent entries
-    if (history.length > (config.maxHistoryEntries || 100)) {
-      history.splice(0, history.length - (config.maxHistoryEntries || 100));
-    }
-    this.healthHistory.set(rpcId, history);
+    // Create initial status
+    const initialStatus: RPCStatus = {
+      id: rpcId,
+      rpcId: rpcId,
+      isOnline: false,
+      lastCheck: new Date(),
+      responseTime: 0,
+      blockNumber: 0,
+      peerCount: 0,
+      gasPrice: '0',
+      isSyncing: false,
+      network: rpcConfig.network,
+      chainId: rpcConfig.chainId,
+      history: []
+    };
 
-    // Calculate statistics
-    const recentHistory = history.slice(-20); // Last 20 checks for uptime calculation
-    const downCount = recentHistory.filter(h => !h.isOnline).length;
-    const uptime = recentHistory.length > 0 ? ((recentHistory.length - downCount) / recentHistory.length) * 100 : 100;
+    this.rpcStatuses.set(rpcId, initialStatus);
+    monitoringLogger.info('RPC status initialized', { 
+      rpcId, 
+      name: rpcConfig.name 
+    });
+  }
+
+  /**
+   * Perform health checks for all user RPCs
+   */
+  private async performHealthChecks(userId: string): Promise<void> {
+    const userRPCs = this.userService.getUserRPCs(userId);
+    const enabledRPCs = userRPCs.filter(rpc => rpc.enabled);
+
+    monitoringLogger.debug('Performing health checks', { 
+      userId, 
+      rpcCount: enabledRPCs.length 
+    });
+
+    for (const rpcConfig of enabledRPCs) {
+      try {
+        const healthResult = await this.web3Service.performHealthCheck(rpcConfig.id);
+        await this.updateRPCStatus(rpcConfig, healthResult);
+        
+        // Record metrics
+        this.metricsService.recordHealthCheck(rpcConfig, healthResult);
+        
+        // Check for alerts
+        await this.checkForAlerts(rpcConfig, healthResult);
+        
+      } catch (error) {
+        monitoringLogger.error('Health check failed', { 
+          rpcId: rpcConfig.id, 
+          name: rpcConfig.name, 
+          error: error instanceof Error ? error.message : String(error) 
+        });
+        
+        // Update status as offline
+        const offlineResult: HealthCheckResult = {
+          isOnline: false,
+          responseTime: 0,
+          blockNumber: 0,
+          peerCount: 0,
+          gasPrice: '0',
+          isSyncing: false,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          network: rpcConfig.network,
+          chainId: rpcConfig.chainId
+        };
+        
+        await this.updateRPCStatus(rpcConfig, offlineResult);
+      }
+    }
+  }
+
+  /**
+   * Update RPC status with health check results
+   */
+  private async updateRPCStatus(rpcConfig: RPCConfig, healthResult: HealthCheckResult): Promise<void> {
+    const rpcId = rpcConfig.id;
+    const currentStatus = this.rpcStatuses.get(rpcId);
     
+    if (!currentStatus) {
+      monitoringLogger.warn('RPC status not found for update', { rpcId });
+      return;
+    }
+
+    // Create health metrics entry
+    const healthMetrics: RPCHealthMetrics = {
+      timestamp: new Date(),
+      responseTime: healthResult.responseTime,
+      blockNumber: healthResult.blockNumber,
+      peerCount: healthResult.peerCount,
+      gasPrice: healthResult.gasPrice,
+      isSyncing: healthResult.isSyncing,
+      syncProgress: healthResult.syncProgress,
+      errorMessage: healthResult.errorMessage || '',
+      isOnline: healthResult.isOnline
+    };
+
     // Update status
-    const wasOnline = currentStatus.isOnline;
     const updatedStatus: RPCStatus = {
       ...currentStatus,
-      isOnline: metrics.isOnline,
-      responseTime: metrics.responseTime,
-      blockNumber: metrics.blockNumber,
-      gasPrice: metrics.gasPrice,
-      peerCount: metrics.peerCount,
-      lastChecked: metrics.timestamp,
-      errorCount: metrics.isOnline ? currentStatus.errorCount : currentStatus.errorCount + 1,
-      uptime: Math.max(0, Math.min(100, uptime)),
-      errorMessage: metrics.errorMessage || '',
-      syncStatus: metrics.syncStatus
+      isOnline: healthResult.isOnline,
+      lastCheck: new Date(),
+      responseTime: healthResult.responseTime,
+      blockNumber: healthResult.blockNumber,
+      peerCount: healthResult.peerCount,
+      gasPrice: healthResult.gasPrice,
+      isSyncing: healthResult.isSyncing,
+      syncProgress: healthResult.syncProgress,
+      syncCurrentBlock: healthResult.syncCurrentBlock,
+      syncHighestBlock: healthResult.syncHighestBlock,
+      syncStartingBlock: healthResult.syncStartingBlock,
+      errorMessage: healthResult.errorMessage || '',
+      history: [
+        healthMetrics,
+        ...currentStatus.history.slice(0, (rpcConfig.maxHistoryEntries || 100) - 1)
+      ]
     };
 
     this.rpcStatuses.set(rpcId, updatedStatus);
-
-    // Emit status update event
-    this.emit('statusUpdate', updatedStatus);
-
-    // Log significant status changes
-    if (wasOnline !== metrics.isOnline) {
-      monitorLogger.info(`RPC status changed: ${config.name}`, {
-        rpcId,
-        wasOnline,
-        isOnline: metrics.isOnline,
-        responseTime: metrics.responseTime
-      });
-    }
-  }
-
-  /**
-   * Update performance statistics
-   */
-  private updatePerformanceStats(metrics: HealthMetrics): void {
-    const stats = this.performanceStats.get(metrics.rpcId);
-    if (!stats) return;
-
-    const history = this.healthHistory.get(metrics.rpcId) || [];
-    const recentHistory = history.slice(-50); // Last 50 checks
     
-    const responseTimes = recentHistory
-      .filter(h => h.isOnline)
-      .map(h => h.responseTime);
-
-    const successfulRequests = recentHistory.filter(h => h.isOnline).length;
-    const totalRequests = recentHistory.length;
-
-    const updatedStats: PerformanceStats = {
-      ...stats,
-      avgResponseTime: responseTimes.length > 0 ? calculateAverage(responseTimes) : 0,
-      minResponseTime: responseTimes.length > 0 ? Math.min(...responseTimes) : 0,
-      maxResponseTime: responseTimes.length > 0 ? Math.max(...responseTimes) : 0,
-      successRate: totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 100,
-      totalRequests: stats.totalRequests + 1
-    };
-
-    this.performanceStats.set(metrics.rpcId, updatedStats);
+    // Update metrics
+    this.metricsService.updateRPCStats(rpcConfig, updatedStatus);
+    
+    monitoringLogger.debug('RPC status updated', { 
+      rpcId, 
+      name: rpcConfig.name, 
+      isOnline: healthResult.isOnline,
+      responseTime: healthResult.responseTime 
+    });
   }
 
   /**
-   * Check for alerts based on health metrics
+   * Check for alerts based on health check results
    */
-  private checkForAlerts(metrics: HealthMetrics, config: RPCConfig): void {
-    // Response time alert
-    if (metrics.isOnline && metrics.responseTime > (config.alertThresholds?.responseTime || 5000)) {
-      this.alertService.addAlert({
-        id: generateId(),
-        rpcId: metrics.rpcId,
-        rpcName: config.name,
-        type: 'slow_response',
-        message: `RPC ${config.name} has slow response time: ${metrics.responseTime}ms (threshold: ${config.alertThresholds?.responseTime || 5000}ms)`,
-        severity: metrics.responseTime > (config.alertThresholds?.responseTime || 5000) * 2 ? 'high' : 'medium',
+  private async checkForAlerts(rpcConfig: RPCConfig, healthResult: HealthCheckResult): Promise<void> {
+    const thresholds = rpcConfig.alertThresholds;
+    if (!thresholds) return;
+
+    // Check response time
+    if (healthResult.responseTime > (thresholds.responseTime || 5000)) {
+      await this.alertService.addAlert({
+        rpcId: rpcConfig.id,
+        type: 'response_time',
+        severity: this.determineSeverity(healthResult.responseTime, thresholds.responseTime || 5000),
+        message: `High response time: ${healthResult.responseTime}ms`,
+        details: { responseTime: healthResult.responseTime, threshold: thresholds.responseTime },
         timestamp: new Date(),
         resolved: false,
-        network: config.network,
-        chainId: config.chainId
+        network: rpcConfig.network,
+        chainId: rpcConfig.chainId
       });
     }
 
-    // Error rate alert
-    const history = this.healthHistory.get(metrics.rpcId) || [];
-    const recentHistory = history.slice(-20);
-    if (recentHistory.length >= 5) {
-      const errorCount = recentHistory.filter(h => !h.isOnline).length;
-      const errorRate = (errorCount / recentHistory.length) * 100;
-      
-      if (errorRate >= (config.alertThresholds?.errorRate || 10) && recentHistory.length >= 5) {
-        this.alertService.addAlert({
-          id: generateId(),
-          rpcId: metrics.rpcId,
-          rpcName: config.name,
-          type: 'high_error_rate',
-          message: `RPC ${config.name} has high error rate: ${errorRate.toFixed(1)}% (threshold: ${config.alertThresholds?.errorRate || 10}%)`,
-          severity: errorRate > 50 ? 'critical' : 'high',
+    // Check peer count
+    if (healthResult.peerCount < (thresholds.peerCount || 5)) {
+      await this.alertService.addAlert({
+        rpcId: rpcConfig.id,
+        type: 'peer_count',
+        severity: this.determineSeverity(thresholds.peerCount || 5, healthResult.peerCount, true),
+        message: `Low peer count: ${healthResult.peerCount}`,
+        details: { peerCount: healthResult.peerCount, threshold: thresholds.peerCount },
+        timestamp: new Date(),
+        resolved: false,
+        network: rpcConfig.network,
+        chainId: rpcConfig.chainId
+      });
+    }
+
+    // Check if offline
+    if (!healthResult.isOnline) {
+      await this.alertService.addAlert({
+        rpcId: rpcConfig.id,
+        type: 'offline',
+        severity: 'critical',
+        message: 'RPC endpoint is offline',
+        details: { errorMessage: healthResult.errorMessage },
+        timestamp: new Date(),
+        resolved: false,
+        network: rpcConfig.network,
+        chainId: rpcConfig.chainId
+      });
+    }
+
+    // Check sync status
+    if (healthResult.isSyncing && healthResult.syncProgress !== undefined) {
+      if (healthResult.syncProgress < 95) {
+        await this.alertService.addAlert({
+          rpcId: rpcConfig.id,
+          type: 'sync_lag',
+          severity: this.determineSeverity(100 - healthResult.syncProgress, 5),
+          message: `Node is syncing: ${healthResult.syncProgress}% complete`,
+          details: { 
+            syncProgress: healthResult.syncProgress,
+            currentBlock: healthResult.syncCurrentBlock,
+            highestBlock: healthResult.syncHighestBlock
+          },
           timestamp: new Date(),
           resolved: false,
-          network: config.network,
-          chainId: config.chainId
+          network: rpcConfig.network,
+          chainId: rpcConfig.chainId
         });
       }
     }
+  }
 
-    // Peer count alert
-    if (metrics.peerCount !== null && metrics.peerCount < (config.alertThresholds?.peerCount || 5)) {
-      this.alertService.addAlert({
-        id: generateId(),
-        rpcId: metrics.rpcId,
-        rpcName: config.name,
-        type: 'peer_count_low',
-        message: `RPC ${config.name} has low peer count: ${metrics.peerCount} (threshold: ${config.alertThresholds?.peerCount || 5})`,
-        severity: metrics.peerCount === 0 ? 'critical' : 'medium',
-        timestamp: new Date(),
-        resolved: false,
-        network: config.network,
-        chainId: config.chainId
-      });
+  /**
+   * Determine alert severity based on threshold comparison
+   */
+  private determineSeverity(value: number, threshold: number, isLowerBetter: boolean = false): 'low' | 'medium' | 'high' | 'critical' {
+    if (isLowerBetter) {
+      // For metrics where lower is better (like peer count)
+      if (value <= threshold * 0.5) return 'critical';
+      if (value <= threshold * 0.7) return 'high';
+      if (value <= threshold * 0.9) return 'medium';
+      return 'low';
+    } else {
+      // For metrics where higher is better (like response time)
+      if (value >= threshold * 2) return 'critical';
+      if (value >= threshold * 1.5) return 'high';
+      if (value >= threshold * 1.2) return 'medium';
+      return 'low';
     }
   }
 
   /**
-   * Setup cleanup interval for old data
+   * Get all RPC statuses for a user
    */
-  private setupCleanupInterval(): void {
-    this.cleanupInterval = setInterval(() => {
-      this.performCleanup();
-    }, config.cleanupIntervalHours * 60 * 60 * 1000);
+  getRPCStatuses(userId: string): RPCStatus[] {
+    const userRPCs = this.userService.getUserRPCs(userId);
+    return userRPCs
+      .filter(rpc => rpc.enabled)
+      .map(rpc => this.rpcStatuses.get(rpc.id))
+      .filter((status): status is RPCStatus => status !== undefined);
+  }
+
+  /**
+   * Get specific RPC status
+   */
+  getRPCStatus(rpcId: string): RPCStatus | undefined {
+    return this.rpcStatuses.get(rpcId);
+  }
+
+  /**
+   * Check if monitoring is active
+   */
+  isMonitoringActive(): boolean {
+    return this.isMonitoring;
+  }
+
+  /**
+   * Get monitoring statistics
+   */
+  getMonitoringStats(userId: string): {
+    totalRPCs: number;
+    onlineRPCs: number;
+    offlineRPCs: number;
+    averageResponseTime: number;
+    alertsCount: number;
+  } {
+    const statuses = this.getRPCStatuses(userId);
+    const totalRPCs = statuses.length;
+    const onlineRPCs = statuses.filter(s => s.isOnline).length;
+    const offlineRPCs = totalRPCs - onlineRPCs;
+    
+    const responseTimes = statuses
+      .filter(s => s.isOnline)
+      .map(s => s.responseTime);
+    
+    const averageResponseTime = responseTimes.length > 0 
+      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length 
+      : 0;
+
+    const alertsCount = this.alertService.getActiveAlertsCount(userId);
+
+    return {
+      totalRPCs,
+      onlineRPCs,
+      offlineRPCs,
+      averageResponseTime,
+      alertsCount
+    };
   }
 
   /**
    * Cleanup old data
    */
-  private performCleanup(): void {
-    monitorLogger.info('Starting data cleanup');
+  private cleanupOldData(): void {
+    const now = new Date();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
 
-    let totalCleaned = 0;
-
-    // Clean up old health history
-    for (const [rpcId, history] of this.healthHistory) {
-      const originalLength = history.length;
-      if (originalLength > config.maxHistoryEntries) {
-        history.splice(0, originalLength - config.maxHistoryEntries);
-        totalCleaned += originalLength - config.maxHistoryEntries;
+    for (const [rpcId, status] of this.rpcStatuses) {
+      const oldEntries = status.history.filter(
+        entry => now.getTime() - entry.timestamp.getTime() > maxAge
+      );
+      
+      if (oldEntries.length > 0) {
+        status.history = status.history.filter(
+          entry => now.getTime() - entry.timestamp.getTime() <= maxAge
+        );
+        
+        monitoringLogger.debug('Cleaned up old history entries', { 
+          rpcId, 
+          removed: oldEntries.length 
+        });
       }
     }
-
-    // Clean up old alerts
-    const alertsCleaned = this.alertService.clearOldAlerts(config.cleanupIntervalHours);
-    totalCleaned += alertsCleaned;
-
-    monitorLogger.info('Data cleanup completed', { 
-      totalCleaned,
-      alertsCleaned
-    });
   }
 
   /**
-   * Generate RPC ID
-   */
-  private generateRPCId(config: RPCConfig): string {
-    return `${config.network}-${config.chainId}`;
-  }
-
-  // Public getters and utility methods
-
-  getRPCStatuses(): RPCStatus[] {
-    return Array.from(this.rpcStatuses.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  getRPCStatus(rpcId: string): RPCStatus | undefined {
-    return this.rpcStatuses.get(rpcId);
-  }
-
-  getHealthHistory(rpcId: string, limit: number = 50): HealthMetrics[] {
-    const history = this.healthHistory.get(rpcId) || [];
-    return history.slice(-limit);
-  }
-
-  getPerformanceStats(rpcId?: string): PerformanceStats[] {
-    if (rpcId) {
-      const stats = this.performanceStats.get(rpcId);
-      return stats ? [stats] : [];
-    }
-    return Array.from(this.performanceStats.values());
-  }
-
-  /**
-   * Get alert service instance
+   * Get service instances
    */
   getAlertService(): AlertService {
     return this.alertService;
   }
 
-  /**
-   * Get metrics service instance
-   */
   getMetricsService(): MetricsService {
     return this.metricsService;
   }
 
-  getSystemMetrics(): SystemMetrics {
-    const statuses = this.getRPCStatuses();
-    const onlineRPCs = statuses.filter(s => s.isOnline);
-    const offlineRPCs = statuses.filter(s => !s.isOnline);
-    
-    // Calculate average response time for online RPCs
-    const totalResponseTime = onlineRPCs.reduce((sum, s) => sum + s.responseTime, 0);
-    const averageResponseTime = onlineRPCs.length > 0 ? totalResponseTime / onlineRPCs.length : 0;
-
-    // Calculate network distribution
-    const networkDistribution: NetworkDistribution[] = this.calculateNetworkDistribution(statuses);
-
-    return {
-      totalRPCs: statuses.length,
-      onlineRPCs: onlineRPCs.length,
-      offlineRPCs: offlineRPCs.length,
-      averageResponseTime: Math.round(averageResponseTime),
-      alertsCount: this.alertService.getActiveAlerts().length,
-      lastUpdate: new Date(),
-      networkDistribution
-    };
+  getUserService(): UserService {
+    return this.userService;
   }
 
-  /**
-   * Calculate network distribution statistics
-   */
-  private calculateNetworkDistribution(statuses: RPCStatus[]): NetworkDistribution[] {
-    const networks = new Map<string, { total: number; online: number; offline: number }>();
-
-    for (const status of statuses) {
-      const existing = networks.get(status.network) || { total: 0, online: 0, offline: 0 };
-      existing.total++;
-      if (status.isOnline) {
-        existing.online++;
-      } else {
-        existing.offline++;
-      }
-      networks.set(status.network, existing);
-    }
-
-    return Array.from(networks.entries()).map(([network, stats]) => ({
-      network,
-      ...stats
-    }));
-  }
-
-  isMonitoringActive(): boolean {
-    return this.isMonitoring;
+  getWeb3Service(): Web3Service {
+    return this.web3Service;
   }
 
   /**
@@ -455,15 +433,11 @@ export class MonitoringService extends EventEmitter {
    */
   cleanup(): void {
     this.stopMonitoring();
-    
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-      this.cleanupInterval = null;
-    }
-
     this.web3Service.cleanup();
-    this.removeAllListeners();
-    
-    monitorLogger.info('Monitoring service cleanup completed');
+    this.alertService.cleanup();
+    this.metricsService.cleanup();
+    this.userService.cleanup();
+    this.rpcStatuses.clear();
+    monitoringLogger.info('Monitoring service cleanup completed');
   }
 }

@@ -1,280 +1,263 @@
 import express from 'express';
-import cors from 'cors';
 import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
-import path from 'path';
+import { Server } from 'socket.io';
 import { MonitoringService } from './services/monitoringService';
-import { AlertService } from './services/alertService';
 import { createApiRouter } from './routes/api';
-import { logger } from './utils/logger';
-import { config } from './config';
-import { SocketEvents } from './types';
+import { EVM_NETWORKS } from './types';
+import logger from './utils/logger';
 
-export function createApp(): { 
-  app: express.Application; 
-  server: any; 
-  io: SocketIOServer;
-  monitoringService: MonitoringService;
-  alertService: AlertService;
-} {
-  const app = express();
-  const server = createServer(app);
-  const io = new SocketIOServer<SocketEvents>(server, {
-    cors: {
-      origin: process.env.NODE_ENV === 'production' ? false : "*",
-      methods: ["GET", "POST"]
-    },
-    transports: ['websocket', 'polling']
-  });
+logger.info('Starting EVM RPC Monitor application...');
 
-  // Trust proxy if behind reverse proxy
-  app.set('trust proxy', 1);
+const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
-  // Middleware
-  app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? false : true,
-    credentials: true
-  }));
+// Middleware
+app.use(express.json());
+app.use(express.static('public'));
+
+// Initialize services
+let monitoringService: MonitoringService;
+let alertService: any;
+let metricsService: any;
+let userService: any;
+
+try {
+  logger.info('Creating Web3Service...');
+  monitoringService = new MonitoringService();
+  logger.info('MonitoringService created successfully');
   
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-  // Security headers
-  app.use((req, res, next) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    if (process.env.NODE_ENV === 'production') {
-      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    }
-    next();
-  });
-
-  // Static files
-  app.use(express.static(path.join(__dirname, '../public')));
-
-  // Services
-  const monitoringService = new MonitoringService();
-  const alertService = monitoringService.getAlertService();
-
-  // API Routes
-  app.use('/api', createApiRouter(monitoringService, alertService, monitoringService.getMetricsService()));
-
-  // Dashboard route
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-  });
-
-  // Health check route (separate from API)
-  app.get('/ping', (req, res) => {
-    res.json({ 
-      status: 'ok', 
-      timestamp: new Date(),
-      uptime: process.uptime()
-    });
-  });
-
-  // Socket.io connection handling
-  let connectedClients = 0;
-
-  io.on('connection', (socket) => {
-    connectedClients++;
-    logger.info(`Client connected: ${socket.id} (${connectedClients} total)`);
-
-    // Send initial data to the newly connected client
-    socket.emit('initialData', {
-      rpcs: monitoringService.getRPCStatuses(),
-      metrics: monitoringService.getSystemMetrics(),
-      alerts: alertService.getActiveAlerts(),
-      timestamp: new Date()
-    });
-
-    // Handle client requests for specific data
-    socket.on('requestRPCHistory', (data: { rpcId: string; limit?: number }) => {
-      const history = monitoringService.getHealthHistory(data.rpcId, data.limit);
-      socket.emit('rpcHistory', {
-        rpcId: data.rpcId,
-        history
-      });
-    });
-
-    socket.on('requestPerformanceStats', (data: { rpcId?: string }) => {
-      const stats = monitoringService.getPerformanceStats(data.rpcId);
-      socket.emit('performanceStats', stats);
-    });
-
-    socket.on('resolveAlert', (data: { alertId: string; resolvedBy?: string }) => {
-      const resolved = alertService.resolveAlert(data.alertId, data.resolvedBy || socket.id);
-      if (resolved) {
-        const alert = alertService.getAlerts({ rpcId: data.alertId, includeResolved: true })[0];
-        if (alert) {
-          socket.emit('alertResolved', alert);
-        }
-      }
-    });
-
-    socket.on('disconnect', (reason) => {
-      connectedClients--;
-      logger.info(`Client disconnected: ${socket.id} (${connectedClients} total) - ${reason}`);
-    });
-
-    // Handle client errors
-    socket.on('error', (error) => {
-      logger.error(`Socket error from ${socket.id}:`, error);
-    });
-  });
-
-  // Set up real-time event listeners
-  monitoringService.on('statusUpdate', (status) => {
-    io.emit('rpcStatusUpdate', status);
-  });
-
-  monitoringService.on('healthCheck', (metrics) => {
-    io.emit('systemMetricsUpdate', metrics);
-  });
-
-  monitoringService.on('alert', (alert) => {
-    io.emit('newAlert', alert);
-  });
-
-  monitoringService.on('monitoringStarted', (data) => {
-    io.emit('monitoringStatusChanged', { 
-      status: 'started', 
-      ...data 
-    });
-  });
-
-  monitoringService.on('monitoringStopped', (data) => {
-    io.emit('monitoringStatusChanged', { 
-      status: 'stopped', 
-      ...data 
-    });
-  });
-
-  alertService.on('alertResolved', (alert) => {
-    io.emit('alertResolved', alert);
-  });
-
-  alertService.on('newAlert', (alert) => {
-    // Also emit through monitoring service events
-    io.emit('newAlert', alert);
-  });
-
-  // Periodic client count logging
-  setInterval(() => {
-    if (connectedClients > 0) {
-      logger.debug(`Active WebSocket connections: ${connectedClients}`);
-    }
-  }, 60000); // Log every minute
-
-  // Periodic performance stats broadcast
-  setInterval(() => {
-    if (connectedClients > 0) {
-      const performanceStats = monitoringService.getPerformanceStats();
-      io.emit('performanceUpdate', performanceStats);
-    }
-  }, config.dashboardRefreshInterval);
-
-  // Error handling middleware
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    logger.error('Unhandled application error:', {
-      error: err.message,
-      stack: err.stack,
-      path: req.path,
-      method: req.method
-    });
-
-    res.status(err.status || 500).json({
-      success: false,
-      error: process.env.NODE_ENV === 'production' 
-        ? 'Internal server error' 
-        : err.message,
-      timestamp: new Date()
-    });
-  });
-
-  // 404 handler for API routes
-  app.use('/api/*', (req, res) => {
-    res.status(404).json({
-      success: false,
-      error: `API endpoint not found: ${req.method} ${req.path}`,
-      timestamp: new Date()
-    });
-  });
-
-  // 404 handler for web routes - serve index.html for SPA routing
-  app.use('*', (req, res) => {
-    // If it's an API request that wasn't handled, return JSON error
-    if (req.originalUrl.startsWith('/api/')) {
-      return res.status(404).json({
-        success: false,
-        error: 'API endpoint not found',
-        timestamp: new Date()
-      });
-    }
-    
-    // For all other routes, serve the dashboard
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-  });
-
-  // Start monitoring service
-  monitoringService.startMonitoring().catch(error => {
-    logger.error('Failed to start monitoring service:', error);
-  });
-
-  // Graceful shutdown handlers
-  const gracefulShutdown = async () => {
-    logger.info('Received shutdown signal, starting graceful shutdown...');
-    
-    // Stop accepting new connections
-    server.close(async () => {
-      logger.info('HTTP server closed');
-      
-      try {
-        // Stop monitoring
-        monitoringService.stopMonitoring();
-        
-        // Cleanup services
-        monitoringService.cleanup();
-        alertService.cleanup();
-        
-        // Close socket connections
-        io.close();
-        
-        logger.info('Graceful shutdown completed');
-        process.exit(0);
-      } catch (error) {
-        logger.error('Error during shutdown:', error);
-        process.exit(1);
-      }
-    });
-
-    // Force shutdown after 30 seconds
-    setTimeout(() => {
-      logger.error('Could not close connections in time, forcefully shutting down');
-      process.exit(1);
-    }, 30000);
-  };
-
-  process.on('SIGTERM', gracefulShutdown);
-  process.on('SIGINT', gracefulShutdown);
-
-  // Handle uncaught exceptions
-  process.on('uncaughtException', (error) => {
-    logger.error('Uncaught Exception:', error);
-    gracefulShutdown();
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    gracefulShutdown();
-  });
-
-  return { 
-    app, 
-    server, 
-    io, 
-    monitoringService, 
-    alertService 
-  };
+  logger.info('Getting AlertService...');
+  alertService = monitoringService.getAlertService();
+  logger.info('AlertService retrieved successfully');
+  
+  logger.info('Getting MetricsService...');
+  metricsService = monitoringService.getMetricsService();
+  logger.info('MetricsService retrieved successfully');
+  
+  logger.info('Getting UserService...');
+  userService = monitoringService.getUserService();
+  logger.info('UserService retrieved successfully');
+  
+  logger.info('All services initialized successfully');
+} catch (error) {
+  logger.error('Failed to initialize services:', error);
+  process.exit(1);
 }
+
+// API routes
+app.use('/api', createApiRouter(monitoringService, alertService, metricsService));
+
+// Serve the main dashboard
+app.get('/', (req, res) => {
+  res.sendFile('public/index.html', { root: '.' });
+});
+
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  logger.info('Client connected', { socketId: socket.id });
+
+  // Send initial data to the client
+  const defaultUserId = 'default';
+  const rpcs = monitoringService.getRPCStatuses(defaultUserId);
+  const alerts = alertService.getUserAlerts(defaultUserId, false);
+  
+  socket.emit('initialData', { rpcs, alerts });
+
+  // Handle client requests
+  socket.on('requestRPCHistory', async (rpcId: string) => {
+    const rpcStatus = monitoringService.getRPCStatus(rpcId);
+    if (rpcStatus) {
+      socket.emit('rpcHistory', rpcId, rpcStatus.history);
+    }
+  });
+
+  socket.on('requestPerformanceStats', async (rpcId: string) => {
+    const rpcStatus = monitoringService.getRPCStatus(rpcId);
+    if (rpcStatus) {
+      const stats = {
+        avgResponseTime: rpcStatus.history.length > 0 
+          ? rpcStatus.history.reduce((sum, h) => sum + h.responseTime, 0) / rpcStatus.history.length 
+          : 0,
+        uptime: rpcStatus.history.length > 0 
+          ? (rpcStatus.history.filter(h => h.isOnline).length / rpcStatus.history.length) * 100 
+          : 0,
+        totalChecks: rpcStatus.history.length
+      };
+      socket.emit('performanceStats', rpcId, stats);
+    }
+  });
+
+  socket.on('resolveAlert', async (alertId: string, resolvedBy: string) => {
+    const resolvedAlert = await alertService.resolveAlert(alertId, resolvedBy);
+    if (resolvedAlert) {
+      socket.emit('alertResolved', resolvedAlert);
+    }
+  });
+
+  socket.on('addRPC', async (rpcConfig) => {
+    const defaultUserId = 'default';
+    const newRPC = await userService.addUserRPC(defaultUserId, rpcConfig);
+    
+    if (newRPC) {
+      // Start monitoring if this is the first RPC
+      if (!monitoringService.isMonitoringActive()) {
+        await monitoringService.startMonitoring(defaultUserId);
+      }
+      
+      socket.emit('rpcAdded', newRPC);
+      
+      // Update all clients with the new RPC
+      io.emit('rpcAdded', newRPC);
+    }
+  });
+
+  socket.on('updateRPC', async (rpcId: string, updates) => {
+    const defaultUserId = 'default';
+    const updatedRPC = await userService.updateUserRPC(defaultUserId, rpcId, updates);
+    
+    if (updatedRPC) {
+      socket.emit('rpcUpdated', updatedRPC);
+      io.emit('rpcUpdated', updatedRPC);
+    }
+  });
+
+  socket.on('deleteRPC', async (rpcId: string) => {
+    const defaultUserId = 'default';
+    const success = await userService.removeUserRPC(defaultUserId, rpcId);
+    
+    if (success) {
+      socket.emit('rpcDeleted', rpcId);
+      io.emit('rpcDeleted', rpcId);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    logger.info('Client disconnected', { socketId: socket.id });
+  });
+});
+
+// Start monitoring for the default user
+async function startDefaultMonitoring() {
+  try {
+    const defaultUserId = 'default';
+    const userRPCs = userService.getUserRPCs(defaultUserId);
+    
+    if (userRPCs.length > 0) {
+      await monitoringService.startMonitoring(defaultUserId);
+      logger.info('Default user monitoring started', { 
+        userId: defaultUserId, 
+        rpcCount: userRPCs.length 
+      });
+    } else {
+      logger.info('No RPCs configured for default user, monitoring not started');
+    }
+  } catch (error) {
+    logger.error('Failed to start default monitoring', {
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  logger.info('Received shutdown signal, starting graceful shutdown...');
+  
+  // Stop monitoring
+  monitoringService.stopMonitoring();
+  
+  // Close HTTP server
+  server.close(() => {
+    logger.info('HTTP server closed');
+  });
+  
+  // Close Socket.IO
+  io.close(() => {
+    logger.info('Socket.IO server closed');
+  });
+  
+  // Cleanup services
+  monitoringService.cleanup();
+  
+  logger.info('Graceful shutdown completed');
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  logger.info('Received SIGTERM, starting graceful shutdown...');
+  
+  // Stop monitoring
+  monitoringService.stopMonitoring();
+  
+  // Close HTTP server
+  server.close(() => {
+    logger.info('HTTP server closed');
+  });
+  
+  // Close Socket.IO
+  io.close(() => {
+    logger.info('Socket.IO server closed');
+  });
+  
+  // Cleanup services
+  monitoringService.cleanup();
+  
+  logger.info('Graceful shutdown completed');
+  process.exit(0);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+
+logger.info('About to start server on port:', PORT);
+
+try {
+  server.listen(PORT, () => {
+    logger.info('🚀 RPC Monitor server is running on port 3000', {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      dashboardUrl: `http://localhost:${PORT}`,
+      apiUrl: `http://localhost:${PORT}/api`,
+      healthUrl: `http://localhost:${PORT}/api/health`
+    });
+
+    // Start default monitoring after server is running
+    startDefaultMonitoring();
+  });
+
+  // Handle server errors
+  server.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EADDRINUSE') {
+      logger.error(`Port ${PORT} is already in use`);
+      process.exit(1);
+    } else if (error.code === 'EACCES') {
+      logger.error(`Permission denied to bind to port ${PORT}`);
+      process.exit(1);
+    } else {
+      logger.error('Server error:', error);
+      process.exit(1);
+    }
+  });
+
+} catch (error) {
+  logger.error('Failed to start server:', error);
+  process.exit(1);
+}
+
+export default app;

@@ -22,101 +22,42 @@ const customFormat = winston.format.combine(
   })
 );
 
-// Create the logger
+// Create the main logger
 const logger = winston.createLogger({
-  level: config.logLevel,
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
   defaultMeta: { service: 'rpc-monitor' },
   transports: [
-    // Error logs - separate file for errors only
-    new winston.transports.File({
-      filename: path.join(logsDir, 'error.log'),
-      level: 'error',
+    new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    }),
-
-    // Combined logs - all levels
-    new winston.transports.File({
-      filename: path.join(logsDir, 'combined.log'),
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
-      maxsize: 5242880, // 5MB
-      maxFiles: 10
-    }),
-
-    // Debug logs - separate file for debug information
-    new winston.transports.File({
-      filename: path.join(logsDir, 'debug.log'),
-      level: 'debug',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
-      maxsize: 5242880, // 5MB
-      maxFiles: 3
-    })
-  ],
-  
-  // Handle uncaught exceptions and rejections
-  exceptionHandlers: [
-    new winston.transports.File({
-      filename: path.join(logsDir, 'exceptions.log'),
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
+        winston.format.colorize(),
+        winston.format.simple()
       )
-    })
-  ],
-  
-  rejectionHandlers: [
-    new winston.transports.File({
-      filename: path.join(logsDir, 'rejections.log'),
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      )
+    }),
+    new winston.transports.File({ 
+      filename: 'logs/error.log', 
+      level: 'error' 
+    }),
+    new winston.transports.File({ 
+      filename: 'logs/combined.log' 
     })
   ]
 });
 
-// Add console transport for non-production environments
-if (config.nodeEnv !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      customFormat
-    )
-  }));
-}
-
-// Create specialized loggers for different components
+// Create child loggers for different services
 export const createChildLogger = (service: string) => {
   return logger.child({ service });
 };
 
-// Performance logging helper
-export const logPerformance = (operation: string, startTime: number, metadata?: object) => {
-  const duration = Date.now() - startTime;
-  logger.debug(`Performance: ${operation} completed in ${duration}ms`, {
-    operation,
-    duration,
-    ...metadata
-  });
-};
-
-// RPC-specific logger
-export const rpcLogger = createChildLogger('rpc');
-export const monitorLogger = createChildLogger('monitor');
-export const alertLogger = createChildLogger('alert');
 export const apiLogger = createChildLogger('api');
 export const web3Logger = createChildLogger('web3');
 export const metricsLogger = createChildLogger('metrics');
+export const userLogger = createChildLogger('user');
+export const alertLogger = createChildLogger('alert');
+export const monitoringLogger = createChildLogger('monitoring');
 
-export { logger };
 export default logger;

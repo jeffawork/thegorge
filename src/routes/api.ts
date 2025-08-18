@@ -1,8 +1,10 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { MonitoringService } from '../services/monitoringService';
 import { AlertService } from '../services/alertService';
+import { UserService } from '../services/userService';
+import { Web3Service } from '../services/web3Service';
 import { apiLogger } from '../utils/logger';
-import { APIResponse } from '../types';
+import { APIResponse, RPCConfig, EVM_NETWORKS } from '../types';
 
 // Middleware to handle async errors
 const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
@@ -28,6 +30,8 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
 
 export function createApiRouter(monitoringService: MonitoringService, alertService: AlertService, metricsService?: any): Router {
   const router = Router();
+  const userService = monitoringService.getUserService();
+  const web3Service = monitoringService.getWeb3Service();
 
   // Apply middleware
   router.use(requestLogger);
@@ -61,7 +65,7 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   }));
 
   /**
-   * GET /api/health - Health check endpoint
+   * GET /health - Health check endpoint
    */
   router.get('/health', (req: Request, res: Response) => {
     const response: APIResponse = {
@@ -80,14 +84,75 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   });
 
   /**
-   * GET /api/rpcs - Get all RPC statuses
+   * GET /networks - Get available EVM networks
    */
-  router.get('/rpcs', asyncHandler(async (req: Request, res: Response) => {
-    const statuses = monitoringService.getRPCStatuses();
+  router.get('/networks', (req: Request, res: Response) => {
+    const response: APIResponse = {
+      success: true,
+      data: EVM_NETWORKS,
+      timestamp: new Date()
+    };
+    
+    res.json(response);
+  });
+
+  /**
+   * POST /networks/detect - Detect network from RPC endpoint
+   */
+  router.post('/networks/detect', asyncHandler(async (req: Request, res: Response) => {
+    const { url } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        error: 'RPC URL is required',
+        timestamp: new Date()
+      });
+    }
+
+    try {
+      const networkInfo = await web3Service.detectNetwork(url);
+      
+      if (!networkInfo) {
+        return res.status(400).json({
+          success: false,
+          error: 'Failed to detect network from RPC endpoint',
+          timestamp: new Date()
+        });
+      }
+
+      const response: APIResponse = {
+        success: true,
+        data: networkInfo,
+        timestamp: new Date()
+      };
+      
+      res.json(response);
+    } catch (error) {
+      apiLogger.error('Network detection failed', {
+        url,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Network detection failed',
+        timestamp: new Date()
+      });
+    }
+  }));
+
+  /**
+   * GET /users/:userId/rpcs - Get all RPCs for a user
+   */
+  router.get('/users/:userId/rpcs', asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    
+    const rpcs = userService.getUserRPCs(userId);
     
     const response: APIResponse = {
       success: true,
-      data: statuses,
+      data: rpcs,
       timestamp: new Date()
     };
     
@@ -95,19 +160,169 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   }));
 
   /**
-   * GET /api/rpcs/:id - Get specific RPC status
+   * POST /users/:userId/rpcs - Add new RPC for a user
    */
-  router.get('/rpcs/:id', asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const status = monitoringService.getRPCStatus(id);
+  router.post('/users/:userId/rpcs', asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const rpcData = req.body;
     
-    if (!status) {
+    // Validate required fields
+    const requiredFields = ['name', 'url', 'network', 'chainId'];
+    for (const field of requiredFields) {
+      if (!rpcData[field]) {
+        return res.status(400).json({
+          success: false,
+          error: `Missing required field: ${field}`,
+          timestamp: new Date()
+        });
+      }
+    }
+
+    try {
+      const newRPC = await userService.addUserRPC(userId, {
+        ...rpcData,
+        timeout: rpcData.timeout || 10000,
+        enabled: rpcData.enabled !== false,
+        priority: rpcData.priority || 1,
+        maxHistoryEntries: rpcData.maxHistoryEntries || 100,
+        alertThresholds: rpcData.alertThresholds || {
+          responseTime: 5000,
+          errorRate: 10,
+          peerCount: 5,
+          blockLag: 5,
+          syncLag: 5
+        }
+      });
+
+      if (!newRPC) {
+        return res.status(400).json({
+          success: false,
+          error: 'Failed to add RPC configuration',
+          timestamp: new Date()
+        });
+      }
+
+      // Start monitoring if this is the first RPC
+      if (!monitoringService.isMonitoringActive()) {
+        await monitoringService.startMonitoring(userId);
+      }
+
       const response: APIResponse = {
-        success: false,
-        error: `RPC with ID '${id}' not found`,
+        success: true,
+        data: newRPC,
         timestamp: new Date()
       };
-      return res.status(404).json(response);
+      
+      res.status(201).json(response);
+    } catch (error) {
+      apiLogger.error('Failed to add RPC', {
+        userId,
+        rpcData,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to add RPC configuration',
+        timestamp: new Date()
+      });
+    }
+  }));
+
+  /**
+   * PUT /users/:userId/rpcs/:rpcId - Update RPC configuration
+   */
+  router.put('/users/:userId/rpcs/:rpcId', asyncHandler(async (req: Request, res: Response) => {
+    const { userId, rpcId } = req.params;
+    const updates = req.body;
+    
+    try {
+      const updatedRPC = await userService.updateUserRPC(userId, rpcId, updates);
+      
+      if (!updatedRPC) {
+        return res.status(404).json({
+          success: false,
+          error: 'RPC configuration not found',
+          timestamp: new Date()
+        });
+      }
+
+      const response: APIResponse = {
+        success: true,
+        data: updatedRPC,
+        timestamp: new Date()
+      };
+      
+      res.json(response);
+    } catch (error) {
+      apiLogger.error('Failed to update RPC', {
+        userId,
+        rpcId,
+        updates,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update RPC configuration',
+        timestamp: new Date()
+      });
+    }
+  }));
+
+  /**
+   * DELETE /users/:userId/rpcs/:rpcId - Remove RPC configuration
+   */
+  router.delete('/users/:userId/rpcs/:rpcId', asyncHandler(async (req: Request, res: Response) => {
+    const { userId, rpcId } = req.params;
+    
+    try {
+      const success = await userService.removeUserRPC(userId, rpcId);
+      
+      if (!success) {
+        return res.status(404).json({
+          success: false,
+          error: 'RPC configuration not found',
+          timestamp: new Date()
+        });
+      }
+
+      const response: APIResponse = {
+        success: true,
+        data: { message: 'RPC configuration removed successfully' },
+        timestamp: new Date()
+      };
+      
+      res.json(response);
+    } catch (error) {
+      apiLogger.error('Failed to remove RPC', {
+        userId,
+        rpcId,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to remove RPC configuration',
+        timestamp: new Date()
+      });
+    }
+  }));
+
+  /**
+   * GET /users/:userId/rpcs/:rpcId/status - Get RPC status
+   */
+  router.get('/users/:userId/rpcs/:rpcId/status', asyncHandler(async (req: Request, res: Response) => {
+    const { rpcId } = req.params;
+    
+    const status = monitoringService.getRPCStatus(rpcId);
+    
+    if (!status) {
+      return res.status(404).json({
+        success: false,
+        error: 'RPC status not found',
+        timestamp: new Date()
+      });
     }
 
     const response: APIResponse = {
@@ -120,29 +335,49 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   }));
 
   /**
-   * GET /api/rpcs/:id/history - Get RPC health history
+   * GET /users/:userId/rpcs/:rpcId/health - Test RPC connection
    */
-  router.get('/rpcs/:id/history', asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 500); // Max 500 entries
+  router.post('/users/:userId/rpcs/:rpcId/health', asyncHandler(async (req: Request, res: Response) => {
+    const { rpcId } = req.params;
     
-    const history = monitoringService.getHealthHistory(id, limit);
-    
-    if (history.length === 0) {
+    try {
+      const healthResult = await web3Service.performHealthCheck(rpcId);
+      
       const response: APIResponse = {
-        success: false,
-        error: `No history found for RPC with ID '${id}'`,
+        success: true,
+        data: healthResult,
         timestamp: new Date()
       };
-      return res.status(404).json(response);
+      
+      res.json(response);
+    } catch (error) {
+      apiLogger.error('Health check failed', {
+        rpcId,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Health check failed',
+        timestamp: new Date()
+      });
     }
+  }));
 
+  /**
+   * GET /users/:userId/status - Get user monitoring status
+   */
+  router.get('/users/:userId/status', asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    
+    const stats = monitoringService.getMonitoringStats(userId);
+    const userStats = userService.getUserStats(userId);
+    
     const response: APIResponse = {
       success: true,
       data: {
-        rpcId: id,
-        history,
-        count: history.length
+        monitoring: stats,
+        user: userStats
       },
       timestamp: new Date()
     };
@@ -151,14 +386,22 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   }));
 
   /**
-   * GET /api/metrics - Get system metrics
+   * GET /users/:userId/alerts - Get user alerts
    */
-  router.get('/metrics', asyncHandler(async (req: Request, res: Response) => {
-    const metrics = monitoringService.getSystemMetrics();
+  router.get('/users/:userId/alerts', asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { resolved, limit = 50 } = req.query;
+    
+    const alerts = userService.getUserAlerts(userId, resolved === 'true');
+    const limitedAlerts = alerts.slice(0, Number(limit));
     
     const response: APIResponse = {
       success: true,
-      data: metrics,
+      data: {
+        alerts: limitedAlerts,
+        total: alerts.length,
+        limit: Number(limit)
+      },
       timestamp: new Date()
     };
     
@@ -166,11 +409,52 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   }));
 
   /**
-   * GET /api/performance - Get performance statistics
+   * POST /users/:userId/alerts/:alertId/resolve - Resolve an alert
    */
-  router.get('/performance', asyncHandler(async (req: Request, res: Response) => {
-    const { rpcId } = req.query;
-    const stats = monitoringService.getPerformanceStats(rpcId as string);
+  router.post('/users/:userId/alerts/:alertId/resolve', asyncHandler(async (req: Request, res: Response) => {
+    const { alertId } = req.params;
+    const { resolvedBy = 'user' } = req.body;
+    
+    try {
+      const resolvedAlert = await alertService.resolveAlert(alertId, resolvedBy);
+      
+      if (!resolvedAlert) {
+        return res.status(404).json({
+          success: false,
+          error: 'Alert not found',
+          timestamp: new Date()
+        });
+      }
+
+      const response: APIResponse = {
+        success: true,
+        data: resolvedAlert,
+        timestamp: new Date()
+      };
+      
+      res.json(response);
+    } catch (error) {
+      apiLogger.error('Failed to resolve alert', {
+        alertId,
+        resolvedBy,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to resolve alert',
+        timestamp: new Date()
+      });
+    }
+  }));
+
+  /**
+   * GET /users/:userId/alerts/stats - Get alert statistics
+   */
+  router.get('/users/:userId/alerts/stats', asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    
+    const stats = alertService.getAlertStats(userId);
     
     const response: APIResponse = {
       success: true,
@@ -182,257 +466,25 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   }));
 
   /**
-   * GET /api/alerts - Get alerts with optional filters
+   * GET /system/stats - Get system-wide statistics
    */
-  router.get('/alerts', asyncHandler(async (req: Request, res: Response) => {
-    const {
-      resolved,
-      rpcId,
-      type,
-      severity,
-      limit,
-      offset
-    } = req.query;
-
-    const options = {
-      includeResolved: resolved !== 'false',
-      rpcId: rpcId as string,
-      type: type as any,
-      severity: severity as any,
-      limit: limit ? parseInt(limit as string) : undefined,
-      offset: offset ? parseInt(offset as string) : undefined
-    };
-
-    // Remove undefined values
-    Object.keys(options).forEach(key => 
-      options[key as keyof typeof options] === undefined && delete options[key as keyof typeof options]
-    );
-
-    const alerts = alertService.getAlerts(options);
+  router.get('/system/stats', (req: Request, res: Response) => {
+    const systemStats = userService.getSystemStats();
+    const connectionStats = web3Service.getConnectionStats();
     
     const response: APIResponse = {
       success: true,
       data: {
-        alerts,
-        count: alerts.length,
-        filters: options
+        users: systemStats,
+        connections: connectionStats,
+        monitoring: {
+          isActive: monitoringService.isMonitoringActive()
+        }
       },
       timestamp: new Date()
     };
     
     res.json(response);
-  }));
-
-  /**
-   * GET /api/alerts/stats - Get alert statistics
-   */
-  router.get('/alerts/stats', asyncHandler(async (req: Request, res: Response) => {
-    const hours = Math.min(parseInt(req.query.hours as string) || 24, 168); // Max 1 week
-    const stats = alertService.getAlertStats(hours);
-    
-    const response: APIResponse = {
-      success: true,
-      data: {
-        ...stats,
-        timeRangeHours: hours
-      },
-      timestamp: new Date()
-    };
-    
-    res.json(response);
-  }));
-
-  /**
-   * GET /api/alerts/trends - Get alert trends over time
-   */
-  router.get('/alerts/trends', asyncHandler(async (req: Request, res: Response) => {
-    const hours = Math.min(parseInt(req.query.hours as string) || 24, 168); // Max 1 week
-    const interval = Math.max(parseInt(req.query.interval as string) || 1, 1); // Min 1 hour
-    
-    const trends = alertService.getAlertTrends(hours, interval);
-    
-    const response: APIResponse = {
-      success: true,
-      data: {
-        trends,
-        timeRangeHours: hours,
-        intervalHours: interval
-      },
-      timestamp: new Date()
-    };
-    
-    res.json(response);
-  }));
-
-  /**
-   * PATCH /api/alerts/:id/resolve - Resolve a specific alert
-   */
-  router.patch('/alerts/:id/resolve', asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { resolvedBy } = req.body;
-    
-    const resolved = alertService.resolveAlert(id, resolvedBy);
-    
-    if (!resolved) {
-      const response: APIResponse = {
-        success: false,
-        error: `Alert with ID '${id}' not found or already resolved`,
-        timestamp: new Date()
-      };
-      return res.status(404).json(response);
-    }
-
-    const response: APIResponse = {
-      success: true,
-      data: {
-        message: 'Alert resolved successfully',
-        alertId: id,
-        resolvedBy
-      },
-      timestamp: new Date()
-    };
-    
-    res.json(response);
-  }));
-
-  /**
-   * POST /api/alerts/resolve - Bulk resolve alerts
-   */
-  router.post('/alerts/resolve', asyncHandler(async (req: Request, res: Response) => {
-    const { alertIds, resolvedBy } = req.body;
-    
-    if (!Array.isArray(alertIds) || alertIds.length === 0) {
-      const response: APIResponse = {
-        success: false,
-        error: 'alertIds must be a non-empty array',
-        timestamp: new Date()
-      };
-      return res.status(400).json(response);
-    }
-
-    const resolvedCount = alertService.bulkResolveAlerts(alertIds, resolvedBy);
-    
-    const response: APIResponse = {
-      success: true,
-      data: {
-        message: `${resolvedCount} alerts resolved successfully`,
-        resolvedCount,
-        totalRequested: alertIds.length,
-        resolvedBy
-      },
-      timestamp: new Date()
-    };
-    
-    res.json(response);
-  }));
-
-  /**
-   * GET /api/dashboard - Get complete dashboard data
-   */
-  router.get('/dashboard', asyncHandler(async (req: Request, res: Response) => {
-    const rpcs = monitoringService.getRPCStatuses();
-    const metrics = monitoringService.getSystemMetrics();
-    const alerts = alertService.getActiveAlerts();
-    const stats = alertService.getAlertStats(24);
-    
-    const response: APIResponse = {
-      success: true,
-      data: {
-        rpcs,
-        metrics,
-        alerts,
-        alertStats: stats,
-        timestamp: new Date()
-      },
-      timestamp: new Date()
-    };
-    
-    res.json(response);
-  }));
-
-  /**
-   * GET /api/export/alerts - Export alerts as JSON
-   */
-  router.get('/export/alerts', asyncHandler(async (req: Request, res: Response) => {
-    const includeResolved = req.query.resolved !== 'false';
-    const alertsJson = alertService.exportAlerts(includeResolved);
-    
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="rpc-alerts-${Date.now()}.json"`);
-    res.send(alertsJson);
-  }));
-
-  /**
-   * POST /api/import/alerts - Import alerts from JSON
-   */
-  router.post('/import/alerts', asyncHandler(async (req: Request, res: Response) => {
-    const { alertsData, merge = true } = req.body;
-    
-    if (!alertsData) {
-      const response: APIResponse = {
-        success: false,
-        error: 'alertsData is required',
-        timestamp: new Date()
-      };
-      return res.status(400).json(response);
-    }
-
-    const importedCount = alertService.importAlerts(
-      typeof alertsData === 'string' ? alertsData : JSON.stringify(alertsData),
-      merge
-    );
-    
-    const response: APIResponse = {
-      success: true,
-      data: {
-        message: `${importedCount} alerts imported successfully`,
-        importedCount,
-        merge
-      },
-      timestamp: new Date()
-    };
-    
-    res.json(response);
-  }));
-
-  /**
-   * DELETE /api/alerts - Clear old alerts
-   */
-  router.delete('/alerts', asyncHandler(async (req: Request, res: Response) => {
-    const hours = Math.min(parseInt(req.query.hours as string) || 24, 168); // Max 1 week
-    const clearedCount = alertService.clearOldAlerts(hours);
-    
-    const response: APIResponse = {
-      success: true,
-      data: {
-        message: `${clearedCount} old alerts cleared`,
-        clearedCount,
-        olderThanHours: hours
-      },
-      timestamp: new Date()
-    };
-    
-    res.json(response);
-  }));
-
-  // Error handling middleware for this router
-  router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-    apiLogger.error('API error', {
-      error: error.message,
-      stack: error.stack,
-      path: req.path,
-      method: req.method,
-      params: req.params,
-      query: req.query
-    });
-
-    const response: APIResponse = {
-      success: false,
-      error: 'Internal server error',
-      timestamp: new Date()
-    };
-
-    res.status(500).json(response);
   });
 
   return router;
