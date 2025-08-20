@@ -1,12 +1,16 @@
 {
-  "name": "evm-rpc-monitor",
+  "name": "the-gorge",
   "version": "1.0.0",
-  "description": "EVM-compatible RPC monitoring tool with real-time dashboard",
+  "description": "The Gorge - Real-time blockchain infrastructure monitoring tool",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "preview:frontend": "cd frontend && npm run preview",
+    "install:all": "npm install && cd frontend && npm install",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
@@ -19,7 +23,9 @@
     "rpc",
     "monitoring",
     "web3",
-    "blockchain"
+    "blockchain",
+    "react",
+    "typescript"
   ],
   "author": "Your Name",
   "license": "MIT",
