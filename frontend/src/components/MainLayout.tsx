@@ -1,12 +1,19 @@
 import React, { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { Header } from './Header'
+import { Navigation } from './Navigation'
 
-interface LayoutProps {
+interface MainLayoutProps {
   children: ReactNode
+  activeTab: string
+  onTabChange: (tab: string) => void
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const MainLayout: React.FC<MainLayoutProps> = ({ 
+  children, 
+  activeTab, 
+  onTabChange 
+}) => {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background Animation - Disabled for cleaner look */}
@@ -17,10 +24,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="floating-shape" />
       </div> */}
 
-      {/* Main Content */}
-      <div className="relative z-10">
+      {/* Sidebar Navigation - Fixed */}
+      <Navigation activeTab={activeTab} onTabChange={onTabChange} />
+      
+      {/* Main Content Area - Offset for fixed navigation */}
+      <div className="ml-64 flex flex-col min-h-screen relative z-10">
         <Header />
-        <main className="container mx-auto px-4 py-6">
+        <main className="flex-1 container mx-auto px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

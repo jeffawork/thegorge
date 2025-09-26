@@ -29,7 +29,7 @@ let userService: any;
 
 try {
   logger.info('Creating Web3Service...');
-  monitoringService = new MonitoringService();
+  monitoringService = new MonitoringService(io);
   logger.info('MonitoringService created successfully');
   
   logger.info('Getting AlertService...');

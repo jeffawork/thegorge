@@ -2,13 +2,16 @@ import { Alert, RPCConfig } from '../types';
 import { MetricsService } from './metricsService';
 import { alertLogger } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
+import { Server as SocketIOServer } from 'socket.io';
 
 export class AlertService {
   private alerts: Map<string, Alert> = new Map();
   private metricsService?: MetricsService;
+  private io: SocketIOServer | null = null;
 
-  constructor(metricsService?: MetricsService) {
+  constructor(metricsService?: MetricsService, io?: SocketIOServer) {
     this.metricsService = metricsService;
+    this.io = io || null;
     alertLogger.info('AlertService initialized');
   }
 
@@ -22,6 +25,11 @@ export class AlertService {
     };
 
     this.alerts.set(alert.id, alert);
+
+    // Emit WebSocket event for new alert
+    if (this.io) {
+      this.io.emit('newAlert', alert);
+    }
 
     // Record metrics if available
     if (this.metricsService) {

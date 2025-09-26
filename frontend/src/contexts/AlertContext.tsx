@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { useConnection } from './ConnectionContext'
+import io, { Socket } from 'socket.io-client'
 
 export interface Alert {
   id: string
@@ -42,10 +42,23 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { socket } = useConnection()
+  const [socket, setSocket] = useState<Socket | null>(null)
 
   useEffect(() => {
     loadAlerts()
+    
+    // Initialize socket connection
+    const newSocket = io('http://localhost:3000', {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    })
+    
+    setSocket(newSocket)
+    
+    return () => {
+      newSocket.close()
+    }
   }, [])
 
   useEffect(() => {
