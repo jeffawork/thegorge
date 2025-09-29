@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  :root {
+    /* Base */
+    --background: 220 35% 99%; /* very light cool gray */
+    --foreground: 220 40% 15%; /* deep cool gray for text */
+    --radius: 0.5rem;
+
+    /* Cards & Popovers */
+    --card: 220 35% 99%;
+    --card-foreground: 220 40% 15%;
+    --popover: 220 35% 98%;
+    --popover-foreground: 220 40% 15%;
+
+    /* Primary Branding - Trustworthy Blockchain Blue */
+    --primary: 210 85% 50%; /* vibrant cyan-blue */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary Accent - Premium Gold */
+    --secondary: 45 90% 50%; /* gold */
+    --secondary-foreground: 222 47% 11%;
+
+    /* Muted & Neutral */
+    --muted: 220 20% 94%;
+    --muted-foreground: 220 15% 35%;
+
+    /* Accent - Highlight with teal for buttons/badges */
+    --accent: 174 70% 38%; /* strong teal */
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive Actions */
+    --destructive: 0 75% 45%; /* rich red */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Focus Rings */
+    --border: 220 20% 85%;
+    --input: 220 20% 85%;
+    --ring: 210 85% 50%;
+  }
+
+  .dark {
+    /* Base */
+    --background: 220 40% 9%; /* dark navy */
+    --foreground: 0 0% 100%;
+
+    /* Cards & Popovers */
+    --card: 220 35% 12%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 220 35% 15%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary */
+    --primary: 210 85% 60%; /* brighter cyan-blue for dark mode */
+    --primary-foreground: 220 40% 9%;
+
+    /* Secondary */
+    --secondary: 45 90% 60%; /* gold pop on dark background */
+    --secondary-foreground: 220 40% 9%;
+
+    /* Muted */
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 15% 70%;
+
+    /* Accent */
+    --accent: 174 80% 45%;
+    --accent-foreground: 220 40% 9%;
+
+    /* Destructive */
+    --destructive: 0 75% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Focus Rings */
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
+    --ring: 210 85% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
