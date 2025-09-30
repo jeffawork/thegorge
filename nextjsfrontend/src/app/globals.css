@@ -4,81 +4,97 @@
 
 
 @layer base {
-  :root {
-    /* Base */
-    --background: 220 35% 99%; /* very light cool gray */
-    --foreground: 220 40% 15%; /* deep cool gray for text */
-    --radius: 0.5rem;
+/*  Light Mode (default) */
+:root {
+  /* Base */
+  --background: 220 35% 99%; /* very light gray */
+  --foreground: 220 40% 15%; /* deep cool gray */
+  --radius: 0.5rem;
 
-    /* Cards & Popovers */
-    --card: 220 35% 99%;
-    --card-foreground: 220 40% 15%;
-    --popover: 220 35% 98%;
-    --popover-foreground: 220 40% 15%;
+  /* Cards & Popovers */
+  --card: 220 35% 99%;
+  --card-foreground: 220 40% 15%;
+  --popover: 220 35% 98%;
+  --popover-foreground: 220 40% 15%;
 
-    /* Primary Branding - Trustworthy Blockchain Blue */
-    --primary: 210 85% 50%; /* vibrant cyan-blue */
-    --primary-foreground: 0 0% 100%;
+  /* Primary Branding */
+  --primary: 189 100% 50%; /* cyan-blue (#00D4FF) */
+  --primary-foreground: 0 0% 100%;
 
-    /* Secondary Accent - Premium Gold */
-    --secondary: 45 90% 50%; /* gold */
-    --secondary-foreground: 222 47% 11%;
+  /* Secondary Accent */
+  --secondary: 180 100% 50%; /* cyan (#00FFFF) */
+  --secondary-foreground: 220 40% 15%;
 
-    /* Muted & Neutral */
-    --muted: 220 20% 94%;
-    --muted-foreground: 220 15% 35%;
+  /* Success / Warning / Critical */
+  --success: 152 100% 50%; /* green (#00FF88) */
+  --success-foreground: 0 0% 100%;
 
-    /* Accent - Highlight with teal for buttons/badges */
-    --accent: 174 70% 38%; /* strong teal */
-    --accent-foreground: 0 0% 100%;
+  --warning: 45 100% 50%; /* amber (#FFB800) */
+  --warning-foreground: 220 40% 15%;
 
-    /* Destructive Actions */
-    --destructive: 0 75% 45%; /* rich red */
-    --destructive-foreground: 0 0% 100%;
+  --destructive: 0 100% 60%; /* red (#FF3B30) */
+  --destructive-foreground: 0 0% 100%;
 
-    /* Borders & Focus Rings */
-    --border: 220 20% 85%;
-    --input: 220 20% 85%;
-    --ring: 210 85% 50%;
-  }
+  /* Muted & Neutral */
+  --muted: 220 20% 94%;
+  --muted-foreground: 220 15% 35%;
 
-  .dark {
-    /* Base */
-    --background: 220 40% 9%; /* dark navy */
-    --foreground: 0 0% 100%;
+  /* Borders & Focus Rings */
+  --border: 220 20% 85%;
+  --input: 220 20% 85%;
+  --ring: 189 100% 50%;
 
-    /* Cards & Popovers */
-    --card: 220 35% 12%;
-    --card-foreground: 0 0% 100%;
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(189 100% 50%) 0%, hsl(180 100% 50%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(152 100% 50%) 0%, hsl(189 100% 50%) 100%);
+  --gradient-warning: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(0 100% 60%) 100%);
+}
 
-    --popover: 220 35% 15%;
-    --popover-foreground: 0 0% 100%;
+/*  Dark Mode */
+[data-theme="dark"] {
+  /* Base */
+  --background: 231 63% 10%; /* dark navy (#0A0E27) */
+  --foreground: 0 0% 100%;   /* white */
 
-    /* Primary */
-    --primary: 210 85% 60%; /* brighter cyan-blue for dark mode */
-    --primary-foreground: 220 40% 9%;
+  /* Cards & Popovers */
+  --card: 229 22% 13%;       /* dark surface (#1A1D29) */
+  --card-foreground: 0 0% 100%;
+  --popover: 232 22% 20%;    /* lighter surface (#2A2D41) */
+  --popover-foreground: 0 0% 100%;
 
-    /* Secondary */
-    --secondary: 45 90% 60%; /* gold pop on dark background */
-    --secondary-foreground: 220 40% 9%;
+  /* Primary Branding */
+  --primary: 189 100% 50%; /* cyan-blue (#00D4FF) */
+  --primary-foreground: 0 0% 100%;
 
-    /* Muted */
-    --muted: 220 20% 20%;
-    --muted-foreground: 220 15% 70%;
+  /* Secondary Accent */
+  --secondary: 180 100% 50%; /* cyan (#00FFFF) */
+  --secondary-foreground: 231 63% 10%;
 
-    /* Accent */
-    --accent: 174 80% 45%;
-    --accent-foreground: 220 40% 9%;
+  /* Success / Warning / Critical */
+  --success: 152 100% 50%; 
+  --success-foreground: 0 0% 100%;
 
-    /* Destructive */
-    --destructive: 0 75% 40%;
-    --destructive-foreground: 0 0% 100%;
+  --warning: 45 100% 50%;
+  --warning-foreground: 231 63% 10%;
 
-    /* Borders & Focus Rings */
-    --border: 220 25% 20%;
-    --input: 220 25% 20%;
-    --ring: 210 85% 60%;
-  }
+  --destructive: 0 100% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Muted & Neutral */
+  --muted: 231 12% 44%;      /* muted gray (#6B7280) */
+  --muted-foreground: 231 20% 78%; /* secondary text (#B0B3C8) */
+
+  /* Borders & Focus Rings */
+  --border: hsl(189 100% 50% / 0.2); /* cyan with alpha */
+  --input: 229 22% 13%;
+  --ring: 189 100% 50%;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(189 100% 50%) 0%, hsl(180 100% 50%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(152 100% 50%) 0%, hsl(189 100% 50%) 100%);
+  --gradient-warning: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(0 100% 60%) 100%);
+}
+
 }
 
 @layer base {
