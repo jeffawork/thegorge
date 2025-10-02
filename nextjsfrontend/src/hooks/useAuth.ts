@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 
-
 export const useLogin = ( ) => {
     const QueryClient = useQueryClient()
     const router = useRouter();
@@ -14,9 +13,7 @@ export const useLogin = ( ) => {
 
     return useMutation({
         mutationFn: authApiService.login,
-        onMutate: () => {
-            console.log("loading..")
-        },
+        
         onSuccess: (data) => {
             setUser(data.user);
             QueryClient.invalidateQueries({ queryKey: ['me'] });

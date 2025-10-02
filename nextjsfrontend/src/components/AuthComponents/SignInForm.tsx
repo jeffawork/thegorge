@@ -3,7 +3,6 @@ import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
-  FormItem,
   FormField,
   FormLabel,
   FormControl,
@@ -15,7 +14,12 @@ import { signInformSchema } from '@/lib/utils';
 import { Button } from '../ui/button';
 import z from 'zod';
 import Link from 'next/dist/client/link';
+import { useLogin } from '@/hooks/useAuth';
+import { Spinner } from '../ui/spinner';
+
 const SignInForm = () => {
+  const { mutate: login, isPending } = useLogin();
+
   const form = useForm<z.infer<typeof signInformSchema>>({
     mode: 'onChange',
     resolver: zodResolver(signInformSchema),
@@ -29,9 +33,8 @@ const SignInForm = () => {
     formState: { errors },
   } = form;
 
-  const onSubmit = (data: any) => {
-    // handle sign in
-    console.log(data);
+  const onSubmit = (data: loginCredentials) => {
+    login(data);
   };
 
   return (
@@ -98,7 +101,12 @@ const SignInForm = () => {
             >
               Forgot Password?
             </Link>
-            <Button className="block w-full cursor-pointer">Sign In</Button>
+            <Button
+              className="block w-full cursor-pointer"
+              disabled={isPending}
+            >
+              {isPending ? <Spinner className="h-4 w-4" /> : 'Sign In'}
+            </Button>
           </form>
         </Form>
         <footer className="mt-3 flex justify-between gap-1">
