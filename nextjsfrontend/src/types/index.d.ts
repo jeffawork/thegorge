@@ -1,12 +1,36 @@
-// Authentication types
-
-import { Interface } from "readline";
 
 declare global {
-type AuthFormTypes =
+  // Authentication types
+
+  type AuthFormTypes =
   | 'sign-in'
   | 'sign-up'
   | 'forgot-password'
+
+// Authentication Store tyoes
+ interface User {
+  email: string
+  name: string
+  role?: string
+  avatar?: string
+}
+  interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+
+  setUser: (user: User | null) => void;
+  logout: () => void;
+}
+
+// AuthApi types
+
+interface loginCredentials {
+ email: string;
+ password: string;
+}
+
+
+
 }
 
 
