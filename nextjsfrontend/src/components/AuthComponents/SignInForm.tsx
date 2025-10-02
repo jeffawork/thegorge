@@ -16,6 +16,7 @@ import z from 'zod';
 import Link from 'next/dist/client/link';
 import { useLogin } from '@/hooks/useAuth';
 import { Spinner } from '../ui/spinner';
+import { Lock, Mail } from 'lucide-react';
 
 const SignInForm = () => {
   const { mutate: login, isPending } = useLogin();
@@ -41,10 +42,10 @@ const SignInForm = () => {
     <section>
       <div>
         <div className="mb-2">
-          <h1 className="text-gradient mb-2 text-3xl font-bold">
+          <h1 className="text-gradient mb-2 text-center text-3xl font-bold">
             Welcome to The Gorge
           </h1>
-          <p className="font-medium text-primary-foreground/45">
+          <p className="text-center font-medium text-primary-foreground/45">
             Sign in to your RPC monitoring dashboard
           </p>
         </div>
@@ -56,12 +57,14 @@ const SignInForm = () => {
                 name="email"
                 render={({ field }) => (
                   <div>
-                    <FormLabel className="text-primary-foreground/45">
-                      Email
-                    </FormLabel>
+                    <div className="mb-1">
+                      <FormLabel className="text-primary-foreground/45">
+                        Email
+                      </FormLabel>
+                    </div>
                     <FormControl>
                       <Input
-                        className="mt-2"
+                        icon={<Mail className="h-5 w-5" />}
                         type="email"
                         placeholder="email"
                         {...field}
@@ -78,12 +81,14 @@ const SignInForm = () => {
                 name="password"
                 render={({ field }) => (
                   <div>
-                    <FormLabel className="text-primary-foreground/45">
-                      Password
-                    </FormLabel>
+                    <div className="mb-1">
+                      <FormLabel className="mb-2 text-primary-foreground/45">
+                        Password
+                      </FormLabel>
+                    </div>
                     <FormControl>
                       <Input
-                        className="mt-2"
+                        icon={<Lock className="h-5 w-5" />}
                         variant="password"
                         type="password"
                         placeholder="password"
@@ -97,7 +102,7 @@ const SignInForm = () => {
             </div>
             <Link
               href="/forgot-password"
-              className="my-3 block cursor-pointer text-sm font-normal leading-6 text-primary-foreground underline"
+              className="hover:text-gradient my-3 block cursor-pointer text-sm font-normal leading-6 text-primary-foreground underline"
             >
               Forgot Password?
             </Link>
@@ -114,7 +119,7 @@ const SignInForm = () => {
             Don't have an account ?
           </p>
           <Link
-            className="cursor-pointer text-sm font-medium text-primary-foreground"
+            className="hover:text-gradient cursor-pointer text-sm font-medium text-primary-foreground"
             href="/sign-up"
           >
             Sign Up

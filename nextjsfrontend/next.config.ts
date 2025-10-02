@@ -2,6 +2,18 @@ import path from 'path';
 import type { NextConfig } from 'next';
 
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:3000/api/:path*", // backend
+      },
+      {
+        source: "/socket.io/:path*",
+        destination: "http://localhost:3000/socket.io/:path*", // backend
+      },
+    ];
+  },
   experimental: {
     // @ts-expect-error: 'turbopack' is experimental and not typed yet
     turbopack: {

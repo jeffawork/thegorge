@@ -7,14 +7,12 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <section className="min-h-screen bg-foreground">
-      <div className="grid place-content-center px-6 py-8">
-        <div className="glass-card p-8">
-          <div>
-            <AuthPosterImage />
-          </div>
-          <div>{children}</div>
+    <section className="grid min-h-screen place-items-center bg-foreground px-6 py-8">
+      <div className="glass-card w-full max-w-md p-8">
+        <div>
+          <AuthPosterImage />
         </div>
+        <div>{children}</div>
       </div>
     </section>
   );
