@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { RPCConfig, HealthCheckResult, EVM_NETWORKS } from '../types';
+import { RPCConfig, HealthCheckResult, EVM_NETWORKS_INFO } from '../types';
 import { web3Logger } from '../utils/logger';
 
 export class Web3Service {
@@ -338,7 +338,7 @@ export class Web3Service {
    * Get available EVM networks
    */
   getAvailableNetworks() {
-    return EVM_NETWORKS;
+    return Object.keys(EVM_NETWORKS_INFO);
   }
 
   /**
@@ -350,7 +350,7 @@ export class Web3Service {
       const chainId = await web3.eth.getChainId();
       
       // Try to find a matching network
-      const network = EVM_NETWORKS.find(n => n.chainId === Number(chainId));
+      const network = EVM_NETWORKS_INFO.find(n => n.chainId === Number(chainId));
       if (network) {
         return { chainId: Number(chainId), network: network.name };
       }
@@ -363,6 +363,40 @@ export class Web3Service {
         error: error instanceof Error ? error.message : String(error)
       });
       return null;
+    }
+  }
+
+  /**
+   * Get block number from RPC endpoint
+   */
+  async getBlockNumber(url: string, timeout: number = 10000): Promise<number> {
+    try {
+      const web3 = new Web3(url);
+      const blockNumber = await web3.eth.getBlockNumber();
+      return Number(blockNumber);
+    } catch (error) {
+      web3Logger.error('Failed to get block number', {
+        url,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get chain ID from RPC endpoint
+   */
+  async getChainId(url: string, timeout: number = 10000): Promise<number> {
+    try {
+      const web3 = new Web3(url);
+      const chainId = await web3.eth.getChainId();
+      return Number(chainId);
+    } catch (error) {
+      web3Logger.error('Failed to get chain ID', {
+        url,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
     }
   }
 }

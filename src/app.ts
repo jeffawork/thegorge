@@ -1,9 +1,11 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { MonitoringService } from './services/monitoringService';
-import { createApiRouter } from './routes/api';
+import apiRoutes from './routes';
 import { EVM_NETWORKS } from './types';
+import { database } from './database';
 import logger from './utils/logger';
 
 logger.info('Starting EVM RPC Monitor application...');
@@ -21,37 +23,54 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.static('public'));
 
-// Initialize services
+// Make database available to routes
+app.locals.database = database;
+
+// Initialize database and services
 let monitoringService: MonitoringService;
 let alertService: any;
 let metricsService: any;
 let userService: any;
 
-try {
-  logger.info('Creating Web3Service...');
-  monitoringService = new MonitoringService(io);
-  logger.info('MonitoringService created successfully');
+async function initializeApp() {
+  try {
+    // Initialize database
+    logger.info('Connecting to database...');
+    await database.connect();
+    logger.info('Database connected successfully');
+    
+    // Initialize services
+    logger.info('Creating Web3Service...');
+    monitoringService = new MonitoringService(io);
+    logger.info('MonitoringService created successfully');
   
-  logger.info('Getting AlertService...');
-  alertService = monitoringService.getAlertService();
-  logger.info('AlertService retrieved successfully');
-  
-  logger.info('Getting MetricsService...');
-  metricsService = monitoringService.getMetricsService();
-  logger.info('MetricsService retrieved successfully');
-  
-  logger.info('Getting UserService...');
-  userService = monitoringService.getUserService();
-  logger.info('UserService retrieved successfully');
-  
-  logger.info('All services initialized successfully');
-} catch (error) {
-  logger.error('Failed to initialize services:', error);
-  process.exit(1);
+    logger.info('Getting AlertService...');
+    alertService = monitoringService.getAlertService();
+    logger.info('AlertService retrieved successfully');
+    
+    logger.info('Getting MetricsService...');
+    metricsService = monitoringService.getMetricsService();
+    logger.info('MetricsService retrieved successfully');
+    
+    logger.info('Getting UserService...');
+    userService = monitoringService.getUserService();
+    logger.info('UserService retrieved successfully');
+    
+    logger.info('All services initialized successfully');
+    
+    // Set up API routes after services are initialized
+    app.use('/api', apiRoutes);
+    
+    // Start the server
+    await startServer();
+    
+  } catch (error) {
+    logger.error('Failed to initialize application:', error);
+    process.exit(1);
+  }
 }
 
-// API routes
-app.use('/api', createApiRouter(monitoringService, alertService, metricsService));
+// API routes will be set up after services are initialized
 
 // Serve the main dashboard
 app.get('/', (req, res) => {
@@ -169,7 +188,9 @@ process.on('SIGINT', async () => {
   logger.info('Received shutdown signal, starting graceful shutdown...');
   
   // Stop monitoring
-  monitoringService.stopMonitoring();
+  if (monitoringService) {
+    monitoringService.stopMonitoring();
+  }
   
   // Close HTTP server
   server.close(() => {
@@ -182,7 +203,16 @@ process.on('SIGINT', async () => {
   });
   
   // Cleanup services
-  monitoringService.cleanup();
+  if (monitoringService) {
+    monitoringService.cleanup();
+  }
+  
+  // Disconnect database
+  try {
+    await database.disconnect();
+  } catch (error) {
+    logger.error('Error disconnecting database:', error);
+  }
   
   logger.info('Graceful shutdown completed');
   process.exit(0);
@@ -192,7 +222,9 @@ process.on('SIGTERM', async () => {
   logger.info('Received SIGTERM, starting graceful shutdown...');
   
   // Stop monitoring
-  monitoringService.stopMonitoring();
+  if (monitoringService) {
+    monitoringService.stopMonitoring();
+  }
   
   // Close HTTP server
   server.close(() => {
@@ -205,7 +237,16 @@ process.on('SIGTERM', async () => {
   });
   
   // Cleanup services
-  monitoringService.cleanup();
+  if (monitoringService) {
+    monitoringService.cleanup();
+  }
+  
+  // Disconnect database
+  try {
+    await database.disconnect();
+  } catch (error) {
+    logger.error('Error disconnecting database:', error);
+  }
   
   logger.info('Graceful shutdown completed');
   process.exit(0);
@@ -223,41 +264,46 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+async function startServer() {
+  const PORT = process.env.PORT || 3000;
 
-logger.info('About to start server on port:', PORT);
+  logger.info('About to start server on port:', PORT);
 
-try {
-  server.listen(PORT, () => {
-    logger.info('🚀 RPC Monitor server is running on port 3000', {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      dashboardUrl: `http://localhost:${PORT}`,
-      apiUrl: `http://localhost:${PORT}/api`,
-      healthUrl: `http://localhost:${PORT}/api/health`
+  try {
+    server.listen(PORT, () => {
+      logger.info('🚀 RPC Monitor server is running on port 3000', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        dashboardUrl: `http://localhost:${PORT}`,
+        apiUrl: `http://localhost:${PORT}/api`,
+        healthUrl: `http://localhost:${PORT}/api/health`
+      });
+
+      // Start default monitoring after server is running
+      startDefaultMonitoring();
     });
 
-    // Start default monitoring after server is running
-    startDefaultMonitoring();
-  });
+    // Handle server errors
+    server.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE') {
+        logger.error(`Port ${PORT} is already in use`);
+        process.exit(1);
+      } else if (error.code === 'EACCES') {
+        logger.error(`Permission denied to bind to port ${PORT}`);
+        process.exit(1);
+      } else {
+        logger.error('Server error:', error);
+        process.exit(1);
+      }
+    });
 
-  // Handle server errors
-  server.on('error', (error: NodeJS.ErrnoException) => {
-    if (error.code === 'EADDRINUSE') {
-      logger.error(`Port ${PORT} is already in use`);
-      process.exit(1);
-    } else if (error.code === 'EACCES') {
-      logger.error(`Permission denied to bind to port ${PORT}`);
-      process.exit(1);
-    } else {
-      logger.error('Server error:', error);
-      process.exit(1);
-    }
-  });
-
-} catch (error) {
-  logger.error('Failed to start server:', error);
-  process.exit(1);
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
+
+// Initialize the application
+initializeApp();
 
 export default app;

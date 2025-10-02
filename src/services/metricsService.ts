@@ -34,119 +34,141 @@ export class MetricsService {
   }
 
   private initializeMetrics(): void {
-    // RPC-specific metrics
-    this.rpcRequestsTotal = new Counter({
-      name: 'rpc_requests_total',
-      help: 'Total number of RPC requests',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'method']
-    });
+    // Check if metrics are already registered to avoid conflicts
+    try {
+      // RPC-specific metrics
+      this.rpcRequestsTotal = new Counter({
+        name: 'rpc_requests_total',
+        help: 'Total number of RPC requests',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'method'],
+        registers: [this.registry]
+      });
 
-    this.rpcErrorsTotal = new Counter({
-      name: 'rpc_errors_total',
-      help: 'Total number of RPC errors',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'error_type']
-    });
+      this.rpcErrorsTotal = new Counter({
+        name: 'rpc_errors_total',
+        help: 'Total number of RPC errors',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'error_type'],
+        registers: [this.registry]
+      });
 
-    this.rpcResponseTime = new Histogram({
-      name: 'rpc_response_time_seconds',
-      help: 'RPC response time in seconds',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
-      buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60]
-    });
+      this.rpcResponseTime = new Histogram({
+        name: 'rpc_response_time_seconds',
+        help: 'RPC response time in seconds',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
+        buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
+        registers: [this.registry]
+      });
 
-    this.rpcBlockNumber = new Gauge({
-      name: 'rpc_block_number',
-      help: 'Current block number for RPC',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
-    });
+      this.rpcBlockNumber = new Gauge({
+        name: 'rpc_block_number',
+        help: 'Current block number for RPC',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
+        registers: [this.registry]
+      });
 
-    this.rpcGasPrice = new Gauge({
-      name: 'rpc_gas_price_wei',
-      help: 'Current gas price in wei for RPC',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
-    });
+      this.rpcGasPrice = new Gauge({
+        name: 'rpc_gas_price_wei',
+        help: 'Current gas price in wei for RPC',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
+        registers: [this.registry]
+      });
 
-    this.rpcPeerCount = new Gauge({
-      name: 'rpc_peer_count',
-      help: 'Current peer count for RPC',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
-    });
+      this.rpcPeerCount = new Gauge({
+        name: 'rpc_peer_count',
+        help: 'Current peer count for RPC',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
+        registers: [this.registry]
+      });
 
-    this.rpcOnlineStatus = new Gauge({
-      name: 'rpc_online_status',
-      help: 'Online status of RPC (1 = online, 0 = offline)',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
-    });
+      this.rpcOnlineStatus = new Gauge({
+        name: 'rpc_online_status',
+        help: 'Online status of RPC (1 = online, 0 = offline)',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
+        registers: [this.registry]
+      });
 
-    this.rpcSyncProgress = new Gauge({
-      name: 'rpc_sync_progress_percent',
-      help: 'Sync progress percentage for RPC',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id']
-    });
+      this.rpcSyncProgress = new Gauge({
+        name: 'rpc_sync_progress_percent',
+        help: 'Sync progress percentage for RPC',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id'],
+        registers: [this.registry]
+      });
 
-    // Alert metrics
-    this.alertsTotal = new Counter({
-      name: 'alerts_total',
-      help: 'Total number of alerts',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'alert_type', 'severity']
-    });
+      // Alert metrics
+      this.alertsTotal = new Counter({
+        name: 'alerts_total',
+        help: 'Total number of alerts',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'alert_type', 'severity'],
+        registers: [this.registry]
+      });
 
-    this.activeAlerts = new Gauge({
-      name: 'active_alerts',
-      help: 'Number of active alerts',
-      labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'alert_type', 'severity']
-    });
+      this.activeAlerts = new Gauge({
+        name: 'active_alerts',
+        help: 'Number of active alerts',
+        labelNames: ['rpc_id', 'rpc_name', 'network', 'chain_id', 'alert_type', 'severity'],
+        registers: [this.registry]
+      });
 
-    this.alertResolutionTime = new Histogram({
-      name: 'alert_resolution_time_seconds',
-      help: 'Time to resolve alerts in seconds',
-      labelNames: ['alert_type', 'severity'],
-      buckets: [60, 300, 900, 1800, 3600, 7200, 14400]
-    });
+      this.alertResolutionTime = new Histogram({
+        name: 'alert_resolution_time_seconds',
+        help: 'Time to resolve alerts in seconds',
+        labelNames: ['alert_type', 'severity'],
+        buckets: [60, 300, 900, 1800, 3600, 7200, 14400],
+        registers: [this.registry]
+      });
 
-    // System metrics
-    this.systemUptime = new Gauge({
-      name: 'system_uptime_seconds',
-      help: 'System uptime in seconds'
-    });
+      // System metrics
+      this.systemUptime = new Gauge({
+        name: 'system_uptime_seconds',
+        help: 'System uptime in seconds',
+        registers: [this.registry]
+      });
 
-    this.systemRPCsTotal = new Gauge({
-      name: 'system_rpcs_total',
-      help: 'Total number of RPCs in the system'
-    });
+      this.systemRPCsTotal = new Gauge({
+        name: 'system_rpcs_total',
+        help: 'Total number of RPCs in the system',
+        registers: [this.registry]
+      });
 
-    this.systemRPCsOnline = new Gauge({
-      name: 'system_rpcs_online',
-      help: 'Number of online RPCs'
-    });
+      this.systemRPCsOnline = new Gauge({
+        name: 'system_rpcs_online',
+        help: 'Number of online RPCs',
+        registers: [this.registry]
+      });
 
-    this.systemRPCsOffline = new Gauge({
-      name: 'system_rpcs_offline',
-      help: 'Number of offline RPCs'
-    });
+      this.systemRPCsOffline = new Gauge({
+        name: 'system_rpcs_offline',
+        help: 'Number of offline RPCs',
+        registers: [this.registry]
+      });
 
-    this.systemAlertsTotal = new Gauge({
-      name: 'system_alerts_total',
-      help: 'Total number of alerts in the system'
-    });
+      this.systemAlertsTotal = new Gauge({
+        name: 'system_alerts_total',
+        help: 'Total number of alerts in the system',
+        registers: [this.registry]
+      });
 
-    // Register all metrics
-    this.registry.registerMetric(this.rpcRequestsTotal);
-    this.registry.registerMetric(this.rpcErrorsTotal);
-    this.registry.registerMetric(this.rpcResponseTime);
-    this.registry.registerMetric(this.rpcBlockNumber);
-    this.registry.registerMetric(this.rpcGasPrice);
-    this.registry.registerMetric(this.rpcPeerCount);
-    this.registry.registerMetric(this.rpcOnlineStatus);
-    this.registry.registerMetric(this.rpcSyncProgress);
-    this.registry.registerMetric(this.alertsTotal);
-    this.registry.registerMetric(this.activeAlerts);
-    this.registry.registerMetric(this.alertResolutionTime);
-    this.registry.registerMetric(this.systemUptime);
-    this.registry.registerMetric(this.systemRPCsTotal);
-    this.registry.registerMetric(this.systemRPCsOnline);
-    this.registry.registerMetric(this.systemRPCsOffline);
-    this.registry.registerMetric(this.systemAlertsTotal);
+      // Register all metrics
+      this.registry.registerMetric(this.rpcRequestsTotal);
+      this.registry.registerMetric(this.rpcErrorsTotal);
+      this.registry.registerMetric(this.rpcResponseTime);
+      this.registry.registerMetric(this.rpcBlockNumber);
+      this.registry.registerMetric(this.rpcGasPrice);
+      this.registry.registerMetric(this.rpcPeerCount);
+      this.registry.registerMetric(this.rpcOnlineStatus);
+      this.registry.registerMetric(this.rpcSyncProgress);
+      this.registry.registerMetric(this.alertsTotal);
+      this.registry.registerMetric(this.activeAlerts);
+      this.registry.registerMetric(this.alertResolutionTime);
+      this.registry.registerMetric(this.systemUptime);
+      this.registry.registerMetric(this.systemRPCsTotal);
+      this.registry.registerMetric(this.systemRPCsOnline);
+      this.registry.registerMetric(this.systemRPCsOffline);
+      this.registry.registerMetric(this.systemAlertsTotal);
+
+    } catch (error) {
+      metricsLogger.warn('Metrics already registered, skipping initialization', { error: error instanceof Error ? error.message : String(error) });
+    }
 
     // Start uptime tracking
     this.startUptimeTracking();

@@ -59,5 +59,8 @@ export const metricsLogger = createChildLogger('metrics');
 export const userLogger = createChildLogger('user');
 export const alertLogger = createChildLogger('alert');
 export const monitoringLogger = createChildLogger('monitoring');
+export const authLogger = createChildLogger('auth');
+export const validationLogger = createChildLogger('validation');
+export const databaseLogger = createChildLogger('database');
 
 export default logger;
