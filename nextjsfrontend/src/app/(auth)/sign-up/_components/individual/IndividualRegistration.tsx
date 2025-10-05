@@ -37,22 +37,28 @@ export const IndividualRegistration = () => {
 
   return (
     <FormProvider {...form}>
-      <div className="relative w-full max-w-md">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={step}
-            custom={direction}
-            initial={{ opacity: 0, x: direction > 0 ? 40 : -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction > 0 ? -40 : 40 }}
-            transition={{ duration: 0.3 }}
-          >
-            {steps[step]}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      <form onSubmit={form.handleSubmit(handleFinalSubmit)}>
+        <div className="relative w-full max-w-md">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              initial={{ opacity: 0, x: direction > 0 ? 40 : -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction > 0 ? -40 : 40 }}
+              transition={{ duration: 0.3 }}
+            >
+              {steps[step]}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-      <StepNavigation total={steps.length} onNavigate={setDirection} />
+        <StepNavigation
+          total={steps.length}
+          onNavigate={setDirection}
+          onSubmit={handleFinalSubmit}
+        />
+      </form>
     </FormProvider>
   );
 };

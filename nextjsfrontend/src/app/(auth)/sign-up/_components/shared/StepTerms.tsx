@@ -6,7 +6,7 @@ export const StepTerms = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
   const { handleSubmit, register } = useFormContext();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div>
       <label className="flex items-center gap-2">
         <input type="checkbox" {...register('termsAccepted')} required />
         Accept Terms & Conditions
@@ -17,6 +17,6 @@ export const StepTerms = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
       </label>
 
       <Button type="submit">Submit</Button>
-    </form>
+    </div>
   );
 };

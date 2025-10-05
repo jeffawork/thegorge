@@ -8,7 +8,12 @@ export const RegistrationTypeSelector = () => {
 
   return (
     <div className="space-y-4 text-center">
-      <h2 className="mb-4 text-xl font-semibold">Choose Registration Type</h2>
+      <h1 className="text-gradient mb-2 text-center text-3xl font-bold">
+        Create Your Account
+      </h1>
+      <p className="text-center font-medium text-primary-foreground/45">
+        Select your registration type to get started
+      </p>
       <div className="flex flex-col gap-3">
         <Button onClick={() => setType('individual')}>Individual</Button>
         <Button onClick={() => setType('organization')}>Organization</Button>
