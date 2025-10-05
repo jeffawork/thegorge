@@ -9,7 +9,7 @@ export function middleware(req: NextRequest) {
 
   // If not logged in and trying to access dashboard → redirect
   if (!token && isProtectedPage) {
-    return NextResponse.redirect(new URL("/login", req.url))
+    return NextResponse.redirect(new URL("/sign-in", req.url))
   }
 
   // If logged in and trying to access login → redirect to dashboard

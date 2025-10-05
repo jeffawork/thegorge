@@ -14,8 +14,9 @@ export const useLogin = ( ) => {
     return useMutation({
         mutationFn: authApiService.login,
         
-        onSuccess: (data) => {
-            setUser(data.user);
+        onSuccess: (res) => {
+            // console.log(data)
+            setUser(res.data);
             QueryClient.invalidateQueries({ queryKey: ['me'] });
             router.push('/dashboard');
             notify.success("Logged in successfully");

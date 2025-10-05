@@ -1,22 +1,22 @@
 'use client';
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form'; // ✅ only useForm comes from here
 import {
   Form,
   FormField,
   FormLabel,
   FormControl,
   FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
-import { useForm } from 'react-hook-form';
+} from '@/components/ui/form'; // ✅ these from your UI
 import { signInformSchema } from '@/lib/utils';
-import { Button } from '../ui/button';
 import z from 'zod';
-import Link from 'next/dist/client/link';
+import Link from 'next/link'; // ✅ use 'next/link', not 'next/dist/client/link'
 import { useLogin } from '@/hooks/useAuth';
-import { Spinner } from '../ui/spinner';
 import { Lock, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { Input } from '@/components/ui/input';
 
 const SignInForm = () => {
   const { mutate: login, isPending } = useLogin();

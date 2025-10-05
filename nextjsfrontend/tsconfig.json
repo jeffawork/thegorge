@@ -31,6 +31,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "types/**/*.d.ts" // ✅ Added this line
-  ],
+, "../SignInForm.tsx"  ],
   "exclude": ["node_modules"]
 }

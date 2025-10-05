@@ -7,8 +7,19 @@ declare global {
   | 'sign-up'
   | 'forgot-password'
 
+
+  // Registeration Types
+
+  export interface CourseFormData {
+  basicInfo: Partial<BasicInfo>;
+  advancedInfo: Partial<AdvancedInfo>;
+  curriculum: Partial<Curriculum>;
+  publishInfo: Partial<PublishInfo>;
+}
+
 // Authentication Store tyoes
  interface User {
+  id:string
   email: string
   name: string
   role?: string

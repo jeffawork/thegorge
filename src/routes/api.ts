@@ -466,6 +466,85 @@ export function createApiRouter(monitoringService: MonitoringService, alertServi
   }));
 
   /**
+   * POST /auth/login - User login
+   */
+  router.post('/auth/login', asyncHandler(async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required',
+        timestamp: new Date()
+      });
+    }
+
+    // For demo purposes, accept any email/password combination
+    // In production, this would validate against a database
+    const user = {
+      id: 'default',
+      name: email.split('@')[0],
+      email: email,
+      role: 'admin',
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}&background=3b82f6&color=ffffff`
+    };
+
+    const response: APIResponse = {
+      success: true,
+      data: user,
+      timestamp: new Date()
+    };
+    
+    res.json(response);
+  }));
+
+  /**
+   * GET /auth/profile - Get user profile
+   */
+  router.get('/auth/profile', asyncHandler(async (req: Request, res: Response) => {
+    // For demo purposes, return a default user
+    const user = {
+      id: 'default',
+      name: 'Admin User',
+      email: 'admin@thegorge.com',
+      role: 'admin',
+      avatar: 'https://ui-avatars.com/api/?name=Admin&background=3b82f6&color=ffffff'
+    };
+
+    const response: APIResponse = {
+      success: true,
+      data: user,
+      timestamp: new Date()
+    };
+    
+    res.json(response);
+  }));
+
+  /**
+   * PUT /auth/profile - Update user profile
+   */
+  router.put('/auth/profile', asyncHandler(async (req: Request, res: Response) => {
+    const updates = req.body;
+    
+    // For demo purposes, return updated user
+    const user = {
+      id: 'default',
+      name: updates.name || 'Admin User',
+      email: updates.email || 'admin@thegorge.com',
+      role: updates.role || 'admin',
+      avatar: updates.avatar || 'https://ui-avatars.com/api/?name=Admin&background=3b82f6&color=ffffff'
+    };
+
+    const response: APIResponse = {
+      success: true,
+      data: user,
+      timestamp: new Date()
+    };
+    
+    res.json(response);
+  }));
+
+  /**
    * GET /system/stats - Get system-wide statistics
    */
   router.get('/system/stats', (req: Request, res: Response) => {

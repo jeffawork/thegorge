@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/providers/AuthProvider';
 import React from 'react';
 
 export default function DashboardLayout({
@@ -5,5 +6,10 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <section>{children}</section>;
+  return (
+    <section>
+      <AuthProvider>{children}</AuthProvider>
+      {/* {children} */}
+    </section>
+  );
 }

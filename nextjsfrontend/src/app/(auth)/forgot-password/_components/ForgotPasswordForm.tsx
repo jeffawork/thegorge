@@ -1,22 +1,22 @@
 'use client';
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Form,
-  FormField,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
 import { useForm } from 'react-hook-form';
 import { signInformSchema } from '@/lib/utils';
-import { Button } from '../ui/button';
 import z from 'zod';
 import Link from 'next/dist/client/link';
 import { useLogin } from '@/hooks/useAuth';
-import { Spinner } from '../ui/spinner';
 import { Mail } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { Input } from '@/components/ui/input';
 
 const ForgotPasswordForm = () => {
   const { mutate: login, isPending } = useLogin();
