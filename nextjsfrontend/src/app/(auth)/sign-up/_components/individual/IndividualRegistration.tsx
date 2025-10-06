@@ -1,30 +1,40 @@
 'use client';
 import { AnimatePresence, motion } from 'framer-motion';
-// import { StepPersonalInfo } from './StepPersonalInfo';
-// import { StepProfessionalInfo } from './StepProfessionalInfo';
 import { StepUseCase } from '../shared/StepUseCase';
 import { StepTerms } from '../shared/StepTerms';
 import { StepNavigation } from '../StepNavigation';
-// import { useRegistrationStore } from '../../_store/useRegistrationStore';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-// import { individualSchema } from '../../_schemas/individualSchema';
 import { useState } from 'react';
 import { useRegistrationStore } from '../_store/useRegistrationStore';
 import StepPersonalInfo from './StepPersonalInfo';
 import StepProfessionalInfo from './StepProfessionalInfo';
+import { individualSchema } from '@/lib/utils';
+import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 
 export const IndividualRegistration = () => {
-  const { step, nextStep, prevStep, type } = useRegistrationStore();
+  const { step, type } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
+  const router = useRouter();
 
-  const form = useForm({
-    // resolver: zodResolver(individualSchema),
+  const form = useForm<z.infer<typeof individualSchema>>({
+    resolver: zodResolver(individualSchema),
     mode: 'onChange',
   });
 
+  const stepFields = [
+    ['firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword'],
+    ['jobTitle', 'company', 'website', 'bio'],
+    ['industry', 'useCase', 'experience'],
+    ['termsAccepted'], // final step
+  ];
+
   const handleFinalSubmit = (data: any) => {
     console.log('Submitting Individual Registration:', { ...data, type });
+    // if (data) {
+    //   router.push('/sign-up');
+    // }
     // POST to API...
   };
 
@@ -32,7 +42,7 @@ export const IndividualRegistration = () => {
     <StepPersonalInfo key={0} />,
     <StepProfessionalInfo key={1} />,
     <StepUseCase key={2} />,
-    <StepTerms key={3} onSubmit={handleFinalSubmit} />,
+    <StepTerms key={3} />,
   ];
 
   return (
@@ -56,7 +66,7 @@ export const IndividualRegistration = () => {
         <StepNavigation
           total={steps.length}
           onNavigate={setDirection}
-          onSubmit={handleFinalSubmit}
+          stepFields={stepFields}
         />
       </form>
     </FormProvider>

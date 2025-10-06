@@ -1,22 +1,29 @@
 'use client';
 import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
-export const StepTerms = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
-  const { handleSubmit, register } = useFormContext();
+export const StepTerms = () => {
+  const { register } = useFormContext();
 
   return (
-    <div>
-      <label className="flex items-center gap-2">
-        <input type="checkbox" {...register('termsAccepted')} required />
-        Accept Terms & Conditions
-      </label>
-      <label className="flex items-center gap-2">
-        <input type="checkbox" {...register('marketingConsent')} />
-        Receive marketing updates
-      </label>
-
-      <Button type="submit">Submit</Button>
-    </div>
+    <section className="space-y-2">
+      <h1 className="text-gradient mb-2 text-center font-bold">
+        Terms & Preferences
+      </h1>
+      <div>
+        <Label className="flex items-center gap-2 text-primary-foreground/45">
+          Accept Terms & Conditions
+        </Label>
+        <Input type="checkbox" {...register('termsAccepted')} required />
+      </div>
+      <div>
+        <Label className="flex items-center gap-2 text-primary-foreground/45">
+          Receive marketing updates
+        </Label>
+        <Input type="checkbox" {...register('marketingConsent')} />
+      </div>
+    </section>
   );
 };

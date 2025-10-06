@@ -7,16 +7,24 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useRegistrationStore } from '../_store/useRegistrationStore';
 import StepOrgDetails from './StepOrgDetails';
+import { organizationSchema } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import z from 'zod';
 
 export const OrganizationRegistration = () => {
   const { step, type } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
 
-  const form = useForm({
-    //   resolver: zodResolver(organizationSchema),
+  const form = useForm<z.infer<typeof organizationSchema>>({
+    resolver: zodResolver(organizationSchema),
     mode: 'onChange',
   });
 
+  const stepFields = [
+    ['orgName', 'orgEmail', 'orgPhone', 'password', 'confirmPassword'],
+    ['industry', 'useCase', 'experience'],
+    ['termsAccepted'], // final step
+  ];
   const handleFinalSubmit = (data: any) => {
     console.log('Submitting Organization Registration:', { ...data, type });
   };
@@ -24,7 +32,7 @@ export const OrganizationRegistration = () => {
   const steps = [
     <StepOrgDetails key={0} />,
     <StepUseCase key={1} />,
-    <StepTerms key={2} onSubmit={handleFinalSubmit} />,
+    <StepTerms key={2} />,
   ];
 
   return (
@@ -49,6 +57,7 @@ export const OrganizationRegistration = () => {
           total={steps.length}
           onNavigate={setDirection}
           onSubmit={handleFinalSubmit}
+          stepFields={stepFields}
         />
       </form>
     </FormProvider>

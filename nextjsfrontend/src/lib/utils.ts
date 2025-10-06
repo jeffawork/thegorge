@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import z from "zod";
+import { z } from "zod"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -33,7 +33,7 @@ export const forgotPasswordSchema = z.object({
 export const individualSchema = z.object({
   firstName: z.string().min(2, "First name required"),
   lastName: z.string().min(2, "Last name required"),
-  email: z.string().email(),
+  email: z.email("invalid email address"),
   phone: z.string().min(8, "Phone number required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
@@ -50,7 +50,7 @@ export const individualSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export type IndividualSchema = z.infer<typeof individualSchema>;
+
 
 //  Organization Details
 export const organizationSchema = z.object({
@@ -71,7 +71,7 @@ export const organizationSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export type OrganizationSchema = z.infer<typeof organizationSchema>;
+
   
 
 //  Join Existing Organization
@@ -86,4 +86,4 @@ export const joinOrgSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export type JoinOrgSchema = z.infer<typeof joinOrgSchema>;
+

@@ -1,17 +1,17 @@
 'use client';
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form'; // ✅ only useForm comes from here
+import { useForm } from 'react-hook-form';
 import {
   Form,
   FormField,
   FormLabel,
   FormControl,
   FormMessage,
-} from '@/components/ui/form'; // ✅ these from your UI
+} from '@/components/ui/form';
 import { signInformSchema } from '@/lib/utils';
 import z from 'zod';
-import Link from 'next/link'; // ✅ use 'next/link', not 'next/dist/client/link'
+import Link from 'next/link';
 import { useLogin } from '@/hooks/useAuth';
 import { Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
