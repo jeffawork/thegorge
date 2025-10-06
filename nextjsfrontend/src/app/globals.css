@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+/*  Light Mode (default) */
+:root {
+  /* Base */
+  --background: 220 35% 99%; /* very light gray */
+  --foreground: 220 40% 15%; /* deep cool gray */
+  --radius: 0.5rem;
+
+  /* Cards & Popovers */
+  --card: 220 35% 99%;
+  --card-foreground: 220 40% 15%;
+  --popover: 220 35% 98%;
+  --popover-foreground: 220 40% 15%;
+
+  /* Primary Branding */
+  --primary: 189 100% 50%; /* cyan-blue (#00D4FF) */
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary Accent */
+  --secondary: 180 100% 50%; /* cyan (#00FFFF) */
+  --secondary-foreground: 220 40% 15%;
+
+  /* Success / Warning / Critical */
+  --success: 152 100% 50%; /* green (#00FF88) */
+  --success-foreground: 0 0% 100%;
+
+  --warning: 45 100% 50%; /* amber (#FFB800) */
+  --warning-foreground: 220 40% 15%;
+
+  --destructive: 0 100% 60%; /* red (#FF3B30) */
+  --destructive-foreground: 0 0% 100%;
+
+  /* Muted & Neutral */
+  --muted: 220 20% 94%;
+  --muted-foreground: 220 15% 35%;
+
+  /* Borders & Focus Rings */
+  --border: 220 20% 85%;
+  --input: 220 20% 85%;
+  --ring: 189 100% 50%;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(189 100% 50%) 0%, hsl(180 100% 50%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(152 100% 50%) 0%, hsl(189 100% 50%) 100%);
+  --gradient-warning: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(0 100% 60%) 100%);
+}
+
+/*  Dark Mode */
+[data-theme="dark"] {
+  /* Base */
+  --background: 231 63% 10%; /* dark navy (#0A0E27) */
+  --foreground: 0 0% 100%;   /* white */
+
+  /* Cards & Popovers */
+  --card: 229 22% 13%;       /* dark surface (#1A1D29) */
+  --card-foreground: 0 0% 100%;
+  --popover: 232 22% 20%;    /* lighter surface (#2A2D41) */
+  --popover-foreground: 0 0% 100%;
+
+  /* Primary Branding */
+  --primary: 189 100% 50%; /* cyan-blue (#00D4FF) */
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary Accent */
+  --secondary: 180 100% 50%; /* cyan (#00FFFF) */
+  --secondary-foreground: 231 63% 10%;
+
+  /* Success / Warning / Critical */
+  --success: 152 100% 50%; 
+  --success-foreground: 0 0% 100%;
+
+  --warning: 45 100% 50%;
+  --warning-foreground: 231 63% 10%;
+
+  --destructive: 0 100% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Muted & Neutral */
+  --muted: 231 12% 44%;      /* muted gray (#6B7280) */
+  --muted-foreground: 231 20% 78%; /* secondary text (#B0B3C8) */
+
+  /* Borders & Focus Rings */
+  --border: hsl(189 100% 50% / 0.2); /* cyan with alpha */
+  --input: 229 22% 13%;
+  --ring: 189 100% 50%;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(189 100% 50%) 0%, hsl(180 100% 50%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(152 100% 50%) 0%, hsl(189 100% 50%) 100%);
+  --gradient-warning: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(0 100% 60%) 100%);
+}
+
+}
+
+
+@layer components {
+  .glass-card {
+    background: rgba(26, 29, 41, 0.8);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+  }
+  
+  .glass-button {
+    background: rgba(26, 29, 41, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+  }
+  
+  .glass-button:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--primary-blue);
+    transform: translateY(-1px);
+  }
+  
+  
+  .btn-primary {
+    background: var(--gradient-primary);
+    color: var(--background-dark);
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+  }
+  
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-success {
+    background: var(--gradient-success);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .data-stream {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .data-stream::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: var(--gradient-primary);
+    animation: dataFlow 3s infinite;
+  }
+  
+  .blockchain-pulse {
+    animation: blockchainPulse 2s infinite;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

@@ -58,23 +58,27 @@ evm-rpc-monitor/
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd evm-rpc-monitor
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
 ```
 
 4. Build the project:
+
 ```bash
 npm run build
 ```
@@ -94,23 +98,27 @@ Copy `.env.example` to `.env` and configure the following variables:
 ## Usage
 
 ### Development Mode
+
 ```bash
 npm run dev
 ```
 
 ### Production Mode
+
 ```bash
 npm run build
 npm start
 ```
 
 ### Testing
+
 ```bash
 npm test
 npm run test:watch
 ```
 
 ### Linting
+
 ```bash
 npm run lint
 npm run lint:fix
