@@ -70,8 +70,10 @@ export interface Alert {
 
 export interface User {
   id: string;
-  username: string;
+  name: string;
   email: string;
+  role: string;
+  avatar?: string;
   createdAt: Date;
   rpcConfigs: RPCConfig[];
 }
@@ -132,8 +134,21 @@ export interface SocketEvents {
   'rpcDeleted': (rpcId: string) => void;
 }
 
+// EVM Network enum
+export enum EVM_NETWORKS {
+  ETHEREUM = 'ethereum',
+  POLYGON = 'polygon',
+  BSC = 'bsc',
+  ARBITRUM = 'arbitrum',
+  OPTIMISM = 'optimism',
+  AVALANCHE = 'avalanche',
+  FANTOM = 'fantom',
+  ETHEREUM_GOERLI = 'ethereum-goerli',
+  POLYGON_MUMBAI = 'polygon-mumbai'
+}
+
 // Common EVM networks
-export const EVM_NETWORKS: NetworkInfo[] = [
+export const EVM_NETWORKS_INFO: NetworkInfo[] = [
   {
     name: 'Ethereum Mainnet',
     chainId: 1,

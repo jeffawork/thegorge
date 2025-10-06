@@ -1,7 +1,7 @@
 import './app';
 import logger from './utils/logger';
 
-logger.info('Starting EVM RPC Monitor...', {
+logger.info('Starting The Gorge...', {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000
 });

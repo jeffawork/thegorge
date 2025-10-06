@@ -4,6 +4,7 @@ import { AlertService } from './alertService';
 import { MetricsService } from './metricsService';
 import { UserService } from './userService';
 import { monitoringLogger } from '../utils/logger';
+import { Server as SocketIOServer } from 'socket.io';
 
 export class MonitoringService {
   private web3Service: Web3Service;
@@ -14,12 +15,14 @@ export class MonitoringService {
   private monitoringInterval: NodeJS.Timeout | null = null;
   private cleanupInterval: NodeJS.Timeout | null = null;
   private isMonitoring: boolean = false;
+  private io: SocketIOServer | null = null;
 
-  constructor() {
+  constructor(io?: SocketIOServer) {
     this.web3Service = new Web3Service();
     this.metricsService = new MetricsService();
-    this.alertService = new AlertService(this.metricsService);
+    this.alertService = new AlertService(this.metricsService, io);
     this.userService = new UserService();
+    this.io = io || null;
     
     monitoringLogger.info('MonitoringService initialized');
   }
@@ -220,6 +223,11 @@ export class MonitoringService {
     };
 
     this.rpcStatuses.set(rpcId, updatedStatus);
+    
+    // Emit WebSocket event for RPC status update
+    if (this.io) {
+      this.io.emit('rpcStatusUpdate', rpcId, updatedStatus.isOnline ? 'online' : 'offline');
+    }
     
     // Update metrics
     this.metricsService.updateRPCStats(rpcConfig, updatedStatus);

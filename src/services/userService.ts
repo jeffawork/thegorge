@@ -17,8 +17,9 @@ export class UserService {
   private initializeDefaultUser(): void {
     const defaultUser: User = {
       id: 'default',
-      username: 'default',
+      name: 'default',
       email: 'default@example.com',
+      role: 'admin',
       createdAt: new Date(),
       rpcConfigs: []
     };
@@ -31,12 +32,13 @@ export class UserService {
   /**
    * Create a new user
    */
-  async createUser(username: string, email: string): Promise<User> {
+  async createUser(name: string, email: string): Promise<User> {
     const userId = uuidv4();
     const user: User = {
       id: userId,
-      username,
+      name,
       email,
+      role: 'user',
       createdAt: new Date(),
       rpcConfigs: []
     };
@@ -44,7 +46,7 @@ export class UserService {
     this.users.set(userId, user);
     this.userRPCs.set(userId, []);
 
-    userLogger.info('New user created', { userId, username, email });
+    userLogger.info('New user created', { userId, name, email });
     return user;
   }
 
@@ -56,11 +58,11 @@ export class UserService {
   }
 
   /**
-   * Get user by username
+   * Get user by name
    */
-  getUserByUsername(username: string): User | undefined {
+  getUserByName(name: string): User | undefined {
     for (const user of this.users.values()) {
-      if (user.username === username) {
+      if (user.name === name) {
         return user;
       }
     }
@@ -236,7 +238,7 @@ export class UserService {
     // Remove user
     this.users.delete(userId);
 
-    userLogger.info('User deleted', { userId, username: user.username });
+    userLogger.info('User deleted', { userId, name: user.name });
     return true;
   }
 
