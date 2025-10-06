@@ -1,40 +1,46 @@
-// src/app/(auth)/register/_components/StepNavigation.tsx
-'use client';
 import { Button } from '@/components/ui/button';
+import { useFormContext } from 'react-hook-form';
 import { useRegistrationStore } from './_store/useRegistrationStore';
 
 interface Props {
   total: number;
   onNavigate?: (dir: number) => void;
+  onSubmit?: (data: any) => void;
 }
 
-export const StepNavigation = ({ total, onNavigate }: Props) => {
-  const { step, prevStep, nextStep, reset } = useRegistrationStore();
-
-  const handlePrev = () => {
-    onNavigate?.(-1);
-    prevStep();
-  };
-
-  const handleNext = () => {
-    onNavigate?.(1);
-    nextStep();
-  };
+export const StepNavigation = ({ total, onNavigate, onSubmit }: Props) => {
+  const { step, prevStep, nextStep } = useRegistrationStore();
+  const { handleSubmit } = useFormContext();
 
   return (
     <div className="mx-auto mt-4 flex max-w-md items-center justify-between">
-      {step > 0 ? (
-        <Button variant="outline" onClick={handlePrev}>
+      {step > 0 && (
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() => {
+            onNavigate?.(-1);
+            prevStep();
+          }}
+        >
           Previous
         </Button>
-      ) : (
-        <div />
       )}
 
       {step < total - 1 ? (
-        <Button onClick={handleNext}>Next</Button>
+        <Button
+          type="button"
+          onClick={() => {
+            onNavigate?.(1);
+            nextStep();
+          }}
+        >
+          Next
+        </Button>
       ) : (
-        <Button onClick={() => reset()}>Restart</Button>
+        <Button type="submit" onClick={handleSubmit(onSubmit!)}>
+          Submit
+        </Button>
       )}
     </div>
   );

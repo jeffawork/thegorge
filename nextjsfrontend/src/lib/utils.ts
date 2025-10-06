@@ -28,47 +28,62 @@ export const forgotPasswordSchema = z.object({
 
 
 // Registration Step Schemas
-const baseSchema = z.object({
-  accountType: z.enum(['individual', 'organization', 'join'], {
-    error: 'Please select an account type',
-  }),
-});
 
-const individualSchema = baseSchema.extend({
-  firstName: z.string().min(2, 'First name required'),
-  lastName: z.string().min(2, 'Last name required'),  
-  email: z.email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  phoneNumber: z.string().optional(),
+// Individual User Details
+export const individualSchema = z.object({
+  firstName: z.string().min(2, "First name required"),
+  lastName: z.string().min(2, "Last name required"),
+  email: z.string().email(),
+  phone: z.string().min(8, "Phone number required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
   jobTitle: z.string().optional(),
   company: z.string().optional(),
-  website: z.string().optional(),
+  website: z.url().optional(),
   bio: z.string().optional(),
-  useCase : z.string().optional(),
-  blockChainExp: z.string().optional(),
+  industry: z.string().optional(),
+  useCase: z.string().optional(),
+  blockchainExperience: z.string().optional(),
+  termsAccepted: z.boolean(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords must match",
+  path: ["confirmPassword"],
 });
 
-const organizationSchema = baseSchema.extend({
-  firstName: z.string().min(2, 'First name required'),
-  lastName: z.string().min(2, 'Last name required'),  
-  email: z.email('Invalid email address'),
-  password: z.string().min(6),
-  orgName: z.string().min(2, 'Organization name required'),
-  orgWebsite: z.url('Invalid URL'),
-  orgAddress: z.string(),
-  orgCountry: z.string(),
-  orgTimezone: z.string()
-});
-  
-const joinOrgSchema = baseSchema.extend({
-  inviteCode: z.string().min(4, 'Invite code required'),
+export type IndividualSchema = z.infer<typeof individualSchema>;
+
+//  Organization Details
+export const organizationSchema = z.object({
+  orgName: z.string().min(2, "Organization name required"),
+  orgDescription: z.string().optional(),
+  conPerson: z.string().min(2, "Contact person required"),
+  orgSize: z.string().optional(),
+  orgWebsite: z.url().optional(),
+  orgAddress: z.string().optional(),
+  country: z.string().min(2),
+  timezone: z.string().optional(),
   email: z.email(),
   password: z.string().min(6),
+  confirmPassword: z.string(),
+  termsAccepted: z.boolean(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords must match",
+  path: ["confirmPassword"],
 });
 
-// Discriminated union (auto-selects schema by accountType)
-const formSchema = z.discriminatedUnion('accountType', [
-  individualSchema,
-  organizationSchema,
-  joinOrgSchema,
-]);
+export type OrganizationSchema = z.infer<typeof organizationSchema>;
+  
+
+//  Join Existing Organization
+export const joinOrgSchema = z.object({
+  inviteCode: z.string().min(6, "Invite code required"),
+  email: z.string().email(),
+  password: z.string().min(6),
+  confirmPassword: z.string(),
+  termsAccepted: z.boolean(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords must match",
+  path: ["confirmPassword"],
+});
+
+export type JoinOrgSchema = z.infer<typeof joinOrgSchema>;
