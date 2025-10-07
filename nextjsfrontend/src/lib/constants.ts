@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 
 
-const navigationItems = [
+export const navigationItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'rpc-sync', label: 'RPC Sync', icon: Server },
   { id: 'portfolio', label: 'Portfolio', icon: Wallet },
@@ -28,7 +28,7 @@ const navigationItems = [
   { id: 'anomalies', label: 'Anomalies', icon: AlertCircle }
 ]
 
-const settingsItems = [
+export const settingsItems = [
   { id: 'general', label: 'General', icon: FileText },
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'notifications', label: 'Notifications', icon: Bell },

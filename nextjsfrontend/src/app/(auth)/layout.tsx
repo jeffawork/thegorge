@@ -1,5 +1,5 @@
-import AuthPosterImage from '@/components/AuthComponents/AuthPosterImage';
 import React from 'react';
+import AuthPosterImage from './_component/AuthPosterImage';
 
 export default function AuthLayout({
   children,
