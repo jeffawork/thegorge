@@ -9,12 +9,6 @@ export default function DashboardLayout({
 }>) {
   return (
     <main>
-      <SidePanel
-        activeTab={''}
-        onTabChange={function (tab: string): void {
-          throw new Error('Function not implemented.');
-        }}
-      />
       {/* <AuthProvider>{children}</AuthProvider> */}
       {children}
     </main>
