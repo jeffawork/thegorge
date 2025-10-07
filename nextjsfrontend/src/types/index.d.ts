@@ -40,6 +40,11 @@ interface loginCredentials {
  password: string;
 }
 
+// Dashboard
+interface ActivePanelProps {
+  activeTab: string
+  onTabChange: (tab: string) => void
+}
 
 
 }
