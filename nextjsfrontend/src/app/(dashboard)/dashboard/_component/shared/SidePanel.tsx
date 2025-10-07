@@ -1,9 +1,10 @@
+'use client';
 import { navigationItems, settingsItems } from '@/lib/constants';
 import { motion } from 'framer-motion';
 import { Activity, ChevronDown, ChevronRight, Settings } from 'lucide-react';
 import React, { useState } from 'react';
 
-const sidePanel = ({ activeTab, onTabChange }: ActivePanelProps) => {
+const SidePanel = ({ activeTab, onTabChange }: ActivePanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const isSettingsActive =
@@ -108,7 +109,7 @@ const sidePanel = ({ activeTab, onTabChange }: ActivePanelProps) => {
                   return (
                     <motion.button
                       key={item.id}
-                      onClick={() => onTabChange(item.id)}
+                      //   onClick={() => onTabChange(item.id)}
                       className={`flex w-full items-center space-x-3 rounded-lg px-3 py-1.5 text-left transition-all duration-200 ${
                         isActive
                           ? 'border border-[#00D4FF]/30 bg-[#00D4FF]/20 text-[#00D4FF]'
@@ -141,4 +142,4 @@ const sidePanel = ({ activeTab, onTabChange }: ActivePanelProps) => {
   );
 };
 
-export default sidePanel;
+export default SidePanel;
