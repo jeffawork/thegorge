@@ -7,9 +7,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <section>
+    <main>
       <AuthProvider>{children}</AuthProvider>
-      {/* {children} */}
-    </section>
+    </main>
   );
 }
