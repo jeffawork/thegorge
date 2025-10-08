@@ -34,6 +34,11 @@ function StepPersonalInfo() {
             Last Name
           </Label>
           <Input {...register('lastName')} placeholder="Last Name" />
+          {errors.lastName && (
+            <p className="text-sm text-red-500">
+              {errors.lastName.message as string}
+            </p>
+          )}
         </div>
         <div>
           <Label className="text-primary-foreground/45" htmlFor="email">

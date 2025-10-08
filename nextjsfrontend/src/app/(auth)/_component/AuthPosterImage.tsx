@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 function AuthPosterImage() {
   return (
     <div>
-      <h1>The Gorge</h1>
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -15,6 +14,9 @@ function AuthPosterImage() {
       >
         <Activity className="h-8 w-8" />
       </motion.div>
+      <h1 className="text-gradient mb-2 text-center text-3xl font-bold">
+        The Gorge
+      </h1>
     </div>
   );
 }

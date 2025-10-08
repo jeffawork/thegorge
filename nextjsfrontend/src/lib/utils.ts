@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx"
+import { m } from "framer-motion";
 import { twMerge } from "tailwind-merge"
 import { z } from "zod"
 
@@ -44,7 +45,7 @@ export const individualSchema = z.object({
   industry: z.string().optional(),
   useCase: z.string().optional(),
   blockchainExperience: z.string().optional(),
-  termsAccepted: z.boolean(),
+  acceptTerms: z.boolean(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
   path: ["confirmPassword"],
@@ -54,18 +55,22 @@ export const individualSchema = z.object({
 
 //  Organization Details
 export const organizationSchema = z.object({
-  orgName: z.string().min(2, "Organization name required"),
-  orgDescription: z.string().optional(),
-  conPerson: z.string().min(2, "Contact person required"),
-  orgSize: z.string().optional(),
-  orgWebsite: z.url().optional(),
-  orgAddress: z.string().optional(),
-  country: z.string().min(2),
-  timezone: z.string().optional(),
   email: z.email(),
   password: z.string().min(6),
   confirmPassword: z.string(),
-  termsAccepted: z.boolean(),
+  firstName: z.string().min(2, "Contact Person first name required"),
+  lastName: z.string().min(2, "Contact Person last name required"),
+  organizationDescription: z.string().optional(),
+  organizationSlug: z.string().optional(),
+  organizationSize: z.string().optional(),
+  organizationWebsite: z.url().optional(),
+  organizationAddress: z.string().optional(),
+  organizationCountry: z.string().optional(),
+  organizationTimezone: z.string().optional(),
+  useCase: z.string().optional(),
+  blockchainExperience: z.string().optional(),
+  acceptTerms: z.boolean(),
+  marketingConsent: z.boolean().optional(), 
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
   path: ["confirmPassword"],
@@ -76,11 +81,12 @@ export const organizationSchema = z.object({
 
 //  Join Existing Organization
 export const joinOrgSchema = z.object({
-  inviteCode: z.string().min(6, "Invite code required"),
-  email: z.string().email(),
-  password: z.string().min(6),
+ firstName: z.string().min(2, "First name required"),
+  lastName: z.string().min(2, "Last name required"),
+  email: z.email("invalid email address"),
+  phone: z.string().min(8, "Phone number required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
-  termsAccepted: z.boolean(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
   path: ["confirmPassword"],

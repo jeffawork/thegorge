@@ -19,6 +19,6 @@ export const RegistrationRouter = () => {
     case 'join':
       return <JoinOrganizationRegistration />;
     default:
-      return <p>Coming soon 🚧</p>;
+      return <p>Coming soon</p>;
   }
 };
