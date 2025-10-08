@@ -1,6 +1,5 @@
 import { AuthProvider } from '@/providers/AuthProvider';
 import React from 'react';
-import SidePanel from './dashboard/_component/shared/SidePanel';
 
 export default function DashboardLayout({
   children,
@@ -8,7 +7,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main>
+    <main className="bg-foreground">
       {/* <AuthProvider>{children}</AuthProvider> */}
       {children}
     </main>

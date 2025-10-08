@@ -44,6 +44,7 @@ interface loginCredentials {
 interface ActivePanelProps {
   activeTab: string
   onTabChange: (tab: string) => void
+  collapsed?: boolean;
 }
 
 

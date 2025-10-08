@@ -8,12 +8,20 @@ import {
   User,
   LogOut,
   Settings,
+  Menu,
+  PanelRightClose,
+  PanelLeftClose,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 // import { useRPC } from '../contexts/RPCContext'
 // import { useAuth } from '../contexts/AuthContext'
 // import { AddRPCModal } from './AddRPCModal'
+interface HeaderProps {
+  onMenuToggle: () => void;
+  collapsed: boolean;
+}
 
-export const Header = () => {
+export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
   // const { user, logout } = useAuth()
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -21,116 +29,97 @@ export const Header = () => {
 
   return (
     <motion.header
-      className="glass-card mb-8 p-6"
+      className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-gray-800 bg-gray-900/70 px-4 py-3 backdrop-blur-md"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-4">
-          <motion.div
-            className="blockchain-pulse rounded-xl bg-gradient-to-r from-[#00D4FF] to-[#00FFFF] p-3"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <BarChart3 className="h-8 w-8 text-[#0A0E27]" />
-          </motion.div>
+      {/* Left Section — Menu + Brand */}
+      <div className="flex items-center gap-4">
+        {/* Sidebar Toggle */}
+        <Button
+          onClick={onMenuToggle}
+          className="rounded-lg p-2 text-gray-300 transition hover:bg-gray-800 hover:text-white"
+        >
+          {collapsed ? (
+            <PanelRightClose className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
+        </Button>
 
+        {/* Logo + Title */}
+        <motion.div
+          className="flex items-center gap-3"
+          whileHover={{ scale: 1.03 }}
+        >
+          <BarChart3 className="hidden h-8 w-8 text-cyan-400 md:block" />
           <div>
-            <motion.h1
-              className="text-gradient text-3xl font-bold lg:text-4xl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            <h1 className="text-gradient text-xl font-bold lg:text-2xl">
               The Gorge
-            </motion.h1>
-            <motion.p
-              className="text-sm text-[#B0B3C8] lg:text-base"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
+            </h1>
+            <p className="text-xs text-gray-400 lg:text-sm">
               Real-time blockchain infrastructure monitoring
-            </motion.p>
+            </p>
           </div>
-        </div>
+        </motion.div>
+      </div>
 
-        <div className="flex items-center gap-3">
+      {/* Right Section — Actions */}
+      <div className="flex items-center gap-3">
+        <motion.button
+          className="glass-button flex items-center gap-2 px-3 py-2 text-sm font-medium"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </motion.button>
+
+        <motion.button
+          className="btn-primary flex items-center gap-2 px-4 py-2"
+          onClick={() => setShowAddModal(true)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Plus className="h-4 w-4" />
+          Add RPC
+        </motion.button>
+
+        {/* User Menu */}
+        <div className="relative" ref={userMenuRef}>
           <motion.button
-            className="glass-button flex items-center gap-2 px-4 py-2 text-sm font-medium"
-            // onClick={handleRefresh}
+            className="glass-button flex items-center gap-2 px-3 py-2 text-sm font-medium"
+            onClick={() => setShowUserMenu(!showUserMenu)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
+            <User className="h-5 w-5" />
           </motion.button>
 
-          <motion.button
-            className="btn-primary flex items-center gap-2 px-6 py-2"
-            onClick={() => setShowAddModal(true)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Plus className="h-4 w-4" />
-            Add RPC
-          </motion.button>
-
-          {/* User Menu */}
-          <div className="relative" ref={userMenuRef}>
-            <motion.button
-              className="glass-button flex items-center gap-2 px-3 py-2 text-sm font-medium"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+          {showUserMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="glass-card absolute right-0 z-50 mt-2 w-48 p-2"
             >
-              {/* {user?.avatar ? (
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name} 
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <User className="w-5 h-5" />
-                )} */}
-              {/* <span className="hidden sm:block">{user?.name || 'User'}</span> */}
-            </motion.button>
-
-            {showUserMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="glass-card absolute right-0 z-50 mt-2 w-48 p-2"
+              <button
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-300 hover:bg-gray-800/50"
+                onClick={() => setShowUserMenu(false)}
               >
-                <div className="border-b border-gray-700/50 px-3 py-2">
-                  {/* <p className="text-sm font-medium text-white">{user?.name || 'User'}</p> */}
-                  {/* <p className="text-xs text-gray-400">{user?.email || 'user@example.com'}</p> */}
-                </div>
-                <button
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-800/50"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    // Navigate to settings profile
-                  }}
-                >
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </button>
-                <button
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/20"
-                  onClick={() => {
-                    // logout()
-                    setShowUserMenu(false);
-                  }}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </motion.div>
-            )}
-          </div>
+                <Settings className="h-4 w-4" />
+                Settings
+              </button>
+              <button
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/20"
+                onClick={() => setShowUserMenu(false)}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+            </motion.div>
+          )}
         </div>
       </div>
     </motion.header>
