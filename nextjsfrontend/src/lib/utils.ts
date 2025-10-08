@@ -46,6 +46,7 @@ export const individualSchema = z.object({
   useCase: z.string().optional(),
   blockchainExperience: z.string().optional(),
   acceptTerms: z.boolean(),
+  marketingConsent: z.boolean().optional(), 
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords must match",
   path: ["confirmPassword"],
