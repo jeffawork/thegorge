@@ -1,10 +1,7 @@
 'use client';
 import { useFormContext } from 'react-hook-form';
 import { Checkbox } from '@/components/ui/checkbox';
-
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
 export const StepTerms = () => {
   const { register } = useFormContext();
@@ -15,7 +12,7 @@ export const StepTerms = () => {
         Terms & Preferences
       </h1>
 
-      <div className="flex items-center justify-between rounded-lg border border-border/50 bg-background/30 px-4 py-3 transition hover:bg-background/50">
+      <div className="flex items-center justify-between rounded-lg border border-border/50 px-4 py-3 transition">
         <Label
           htmlFor="termsAccepted"
           className="flex items-center gap-2 text-sm text-primary-foreground/80"
@@ -30,7 +27,7 @@ export const StepTerms = () => {
         />
       </div>
 
-      <div className="flex items-center justify-between rounded-lg border border-border/50 bg-background/30 px-4 py-3 transition hover:bg-background/50">
+      <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
         <Label
           htmlFor="marketingConsent"
           className="flex items-center gap-2 text-sm text-primary-foreground/80"

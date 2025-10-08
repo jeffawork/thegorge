@@ -30,17 +30,17 @@ export const StepNavigation = ({ total, onNavigate, stepFields }: Props) => {
   return (
     <div className="mx-auto mt-4 flex max-w-md items-center justify-between">
       {step > 0 && (
-        <Button variant="outline" type="button" onClick={handlePrevStep}>
+        <Button variant="secondary" type="button" onClick={handlePrevStep}>
           Previous
         </Button>
       )}
 
       {step < total - 1 ? (
-        <Button type="button" onClick={handleNextStep}>
+        <Button variant="secondary" type="button" onClick={handleNextStep}>
           Next
         </Button>
       ) : (
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Register</Button>
       )}
     </div>
   );
