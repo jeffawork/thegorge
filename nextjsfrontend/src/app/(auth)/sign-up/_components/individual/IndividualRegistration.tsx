@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 
 export const IndividualRegistration = () => {
-  const { step, type } = useRegistrationStore();
+  const { step, type, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
   const router = useRouter();
 
@@ -31,13 +31,14 @@ export const IndividualRegistration = () => {
   ];
 
   const handleFinalSubmit = (data: any) => {
-    // console.log('Submitting Individual Registration:', { ...data, type });
-    // if (data) {
-    //   router.push('/sign-in');
-    // }
+    console.log('Submitting Individual Registration:', { ...data, type });
+    if (data) {
+      router.push('/sign-in');
+      reset();
+    }
     // POST to API...
 
-    console.log('like');
+    // console.log('like');
   };
 
   const steps = [

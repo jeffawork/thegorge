@@ -6,22 +6,25 @@ import { useFormContext } from 'react-hook-form';
 function MoreOrgDetails() {
   const { register } = useFormContext();
   return (
-    <section>
+    <section className="space-y-2">
+      <h1 className="text-gradient mb-2 text-center font-bold">
+        More Organization Details
+      </h1>
       <div>
         <Label htmlFor="organizationWebsite">Website of Organization</Label>
         <Input {...register('organizationWebsite')} placeholder="Website" />
       </div>
       <div>
-        <Label htmlFor="orgAddress">Address</Label>
-        <Input {...register('orgAddress')} placeholder="Address" />
+        <Label htmlFor="organizationAddress">Address</Label>
+        <Input {...register('organizationAddress')} placeholder="Address" />
       </div>
       <div>
-        <Label htmlFor="orgCountry">Country </Label>
-        <Input {...register('orgCountry')} placeholder="Country" />
+        <Label htmlFor="organizationCountry">Country </Label>
+        <Input {...register('organizationCountry')} placeholder="Country" />
       </div>
       <div>
-        <Label htmlFor="orgTimezone">Timezone</Label>
-        <Input {...register('orgTimezone')} placeholder="Timezone" />
+        <Label htmlFor="organizationTimezone">Timezone</Label>
+        <Input {...register('organizationTimezone')} placeholder="Timezone" />
       </div>
     </section>
   );

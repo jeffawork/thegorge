@@ -30,7 +30,7 @@ export const StepTerms = () => {
           render={({ field }) => (
             <Checkbox
               id="acceptTerms"
-              checked={field.value}
+              checked={!!field.value}
               onCheckedChange={field.onChange}
               className="size-5 cursor-pointer accent-primary"
             />
@@ -58,7 +58,7 @@ export const StepTerms = () => {
           render={({ field }) => (
             <Checkbox
               id="marketingConsent"
-              checked={field.value}
+              checked={!!field.value}
               onCheckedChange={field.onChange}
               className="size-5 cursor-pointer accent-primary"
             />

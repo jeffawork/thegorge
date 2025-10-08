@@ -9,21 +9,41 @@ function StepOrgDetails() {
   return (
     <section>
       <div className="space-y-2">
+        <h1 className="text-gradient mb-2 text-center font-bold">
+          Organization Details
+        </h1>
         <div>
-          <Label htmlFor="orgName">Name of Organization</Label>
-          <Input {...register('orgName')} placeholder="Organization" />
+          <Label htmlFor="organizationName">Name of Organization</Label>
+          <Input {...register('organizationName')} placeholder="Organization" />
         </div>
         <div>
-          <Label htmlFor="orgDescription">Description of Organization</Label>
-          <Input {...register('orgDescription')} placeholder="Description" />
+          <Label htmlFor="organizationSlug">Slug of Organization</Label>
+          <Input {...register('organizationSlug')} placeholder="Organization" />
         </div>
         <div>
-          <Label htmlFor="orgSize">Size of Organization</Label>
-          <Input {...register('orgSize')} placeholder="Size" />
+          <Label htmlFor="organizationDescription">
+            Description of Organization
+          </Label>
+          <Input
+            {...register('organizationDescription')}
+            placeholder="Description"
+          />
         </div>
         <div>
-          <Label htmlFor="conPerson">Contact Person</Label>
-          <Input {...register('conPerson')} placeholder="Contact Person" />
+          <Label htmlFor="organizationSize">Size of Organization</Label>
+          <Input {...register('organizationSize')} placeholder="Size" />
+        </div>
+        <div>
+          <Label htmlFor="industry">Industry</Label>
+          <Input {...register('industry')} placeholder="Industry" />
+        </div>
+        <div>
+          <Label htmlFor="firstName">Contact Person First Name</Label>
+          <Input {...register('firstName')} placeholder="Contact Person" />
+        </div>
+        <div>
+          <Label htmlFor="lastName">Contact Person Last Name</Label>
+          <Input {...register('lastName')} placeholder="Contact Person" />
         </div>
         <div>
           <Label htmlFor="email">Email</Label>
