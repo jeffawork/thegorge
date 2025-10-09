@@ -86,7 +86,6 @@ export const joinOrgSchema = z.object({
   lastName: z.string().min(2, "Last name required"),
   email: z.email("invalid email address"),
   managerEmail: z.email("invalid email address"),
-  phone: z.string().min(8, "Phone number required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
   jobTitle: z.string().optional(),

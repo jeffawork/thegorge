@@ -1,7 +1,5 @@
 'use client';
 import { AnimatePresence, motion } from 'framer-motion';
-import { StepUseCase } from '../shared/StepUseCase';
-import { StepTerms } from '../shared/StepTerms';
 import { StepNavigation } from '../shared/StepNavigation';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
