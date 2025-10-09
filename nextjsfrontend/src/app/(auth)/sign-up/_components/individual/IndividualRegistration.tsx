@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { StepUseCase } from '../shared/StepUseCase';
 import { StepTerms } from '../shared/StepTerms';
-import { StepNavigation } from '../StepNavigation';
+import { StepNavigation } from '../shared/StepNavigation';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 
 export const IndividualRegistration = () => {
-  const { step, type, reset } = useRegistrationStore();
+  const { step, registrationType, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
   const router = useRouter();
 
@@ -31,7 +31,10 @@ export const IndividualRegistration = () => {
   ];
 
   const handleFinalSubmit = (data: any) => {
-    console.log('Submitting Individual Registration:', { ...data, type });
+    console.log('Submitting Individual Registration:', {
+      ...data,
+      registrationType,
+    });
     if (data) {
       router.push('/sign-in');
       reset();

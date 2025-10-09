@@ -36,7 +36,10 @@ function StepOrgDetails() {
           >
             Slug of Organization
           </Label>
-          <Input {...register('organizationSlug')} placeholder="Organization" />
+          <Input
+            {...register('organizationSlug')}
+            placeholder="Organization Slug"
+          />
           {errors.organizationSlug && (
             <p className="text-sm text-red-500">
               {errors.organizationSlug.message as string}
@@ -71,17 +74,6 @@ function StepOrgDetails() {
           {errors.organizationSize && (
             <p className="text-sm text-red-500">
               {errors.organizationSize.message as string}
-            </p>
-          )}
-        </div>
-        <div>
-          <Label className="text-primary-foreground/45" htmlFor="industry">
-            Industry
-          </Label>
-          <Input {...register('industry')} placeholder="Industry" />
-          {errors.industry && (
-            <p className="text-sm text-red-500">
-              {errors.industry.message as string}
             </p>
           )}
         </div>
@@ -131,6 +123,7 @@ function StepOrgDetails() {
             {...register('password')}
             placeholder="Password"
             type="password"
+            variant="password"
           />
           {errors.password && (
             <p className="text-sm text-red-500">
@@ -149,6 +142,7 @@ function StepOrgDetails() {
             {...register('confirmPassword')}
             placeholder="Confirm Password"
             type="password"
+            variant="password"
           />
           {errors.confirmPassword && (
             <p className="text-sm text-red-500">

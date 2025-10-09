@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { StepUseCase } from '../shared/StepUseCase';
 import { StepTerms } from '../shared/StepTerms';
-import { StepNavigation } from '../StepNavigation';
+import { StepNavigation } from '../shared/StepNavigation';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useRegistrationStore } from '../_store/useRegistrationStore';
@@ -11,10 +11,12 @@ import OrgPlans from './OrgPlans';
 import { organizationSchema } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
+import { useRouter } from 'next/navigation';
 
 export const OrganizationRegistration = () => {
-  const { step, type } = useRegistrationStore();
+  const { step, registrationType, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof organizationSchema>>({
     resolver: zodResolver(organizationSchema),
@@ -45,7 +47,14 @@ export const OrganizationRegistration = () => {
     ['acceptTerms', 'marketingConsent'], // final step
   ];
   const handleFinalSubmit = (data: any) => {
-    console.log('Submitting Organization Registration:', { ...data, type });
+    console.log('Submitting Organization Registration:', {
+      ...data,
+      registrationType,
+    });
+    if (data) {
+      router.push('/sign-in');
+      reset();
+    }
   };
 
   const steps = [

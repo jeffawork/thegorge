@@ -1,7 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { useFormContext } from 'react-hook-form';
-import { useRegistrationStore } from './_store/useRegistrationStore';
+import { useRegistrationStore } from '../_store/useRegistrationStore';
 
 interface Props {
   total: number;

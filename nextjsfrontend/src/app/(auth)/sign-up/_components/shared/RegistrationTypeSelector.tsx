@@ -1,7 +1,7 @@
 // src/app/(auth)/register/_components/RegistrationTypeSelector.tsx
 'use client';
 import { Button } from '@/components/ui/button';
-import { useRegistrationStore } from './_store/useRegistrationStore';
+import { useRegistrationStore } from '../_store/useRegistrationStore';
 import Link from 'next/link';
 
 export const RegistrationTypeSelector = () => {
