@@ -7,6 +7,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useRegistrationStore } from '../_store/useRegistrationStore';
 import StepOrgDetails from './StepOrgDetails';
+import OrgPlans from './OrgPlans';
 import { organizationSchema } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
@@ -21,9 +22,27 @@ export const OrganizationRegistration = () => {
   });
 
   const stepFields = [
-    ['orgName', 'orgEmail', 'orgPhone', 'password', 'confirmPassword'],
-    ['industry', 'useCase', 'experience'],
-    ['termsAccepted'], // final step
+    [
+      'organizationName',
+      'organizationSlug',
+      'organizationDescription',
+      'organizationSize',
+      'industry',
+      'firstName',
+      'lastName',
+      'email',
+      'password',
+      'confirmPassword',
+    ],
+    [
+      'organizationWebsite',
+      'organizationAddress',
+      'organizationCountry',
+      'organizationTimezone',
+    ],
+    ['plan', 'expectedRpcUsage'],
+    ['industry', 'useCase', 'blockchainExperience'],
+    ['acceptTerms', 'marketingConsent'], // final step
   ];
   const handleFinalSubmit = (data: any) => {
     console.log('Submitting Organization Registration:', { ...data, type });
@@ -31,8 +50,9 @@ export const OrganizationRegistration = () => {
 
   const steps = [
     <StepOrgDetails key={0} />,
-    <StepUseCase key={1} />,
-    <StepTerms key={2} />,
+    <OrgPlans key={1} />,
+    <StepUseCase key={2} />,
+    <StepTerms key={3} />,
   ];
 
   return (
