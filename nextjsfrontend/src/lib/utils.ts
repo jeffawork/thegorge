@@ -32,6 +32,7 @@ export const forgotPasswordSchema = z.object({
 
 // Individual User Details
 export const individualSchema = z.object({
+  registrationType: z.literal("individual").optional(),
   firstName: z.string().min(2, "First name required"),
   lastName: z.string().min(2, "Last name required"),
   email: z.email("invalid email address"),
@@ -56,6 +57,7 @@ export const individualSchema = z.object({
 
 //  Organization Details
 export const organizationSchema = z.object({
+ registrationType: z.literal("organization").optional(),
   email: z.email(),
   password: z.string().min(6),
   confirmPassword: z.string(),
@@ -82,6 +84,7 @@ export const organizationSchema = z.object({
 
 //  Join Existing Organization
 export const joinOrgSchema = z.object({
+  registrationType: z.literal("join_organization").optional(),
  firstName: z.string().min(2, "First name required"),
   lastName: z.string().min(2, "Last name required"),
   email: z.email("invalid email address"),
@@ -98,4 +101,8 @@ export const joinOrgSchema = z.object({
   path: ["confirmPassword"],
 });
 
-
+export const registerSchema = z.discriminatedUnion("type", [
+  individualSchema,
+  organizationSchema,
+  joinOrgSchema,
+]);

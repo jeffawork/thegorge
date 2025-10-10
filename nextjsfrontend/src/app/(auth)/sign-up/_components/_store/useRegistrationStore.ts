@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 
 interface RegistrationState {
-  registrationType: 'individual' | 'organization' | 'join' | null;
+  registrationType: 'individual' | 'organization' | 'join_organization' | null;
   step: number;
   setType: (registrationType: RegistrationState['registrationType']) => void;
   nextStep: () => void;

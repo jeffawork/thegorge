@@ -1,3 +1,4 @@
+import { registerSchema } from "@/lib/utils";
 
 declare global {
   // Authentication types
@@ -9,13 +10,6 @@ declare global {
 
 
   // Registeration Types
-
-  export interface CourseFormData {
-  basicInfo: Partial<BasicInfo>;
-  advancedInfo: Partial<AdvancedInfo>;
-  curriculum: Partial<Curriculum>;
-  publishInfo: Partial<PublishInfo>;
-}
 
 // Authentication Store tyoes
  interface User {
@@ -40,13 +34,13 @@ interface loginCredentials {
  password: string;
 }
 
+type registerCredentials = z.infer<typeof registerSchema>;
 // Dashboard
 interface ActivePanelProps {
   activeTab: string
   onTabChange: (tab: string) => void
   collapsed?: boolean;
 }
-
 
 }
 

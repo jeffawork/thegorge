@@ -16,7 +16,7 @@ export const RegistrationRouter = () => {
       return <IndividualRegistration />;
     case 'organization':
       return <OrganizationRegistration />;
-    case 'join':
+    case 'join_organization':
       return <JoinOrganizationRegistration />;
     default:
       return <p>Coming soon</p>;

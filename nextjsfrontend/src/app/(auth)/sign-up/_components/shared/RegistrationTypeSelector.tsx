@@ -23,7 +23,7 @@ export const RegistrationTypeSelector = () => {
         <Button variant="link" onClick={() => setType('organization')}>
           Organization
         </Button>
-        <Button variant="link" onClick={() => setType('join')}>
+        <Button variant="link" onClick={() => setType('join_organization')}>
           Join Organization
         </Button>
       </div>

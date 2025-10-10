@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   BarChart3,
@@ -8,7 +8,6 @@ import {
   User,
   LogOut,
   Settings,
-  Menu,
   PanelRightClose,
   PanelLeftClose,
 } from 'lucide-react';
