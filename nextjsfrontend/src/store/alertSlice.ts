@@ -2,9 +2,15 @@ import { create } from 'zustand'
 import { useSocketStore } from './socketSlice'
 
 interface Alert {
+ id: string
+  title: string
   message: string
-  type: 'info' | 'warning' | 'error'
-  timestamp: number
+  type: 'info' | 'warning' | 'error' | 'success'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  rpcId?: string
+  resolved: boolean
+  createdAt: Date
+  resolvedAt?: Date
 }
 
 interface AlertSlice {

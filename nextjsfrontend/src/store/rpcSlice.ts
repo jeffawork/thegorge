@@ -35,7 +35,7 @@ export const useRPCStore = create<RPCSlice>((set, get) => ({
   fetchRPCs: async () => {
     set({ loading: true })
     try {
-      const res = await fetch('/api/users/default/rpcs')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/default/rpcs`)
       const data = await res.json()
       set({ rpcs: data.data, loading: false })
     } catch (err) {
@@ -44,7 +44,7 @@ export const useRPCStore = create<RPCSlice>((set, get) => ({
   },
 
   addRPC: async (rpc) => {
-    const res = await fetch('/api/users/default/rpcs', {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/default/rpcs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(rpc),

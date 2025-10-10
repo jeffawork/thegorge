@@ -11,7 +11,7 @@ export const useSocketStore = create<SocketSlice>((set) => ({
   socket: null,
 
   connect: () => {
-    const newSocket = io('http://localhost:3000', { reconnection: true })
+    const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL, { reconnection: true })
     set({ socket: newSocket })
   },
 
