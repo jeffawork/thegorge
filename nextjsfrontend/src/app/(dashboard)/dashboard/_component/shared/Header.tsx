@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
 
   return (
     <motion.header
-      className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-gray-800 bg-gray-900/70 px-4 py-3 backdrop-blur-md"
+      className="flex w-full items-center justify-between border-b border-gray-800 bg-gray-900/70 px-4 py-3 backdrop-blur-md"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}

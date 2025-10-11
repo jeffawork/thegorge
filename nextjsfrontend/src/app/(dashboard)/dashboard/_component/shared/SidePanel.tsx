@@ -13,9 +13,7 @@ const SidePanel = ({ activeTab, onTabChange, collapsed }: ActivePanelProps) => {
 
   return (
     <motion.aside
-      className={`sticky left-0 top-0 z-50 h-screen overflow-y-auto overflow-x-hidden border-r border-gray-700/50 bg-gray-900/80 backdrop-blur-sm transition-all duration-300 ${
-        collapsed ? 'w-20' : 'w-64'
-      }`}
+      // className={`} z-50 h-screen border-r border-gray-700/50 bg-gray-900/80 backdrop-blur-sm transition-all duration-300`}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}

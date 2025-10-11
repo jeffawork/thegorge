@@ -100,31 +100,35 @@ const DashboardPage = () => {
   // );
 
   return (
-    <section className="flex min-h-screen overflow-hidden">
-      <AnimatePresence>
-        {(isMobileOpen || !isMobile) && (
-          <motion.div
-            key="sidebar"
-            initial={{ x: isMobile ? -260 : 0, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: isMobile ? -260 : 0, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className={`fixed z-50 md:static ${
-              collapsed ? 'w-20' : 'w-64'
-            } h-screen border-r border-gray-800 bg-gray-900/80 shadow-lg backdrop-blur-md`}
-          >
-            <SidePanel
-              activeTab={activeTab}
-              onTabChange={(id) => {
-                setActiveTab(id);
-                if (isMobile) setIsMobileOpen(false); // auto close after selection
-              }}
-              collapsed={collapsed}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <div className="relative z-10 flex min-h-screen w-full flex-col">
+    <section className="relative flex h-screen overflow-hidden">
+      <div
+        className={`overflow-y-auto overflow-x-hidden ${
+          collapsed ? 'w-20' : 'w-64'
+        } border-r border-gray-800 bg-gray-900/80 shadow-lg backdrop-blur-md`}
+      >
+        <AnimatePresence>
+          {(isMobileOpen || !isMobile) && (
+            <motion.div
+              key="sidebar"
+              initial={{ x: isMobile ? -260 : 0, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: isMobile ? -260 : 0, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <SidePanel
+                activeTab={activeTab}
+                onTabChange={(id) => {
+                  setActiveTab(id);
+                  if (isMobile) setIsMobileOpen(false); // auto close after selection
+                }}
+                collapsed={collapsed}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="z-5 flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
         <Header
           collapsed={collapsed}
           onMenuToggle={() => {
