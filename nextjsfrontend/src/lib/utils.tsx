@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   XCircle,
   Activity,
+  TrendingDown,
+  TrendingUp,
 } from 'lucide-react';
 
 export function cn(...inputs: ClassValue[]) {
@@ -149,4 +151,33 @@ export const getStatusIcon = (status: string): JSX.Element => {
     default:
       return <Activity className="h-5 w-5 text-gray-400" />;
   }
+};
+
+// portfolio
+
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
+
+export const formatBalance = (balance: string, decimals: number = 6) => {
+  const num = parseFloat(balance);
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toFixed(decimals);
+};
+
+export const getChangeColor = (change: number) => {
+  return change >= 0 ? 'text-green-400' : 'text-red-400';
+};
+
+export const getChangeIcon = (change: number) => {
+  return change >= 0 ? TrendingUp : TrendingDown;
 };
