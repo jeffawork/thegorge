@@ -1,11 +1,11 @@
 import React from 'react';
 import OverviewDisplay from './OverviewDisplay';
-import RPCSyncDisplay from './RPCSyncDisplay';
 import WalletPorfolioDisplay from './WalletPorfolioDisplay';
 import AlertsDisplay from './AlertsDisplay';
 import AnalyticsDisplay from './AnalyticsDisplay';
 import AnomaliesDisplay from './AnomaliesDisplay';
 import SettingsDisplay from './SettingsDisplay';
+import { RPCSyncDisplay } from './RPCSyncDisplay';
 
 interface Props {
   activeTab: string;

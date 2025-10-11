@@ -42,6 +42,22 @@ interface ActivePanelProps {
   collapsed?: boolean;
 }
 
+interface RPCSyncState {
+  id: string
+  name: string
+  url: string
+  chainId: number
+  syncStatus: 'synced' | 'syncing' | 'behind' | 'stuck' | 'unknown'
+  currentBlock: number
+  latestBlock: number
+  syncProgress: number
+  blocksBehind: number
+  syncSpeed: number
+  healthScore: number
+  lastUpdate: Date
+}
+
+
 }
 
 

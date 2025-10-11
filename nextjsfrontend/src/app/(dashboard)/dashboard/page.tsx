@@ -4,7 +4,6 @@ import SidePanel from './_component/shared/SidePanel';
 import { Header } from './_component/shared/Header';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageOutlet from './_component/molecules/PageOutlet';
-import { Menu, PanelRightClose, PanelLeftClose } from 'lucide-react';
 
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
