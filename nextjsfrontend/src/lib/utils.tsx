@@ -115,6 +115,18 @@ export const registerSchema = z.discriminatedUnion('type', [
   joinOrgSchema,
 ]);
 
+// Rpcs Schemas
+
+export const rpcSchema = z.object({
+  name: z.string().min(2, 'RPC name is required'),
+  url: z.string().url('Enter a valid URL'),
+  network: z.string().min(1, 'Select a network'),
+  chainId: z.string().optional(),
+  timeout: z.coerce.number().min(1000).max(60000).optional(),
+  priority: z.coerce.number().optional(),
+  enabled: z.boolean().default(true),
+});
+
 // Sync State Utils
 export const getHealthColor = (score: number) => {
   if (score >= 90) return 'text-green-400';

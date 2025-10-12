@@ -67,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
       {/* Right Section — Actions */}
       <div className="flex items-center gap-3">
         <motion.button
-          className="glass-button flex items-center gap-2 px-3 py-2 text-sm font-medium"
+          className="glass-button flex items-center gap-2 px-3 py-2 text-sm font-medium text-white"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <User className="h-5 w-5" />
+            <User className="h-5 w-5 text-white" />
           </motion.button>
 
           {showUserMenu && (

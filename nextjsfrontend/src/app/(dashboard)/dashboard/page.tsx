@@ -101,13 +101,13 @@ const DashboardPage = () => {
 
   return (
     <section className="relative flex h-screen overflow-hidden">
-      <div
-        className={`overflow-y-auto overflow-x-hidden ${
-          collapsed ? 'w-20' : 'w-64'
-        } border-r border-gray-800 bg-gray-900/80 shadow-lg backdrop-blur-md`}
-      >
-        <AnimatePresence>
-          {(isMobileOpen || !isMobile) && (
+      {(isMobileOpen || !isMobile) && (
+        <div
+          className={`overflow-y-auto overflow-x-hidden ${
+            collapsed ? 'w-20' : 'w-64'
+          } border-r border-gray-800 bg-gray-900/80 shadow-lg backdrop-blur-md`}
+        >
+          <AnimatePresence>
             <motion.div
               key="sidebar"
               initial={{ x: isMobile ? -260 : 0, opacity: 0 }}
@@ -124,9 +124,9 @@ const DashboardPage = () => {
                 collapsed={collapsed}
               />
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </AnimatePresence>
+        </div>
+      )}
 
       <div className="z-5 flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
         <Header

@@ -57,6 +57,34 @@ interface RPCSyncState {
   lastUpdate: Date
 }
 
+// wllet pge
+interface WalletData {
+  id: string
+  name: string
+  address: string
+  chainId: number
+  totalValueUSD: number
+  change24h: number
+  tokens: Array<{
+    symbol: string
+    name: string
+    balance: string
+    balanceUSD: number
+    percentage: number
+    priceUSD: number
+    change24h: number
+    logoUrl?: string
+  }>
+  nfts: Array<{
+    contractAddress: string
+    tokenId: string
+    name: string
+    imageUrl?: string
+    valueUSD?: number
+  }>
+  lastUpdated: Date
+}
+
 
 }
 
