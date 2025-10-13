@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,15 +14,17 @@ import {
 import { useRPCStore } from '@/store/rpcSlice';
 import { rpcSchema } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
+  Form,
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
+
 import { Checkbox } from '@radix-ui/react-checkbox';
 import {
   Select,
@@ -42,7 +45,7 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
   onClose,
 }) => {
   const { addRPC } = useRPCStore();
-  const [showChainId, setShowChainId] = useState(false);
+  // const [showChainId, setShowChainId] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm({
     resolver: zodResolver(rpcSchema),
@@ -57,7 +60,7 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
     },
   });
 
-  // const showChainId = form.watch('network') === 'custom';
+  const showChainId = form.watch('network') === 'custom';
 
   const handleSubmit = (data: any) => {};
 
@@ -79,272 +82,188 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
         >
           {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 text-black backdrop-blur-sm"
             onClick={onClose}
           />
 
           {/* Modal */}
           <motion.div
-            className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto"
+            className="bg-bl relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-200 bg-foreground shadow-2xl"
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
-            <div className="glass-card overflow-hidden">
-              {/* Header */}
-              <div className="from-primary-500 to-secondary-500 bg-gradient-to-r p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-white/20 p-2">
-                      <Server className="h-6 w-6 text-white" />
-                    </div>
-                    <h2 className="text-xl font-semibold text-white">
-                      Add New RPC Endpoint
-                    </h2>
-                  </div>
-                  <motion.button
-                    className="rounded-lg p-2 transition-colors hover:bg-white/20"
-                    onClick={onClose}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <X className="h-5 w-5 text-white" />
-                  </motion.button>
+            {/* Header */}
+            <div className="from-primary-500 to-secondary-500 flex items-center justify-between bg-gradient-to-r p-6">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-white/20 p-2">
+                  <Server className="h-6 w-6 text-black" />
                 </div>
+                <h2 className="text-gradient text-center text-xl font-semibold">
+                  Add New RPC Endpoint
+                </h2>
               </div>
+              <motion.button
+                className="rounded-lg p-2 transition-colors hover:bg-white/20"
+                onClick={onClose}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X className="h-5 w-5 bg-white/20" />
+              </motion.button>
+            </div>
 
-              {/* Body */}
-              <div className="p-6">
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(handleSubmit)}
-                    className="space-y-6"
+            {/* Body */}
+            <div className="p-6">
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-6"
+              >
+                {/* RPC Name */}
+                <div>
+                  <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
+                    <Server className="text-gradient h-4 w-4" /> RPC Name *
+                  </label>
+                  <Input
+                    placeholder="e.g., My Ethereum Node"
+                    {...form.register('name')}
+                  />
+                  {form.formState.errors.name && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {form.formState.errors.name.message as string}
+                    </p>
+                  )}
+                </div>
+
+                {/* RPC URL */}
+                <div>
+                  <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
+                    <Link className="text-gradient h-4 w-4" /> RPC URL *
+                  </label>
+                  <Input
+                    placeholder="https://eth-mainnet.rpc.x.superfluid.dev"
+                    {...form.register('url')}
+                  />
+                  {form.formState.errors.url && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {form.formState.errors.url.message as string}
+                    </p>
+                  )}
+                </div>
+
+                {/* Network */}
+                <div>
+                  <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
+                    <Server className="text-gradient h-4 w-4" /> Network *
+                  </label>
+                  <select
+                    {...form.register('network')}
+                    className="focus:border-primary-500 focus:ring-primary-200 w-full rounded-md border border-gray-300 p-2 focus:ring"
                   >
-                    {/* RPC Name */}
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Server className="h-4 w-4" /> RPC Name *
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., My Ethereum Node"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <option value="">Select a network...</option>
+                    <option value="ethereum">Ethereum Mainnet</option>
+                    <option value="polygon">Polygon</option>
+                    <option value="bsc">Binance Smart Chain</option>
+                    <option value="arbitrum">Arbitrum</option>
+                    <option value="optimism">Optimism</option>
+                    <option value="custom">Custom Network</option>
+                  </select>
+                </div>
 
-                    {/* RPC URL */}
-                    <FormField
-                      control={form.control}
-                      name="url"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Link className="h-4 w-4" /> RPC URL *
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="https://eth-mainnet.rpc.x.superfluid.dev"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* Chain ID */}
+                <AnimatePresence>
+                  {showChainId && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
+                        <Hash className="text-gradient h-4 w-4" /> Chain ID *
+                      </label>
+                      <Input
+                        type="number"
+                        placeholder="1 for Ethereum Mainnet"
+                        {...form.register('chainId')}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                    {/* Network */}
-                    <FormField
-                      control={form.control}
-                      name="network"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Server className="h-4 w-4" /> Network *
-                          </FormLabel>
-                          <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a network..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="ethereum">
-                                  Ethereum Mainnet
-                                </SelectItem>
-                                <SelectItem value="polygon">Polygon</SelectItem>
-                                <SelectItem value="bsc">
-                                  Binance Smart Chain
-                                </SelectItem>
-                                <SelectItem value="arbitrum">
-                                  Arbitrum
-                                </SelectItem>
-                                <SelectItem value="optimism">
-                                  Optimism
-                                </SelectItem>
-                                <SelectItem value="custom">
-                                  Custom Network
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* Timeout */}
+                <div>
+                  <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
+                    <Clock className="text-gradient h-4 w-4" /> Timeout (ms)
+                  </label>
+                  <Input
+                    type="number"
+                    min="1000"
+                    max="60000"
+                    {...form.register('timeout', { valueAsNumber: true })}
+                  />
+                </div>
 
-                    {/* Chain ID */}
-                    <AnimatePresence>
-                      {showChainId && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                        >
-                          <FormField
-                            control={form.control}
-                            name="chainId"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <Hash className="h-4 w-4" /> Chain ID *
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    placeholder="1 for Ethereum Mainnet"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                {/* Priority */}
+                <div>
+                  <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
+                    <Flag className="text-gradient h-4 w-4" /> Priority
+                  </label>
+                  <select
+                    {...form.register('priority', { valueAsNumber: true })}
+                    className="focus:border-primary-500 focus:ring-primary-200 w-full rounded-md border border-gray-300 p-2 focus:ring"
+                  >
+                    <option value={1}>High</option>
+                    <option value={2}>Medium</option>
+                    <option value={3}>Low</option>
+                  </select>
+                </div>
 
-                    {/* Timeout */}
-                    <FormField
-                      control={form.control}
-                      name="timeout"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" /> Timeout (ms)
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="1000"
-                              max="60000"
-                              {...field}
-                              value={
-                                typeof field.value === 'number'
-                                  ? field.value
-                                  : Number(field.value) || 10000
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* Enabled */}
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={form.watch('enabled')}
+                    onCheckedChange={(val) =>
+                      form.setValue('enabled', Boolean(val))
+                    }
+                  />
+                  <label className="text-gradient flex cursor-pointer items-center gap-2">
+                    <ToggleRight className="text-gradient h-4 w-4" />
+                    Enable monitoring
+                  </label>
+                </div>
 
-                    {/* Priority */}
-                    <FormField
-                      control={form.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Flag className="h-4 w-4" /> Priority
-                          </FormLabel>
-                          <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={String(field.value)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select priority" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">High</SelectItem>
-                                <SelectItem value="2">Medium</SelectItem>
-                                <SelectItem value="3">Low</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                {/* Actions */}
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex flex-1 items-center justify-center gap-2"
+                  >
+                    <Zap className="h-4 w-4" />
+                    Test Connection
+                  </Button>
 
-                    {/* Enabled */}
-                    <FormField
-                      control={form.control}
-                      name="enabled"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormLabel className="flex items-center gap-2">
-                            <ToggleRight className="text-primary-400 h-4 w-4" />
-                            Enable monitoring
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Actions */}
-                    <div className="flex gap-3 pt-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        // onClick={testConnection}
-                        className="flex flex-1 items-center justify-center gap-2"
-                      >
-                        <Zap className="h-4 w-4" />
-                        Test Connection
-                      </Button>
-
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="flex flex-1 items-center justify-center gap-2"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
-                            Adding...
-                          </>
-                        ) : (
-                          <>
-                            <Server className="h-4 w-4" />
-                            Add RPC
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </div>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex flex-1 items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Server className="h-4 w-4" />
+                        Add RPC
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
             </div>
           </motion.div>
         </motion.div>
