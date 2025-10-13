@@ -35,6 +35,32 @@ interface loginCredentials {
 }
 
 type registerCredentials = z.infer<typeof registerSchema>;
+
+// RpcApi types 
+
+interface RpcCredentials {
+  name: string
+  url: string
+  network: string
+  chainId: number
+  timeout: number
+  enabled: boolean
+  priority: number
+}
+interface RpcTestCredentials {
+  name: string
+  url: string
+  network: string
+  chainId: number
+  timeout: number
+}
+
+interface UpdateRpcCredentials {
+  name: string
+  url: string
+  priority: number
+}
+
 // Dashboard
 interface ActivePanelProps {
   activeTab: string

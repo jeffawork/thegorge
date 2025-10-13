@@ -56,3 +56,55 @@ export const  authApiService = {
     return data;
   }
 }
+
+
+export const rpcApiService ={
+ 
+  addRpc: async (credentials : RpcCredentials) => {
+    const {data} = await axiosInst.post("/rpcs", credentials)
+    return data;  
+  },
+
+  updateRpc: async (Id:string ,credentials : UpdateRpcCredentials) => {
+    const {data} = await axiosInst.put(`/rpcs/${Id}`, credentials)
+    return data;  
+  },
+
+  testRpc: async (credentials: RpcTestCredentials ) => {
+    const {data} = await axiosInst.post("/rpcs/test", credentials)
+    return data;  
+  },
+
+  deleteRPc: async (Id:string) => {
+    const {data} = await axiosInst.delete(`/rpcs/${Id}`)
+    return data;  
+  },
+  
+  getRpc: async () => {
+    const {data} = await axiosInst.get("/rpcs")
+    return data;  
+  },
+
+  getRpcById: async (Id: {Id: string}) => {
+    const {data} = await axiosInst.get(`/rpcs/${Id}`)
+    return data;  
+  },
+
+  getRpcStatus: async (Id: {Id: string}) => {
+    const {data} = await axiosInst.get(`/rpcs/${Id}/status`)
+    return data;  
+  },
+
+  getRpcMetrics: async (Id: {Id: string}) => {
+    const {data} = await axiosInst.get(`/rpcs/${Id}/metrics`)
+    return data;  
+  },
+  
+  getRpcToggle: async (Id: {Id: string}) => {
+    const {data} = await axiosInst.get(`/rpcs/${Id}/toggle`)
+    return data;  
+  },
+
+
+
+}
