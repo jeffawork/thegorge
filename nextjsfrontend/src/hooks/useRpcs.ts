@@ -1,6 +1,6 @@
 import { rpcApiService } from "@/lib/apiClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
+import { RPC, useRPCStore } from "@/store/rpcSlice";
 export const useGetRpcs = () => {
   return useQuery({
     queryKey: ["rpcs"], // Unique cache key
@@ -50,16 +50,19 @@ export const useTestRpc = (credentials: RpcTestCredentials) => {
   });
 };
 
+
+
+// 🟢 ADD RPC
 export function useAddRpc() {
   const queryClient = useQueryClient();
+  const addRpcToState = useRPCStore((s) => s.addRpcToState);
 
   return useMutation({
     mutationFn: rpcApiService.addRpc,
 
-    // Optimistic update before API response
+    // Optimistic update
     onMutate: async (newRpc: any) => {
       await queryClient.cancelQueries({ queryKey: ["rpcs"] });
-
       const previousRpcs = queryClient.getQueryData<any[]>(["rpcs"]);
 
       const optimisticRpc = {
@@ -69,115 +72,122 @@ export function useAddRpc() {
         createdAt: new Date().toISOString(),
       };
 
-      queryClient.setQueryData<any[]>(["rpcs"], (old) =>
-        old ? [...old, optimisticRpc] : [optimisticRpc]
+      queryClient.setQueryData<RPC[]>(["rpcs"], (old: RPC[] | undefined) =>
+        Array.isArray(old) ? [...old, optimisticRpc] : [optimisticRpc]
       );
 
       return { previousRpcs };
     },
 
-    // If error, roll back
+    // Rollback if error
     onError: (err, _, context) => {
       if (context?.previousRpcs) {
         queryClient.setQueryData(["rpcs"], context.previousRpcs);
       }
     },
 
-    // On success, replace the optimistic entry with real data
+    // ✅ On success: update both React Query cache & Zustand
     onSuccess: (data) => {
-      queryClient.setQueryData<any[]>(["rpcs"], (old) =>
+      queryClient.setQueryData<RPC[]>(["rpcs"], (old: RPC[] | undefined) =>
         old
-          ? old.map((rpc) =>
-              rpc.id.startsWith("temp-") ? data.data : rpc
-            )
-          : [data.data]
+          ? old.map((rpc: RPC) =>
+          typeof rpc.id === "string" && rpc.id.startsWith("temp-") ? data.data as RPC : rpc
+        )
+          : [data.data as RPC]
       );
+
+      // Push result into Zustand store
+      addRpcToState(data.data);
     },
 
-    // Optionally refetch after
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["rpcs"] });
     },
   });
 }
 
+// 🟡 UPDATE RPC
 export function useUpdateRpc() {
   const queryClient = useQueryClient();
+  const updateRpcInState = useRPCStore((s) => s.updateRpcInState);
 
   return useMutation({
-    mutationFn: (params: { Id: string; credentials: UpdateRpcCredentials }) =>
+    mutationFn: (params: { Id: string; credentials: any }) =>
       rpcApiService.updateRpc(params.Id, params.credentials),
-    mutationKey: ["updateRpc"],
 
-    // Optimistic update before API response
     onMutate: async (updatedRpc: any) => {
       await queryClient.cancelQueries({ queryKey: ["rpcs"] });
       const previousRpcs = queryClient.getQueryData<any[]>(["rpcs"]);
 
-      // Optimistically update the cache
-      queryClient.setQueryData<any[]>(["rpcs"], (old) =>
-        old ? old.map((rpc) => (rpc.id === updatedRpc.Id ? updatedRpc : rpc)) : []
+      queryClient.setQueryData<RPC[]>(["rpcs"], (old: RPC[] | undefined) =>
+        old
+                ? old.map((rpc: RPC) =>
+                rpc.id === updatedRpc.Id ? { ...rpc, ...updatedRpc.credentials } : rpc
+        )
+          : []
       );
 
       return { previousRpcs };
-
     },
 
-    // If error, roll back
     onError: (err, _, context) => {
-      if (context?.previousRpcs) {
+      if (context?.previousRpcs)
         queryClient.setQueryData(["rpcs"], context.previousRpcs);
-      }
-    },  
-
-    // On success, ensure the cache is updated with server response
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData<any[]>(["rpcs"], (old) =>
-        old ? old.map((rpc) => (rpc.id === variables.Id ? data.data : rpc)) : [data.data]
-      );
     },
 
-    // Optionally refetch after
+    // ✅ On success: reflect update in Zustand
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<RPC[]>(["rpcs"], (old: RPC[] | undefined) =>
+        old
+          ? old.map((rpc: RPC) => (rpc.id === variables.Id ? data.data as RPC : rpc))
+          : [data.data as RPC]
+      );
+
+      updateRpcInState(data.data);
+    },
+
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["rpcs"] });
     },
   });
+}
 
-}  
- 
+// 🔴 DELETE RPC
 export function useDeleteRpc() {
   const queryClient = useQueryClient();
+  const deleteRpcFromState = useRPCStore((s) => s.deleteRpcFromState);
+
   return useMutation({
     mutationFn: (Id: string) => rpcApiService.deleteRpc(Id),
-    mutationKey: ["deleteRpc"],
-    // Optimistic update before API response
+
     onMutate: async (Id: string) => {
       await queryClient.cancelQueries({ queryKey: ["rpcs"] });
       const previousRpcs = queryClient.getQueryData<any[]>(["rpcs"]);
-        // Optimistically update the cache  
-        queryClient.setQueryData<any[]>(["rpcs"], (old) =>
-        old ? old.filter((rpc) => rpc.id !== Id) : []
+
+      queryClient.setQueryData<RPC[]>(["rpcs"], (old) =>
+        Array.isArray(old) ? old.filter((rpc: RPC) => rpc.id !== Id) : []
       );
+
       return { previousRpcs };
     },
 
-    // If error, roll back
     onError: (err, _, context) => {
       if (context?.previousRpcs) {
         queryClient.setQueryData(["rpcs"], context.previousRpcs);
       }
     },
-    // On success, ensure the cache is updated with server response 
+
+    // ✅ On success: remove from Zustand
     onSuccess: (_, Id) => {
-      queryClient.setQueryData<any[]>(["rpcs"], (old) =>
-        old ? old.filter((rpc) => rpc.id !== Id) : []
+      queryClient.setQueryData<RPC[]>(["rpcs"], (old: RPC[] | undefined) =>
+        old ? old.filter((rpc: RPC) => rpc.id !== Id) : []
       );
+
+      deleteRpcFromState(Id);
     },
 
-    // Optionally refetch after
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["rpcs"] });
     },
   });
-
 }

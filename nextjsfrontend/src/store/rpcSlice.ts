@@ -1,3 +1,4 @@
+// useRPCStore.ts
 import { create } from 'zustand'
 import { useSocketStore } from './socketSlice'
 
@@ -22,8 +23,10 @@ interface RPCSlice {
   rpcs: RPC[]
   loading: boolean
   error: string | null
-  fetchRPCs: () => Promise<void>
-  addRPC: (rpc: Omit<RPC, 'id'>) => Promise<void>
+  setRpcs: (rpcs: RPC[]) => void
+  addRpcToState: (rpc: RPC) => void
+  updateRpcInState: (rpc: RPC) => void
+  deleteRpcFromState: (id: string) => void
   setupSocketListeners: () => void
 }
 
@@ -32,45 +35,40 @@ export const useRPCStore = create<RPCSlice>((set, get) => ({
   loading: false,
   error: null,
 
-  fetchRPCs: async () => {
-    set({ loading: true })
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/default/rpcs`)
-      const data = await res.json()
-      set({ rpcs: data.data, loading: false })
-    } catch (err) {
-      set({ error: 'Failed to fetch RPCs', loading: false })
-    }
-  },
+  // Replace entire RPC list (e.g., after fetch)
+  setRpcs: (rpcs) => set({ rpcs }),
 
-  addRPC: async (rpc) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/default/rpcs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(rpc),
-    })
-    const data = await res.json()
-    set((state) => ({ rpcs: [...state.rpcs, data.data] }))
-  },
+  // Add one RPC
+  addRpcToState: (rpc) =>
+    set((state) => ({ rpcs: [...state.rpcs, rpc] })),
 
+  // Update one RPC
+  updateRpcInState: (updated) =>
+    set((state) => ({
+      rpcs: state.rpcs.map((r) => (r.id === updated.id ? updated : r)),
+    })),
+
+  // Delete one RPC
+  deleteRpcFromState: (id) =>
+    set((state) => ({
+      rpcs: state.rpcs.filter((r) => r.id !== id),
+    })),
+
+  // Socket real-time sync
   setupSocketListeners: () => {
     const socket = useSocketStore.getState().socket
     if (!socket) return
 
     socket.on('rpcAdded', (rpc) => {
-      set((state) => ({ rpcs: [...state.rpcs, rpc] }))
+      get().addRpcToState(rpc)
     })
 
     socket.on('rpcUpdated', (rpc) => {
-      set((state) => ({
-        rpcs: state.rpcs.map((r) => (r.id === rpc.id ? rpc : r)),
-      }))
+      get().updateRpcInState(rpc)
     })
 
     socket.on('rpcDeleted', (rpcId) => {
-      set((state) => ({
-        rpcs: state.rpcs.filter((r) => r.id !== rpcId),
-      }))
+      get().deleteRpcFromState(rpcId)
     })
   },
 }))

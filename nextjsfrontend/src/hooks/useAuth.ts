@@ -30,6 +30,7 @@ export const useLogin = ( ) => {
     })
 
 }
+
 export const useRegister = ( ) => {
     const QueryClient = useQueryClient()
     const router = useRouter();
@@ -52,6 +53,7 @@ export const useRegister = ( ) => {
     })
 
 }
+
 export const useLogout = ( ) => {
     const QueryClient = useQueryClient()
     const router = useRouter();
