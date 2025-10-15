@@ -1,7 +1,7 @@
 import { AlertTriangle, Info } from 'lucide-react';
 import React from 'react';
 
-const AlertRules = () => {
+export const AlertRules = () => {
   return (
     <div className="space-y-6">
       <div className="glass-card p-6">
@@ -51,5 +51,3 @@ const AlertRules = () => {
     </div>
   );
 };
-
-export default AlertRules;
