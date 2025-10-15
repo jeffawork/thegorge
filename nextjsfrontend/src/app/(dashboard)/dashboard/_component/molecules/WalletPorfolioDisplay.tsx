@@ -3,7 +3,7 @@ import { Wallet, DollarSign, TrendingUp, Eye } from 'lucide-react';
 import React from 'react';
 import { WalletPortfolio } from '../atoms/WalletPortfolio';
 
-export const WalletPorfolioDisplay: React.FC = () => {
+const WalletPorfolioDisplay: React.FC = () => {
   return (
     <div className="space-y-6">
       <motion.div
@@ -84,3 +84,5 @@ export const WalletPorfolioDisplay: React.FC = () => {
     </div>
   );
 };
+
+export default WalletPorfolioDisplay;

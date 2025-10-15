@@ -4,8 +4,9 @@ import AlertsDisplay from './AlertsDisplay';
 import AnalyticsDisplay from './AnalyticsDisplay';
 import AnomaliesDisplay from './AnomaliesDisplay';
 import SettingsDisplay from './SettingsDisplay';
-import { RPCSyncDisplay } from './RPCSyncDisplay';
-import { WalletPorfolioDisplay } from './WalletPorfolioDisplay';
+import RPCSyncDisplay from './RPCSyncDisplay';
+import WalletPorfolioDisplay from './WalletPorfolioDisplay';
+import UsageAndCosts from './UsageAndCosts';
 
 interface Props {
   activeTab: string;
@@ -25,7 +26,7 @@ const PageOutlet = ({ activeTab }: Props) => {
       case 'performance':
         return <AnalyticsDisplay />;
       case 'usage-costs':
-        return <AnalyticsDisplay />;
+        return <UsageAndCosts />;
       case 'anomalies':
         return <AnomaliesDisplay />;
       case 'general':

@@ -8,7 +8,8 @@ import {
   Clock,
 } from 'lucide-react';
 import { RPCSyncOverview } from '../atoms/RPCSyncOverview';
-export const RPCSyncDisplay: React.FC = () => {
+
+ const RPCSyncDisplay: React.FC = () => {
   return (
     <div className="space-y-6">
       <motion.div
@@ -121,3 +122,5 @@ export const RPCSyncDisplay: React.FC = () => {
     </div>
   );
 };
+
+export default RPCSyncDisplay

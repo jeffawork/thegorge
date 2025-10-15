@@ -13,6 +13,7 @@ import {
   Calendar,
   Filter,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface CostData {
   category: string;
@@ -217,9 +218,9 @@ export const CostAnalytics: React.FC = () => {
               <PieChart className="h-4 w-4" />
             )}
           </button>
-          <button className="p-2 text-gray-400 transition-colors hover:text-white">
+          <Button className="p-2 text-gray-400 transition-colors hover:text-white">
             <Download className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
 

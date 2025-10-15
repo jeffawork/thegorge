@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, TrendingUp, Filter, Download } from 'lucide-react';
 
-export const AnalyticsDisplay: React.FC = () => {
+const AnalyticsDisplay: React.FC = () => {
   return (
     <div className="space-y-6">
       <motion.div
@@ -116,3 +116,5 @@ export const AnalyticsDisplay: React.FC = () => {
     </div>
   );
 };
+
+export default AnalyticsDisplay;
