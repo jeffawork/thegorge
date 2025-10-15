@@ -37,7 +37,7 @@ const PageOutlet = ({ activeTab }: Props) => {
       case 'appearance':
       case 'team':
       case 'billing':
-        return <SettingsDisplay />;
+        return <SettingsDisplay activeTab={activeTab} />;
       default:
         return <OverviewDisplay />;
     }
