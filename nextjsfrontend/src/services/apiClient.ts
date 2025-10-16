@@ -58,6 +58,9 @@ export const  authApiService = {
 }
 
 
+
+// APIs related RPCs
+
 export const rpcApiService = {
  
   addRpc: async (credentials : RpcCredentials) => {
