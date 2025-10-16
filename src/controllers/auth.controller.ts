@@ -32,7 +32,7 @@ export class AuthController extends BaseController {
         throw new ValidationException('Invalid login data', validationErrors);
       }
 
-      const result = await this.authService.login(loginDto.email, loginDto.password);
+      const result = await this.authService.login(loginDto);
       this.sendSuccess(res, result, 'Login successful');
     } catch (error) {
       this.handleError(error, req, res, next);

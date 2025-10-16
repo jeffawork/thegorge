@@ -1,4 +1,4 @@
-import { rpcApiService } from "@/lib/apiClient";
+import { rpcApiService } from "@/services/apiClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RPC, useRPCStore } from "@/store/rpcSlice";
 export const useGetRpcs = () => {
