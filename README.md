@@ -1,155 +1,65 @@
-# EVM RPC Monitor
+# The Gorge RPC Monitor
 
-A comprehensive monitoring tool for EVM-compatible RPC endpoints with real-time dashboard and alerting capabilities.
+Real-time monitoring tool for EVM-compatible RPC endpoints.
+
+## Quick Start
+
+```bash
+# Setup and start
+npm run setup && npm run dev
+
+# Docker setup
+npm run setup:docker
+```
+
+**Application:** http://localhost:3000 | **API Health:** http://localhost:3000/api/health
 
 ## Features
 
-- **Real-time Monitoring**: Continuous monitoring of RPC endpoint health and performance
-- **Web3 Integration**: Built with Web3.js for Ethereum and EVM-compatible blockchain interaction
-- **Live Dashboard**: Real-time updates via WebSocket connections
-- **Alert System**: Configurable alerts for various monitoring thresholds
-- **Comprehensive Logging**: Winston-based logging with file and console output
-- **TypeScript**: Full TypeScript support with proper type definitions
-- **Testing**: Jest-based test suite for services and utilities
+- **Real-time Monitoring** - RPC endpoint health tracking
+- **Web3 Integration** - EVM-compatible blockchain support
+- **Mock Database** - Development without PostgreSQL
+- **Docker Support** - Complete containerization
+- **TypeScript** - Full type safety
 
-## Project Structure
-
-```
-evm-rpc-monitor/
-├── package.json
-├── tsconfig.json
-├── .env.example
-├── .gitignore
-├── README.md
-├── logs/
-│   └── .gitkeep
-├── public/
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
-├── src/
-│   ├── index.ts
-│   ├── app.ts
-│   ├── types/
-│   │   └── index.ts
-│   ├── config/
-│   │   └── index.ts
-│   ├── utils/
-│   │   ├── logger.ts
-│   │   └── helpers.ts
-│   ├── services/
-│   │   ├── web3Service.ts
-│   │   ├── monitoringService.ts
-│   │   └── alertService.ts
-│   └── routes/
-│       └── api.ts
-└── tests/
-    ├── services/
-    │   └── web3Service.test.ts
-    └── utils/
-        └── helpers.test.ts
-```
-
-## Prerequisites
-
-- Node.js >= 16.0.0
-- npm >= 7.0.0
-
-## Installation
-
-1. Clone the repository:
+## Commands
 
 ```bash
-git clone <repository-url>
-cd evm-rpc-monitor
+# Setup
+npm run setup          # Basic setup
+npm run setup:docker   # Docker setup
+npm run setup:clean    # Clean install
+
+# Development
+npm run dev            # Start dev server
+npm run build          # Build for production
+npm test               # Run tests
+
+# Docker
+npm run docker:up      # Start with Docker
+npm run docker:down    # Stop Docker
+npm run docker:logs    # View logs
 ```
 
-2. Install dependencies:
+## API Testing
 
 ```bash
-npm install
+# Health check
+curl http://localhost:3000/api/health
+
+# Logout (demo token)
+curl -X POST -H "Authorization: Bearer demo-token" http://localhost:3000/api/auth/logout
 ```
 
-3. Set up environment variables:
+**Demo Tokens:** `demo-token` (access) | `demo-refreshed-token` (refresh)
 
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
+## Documentation
 
-4. Build the project:
-
-```bash
-npm run build
-```
-
-## Configuration
-
-Copy `.env.example` to `.env` and configure the following variables:
-
-- `NODE_ENV`: Environment (development/production)
-- `PORT`: Server port (default: 3000)
-- `WEB3_PROVIDER_URL`: Your RPC endpoint URL
-- `WEB3_CHAIN_ID`: Chain ID for the network
-- `MONITORING_INTERVAL`: Monitoring check interval in milliseconds
-- `ALERT_THRESHOLD`: Threshold for triggering alerts
-- `LOG_LEVEL`: Logging level (debug, info, warn, error)
-
-## Usage
-
-### Development Mode
-
-```bash
-npm run dev
-```
-
-### Production Mode
-
-```bash
-npm run build
-npm start
-```
-
-### Testing
-
-```bash
-npm test
-npm run test:watch
-```
-
-### Linting
-
-```bash
-npm run lint
-npm run lint:fix
-```
-
-## API Endpoints
-
-- `GET /api/health` - Health check endpoint
-- `GET /api/status` - Current monitoring status
-- `GET /api/metrics` - Performance metrics
-- `GET /api/alerts` - Active alerts
-
-## WebSocket Events
-
-- `status_update` - Real-time status updates
-- `metrics_update` - Performance metrics updates
-- `alert` - Alert notifications
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+- [Environment Setup](docs/ENVIRONMENT_CONFIG.md)
+- [Testing Guide](docs/TESTING_GUIDE.md)
+- [API Reference](docs/API_DOCUMENTATION.md)
+- [Docker Setup](docs/DOCKER.md)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For support and questions, please open an issue on the GitHub repository.
+MIT License - see [LICENSE](LICENSE) file for details.

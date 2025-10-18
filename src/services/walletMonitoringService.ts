@@ -171,7 +171,7 @@ export class WalletMonitoringService {
       ...wallet,
       id: this.generateWalletId(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.wallets.set(newWallet.id, newWallet);
@@ -179,7 +179,7 @@ export class WalletMonitoringService {
       walletId: newWallet.id,
       orgId: newWallet.orgId,
       address: newWallet.address,
-      chainId: newWallet.chainId
+      chainId: newWallet.chainId,
     });
 
     return newWallet.id;
@@ -212,7 +212,7 @@ export class WalletMonitoringService {
         walletLogger.error('Failed to monitor wallet', {
           walletId,
           address: wallet.address,
-          error: error.message
+          error: (error as Error).message,
         });
       }
     }
@@ -241,15 +241,15 @@ export class WalletMonitoringService {
   private async updateWalletBalances(wallet: Wallet): Promise<void> {
     // Simulate balance checking - in real implementation, you'd query the blockchain
     const balances = await this.fetchWalletBalances(wallet);
-    
+
     const existing = this.walletBalances.get(wallet.id) || [];
     existing.push(...balances);
-    
+
     // Keep only last 1000 balance records per wallet
     if (existing.length > 1000) {
       existing.splice(0, existing.length - 1000);
     }
-    
+
     this.walletBalances.set(wallet.id, existing);
   }
 
@@ -273,8 +273,8 @@ export class WalletMonitoringService {
       priceUSD: 2000,
       timestamp: now,
       metadata: {
-        tokenType: 'native'
-      }
+        tokenType: 'native',
+      },
     });
 
     // ERC-20 token balances (simulated)
@@ -282,7 +282,7 @@ export class WalletMonitoringService {
     for (let i = 0; i < tokenCount; i++) {
       const tokenBalance = Math.random() * 1000;
       const tokenPrice = Math.random() * 100 + 1; // $1-$100
-      
+
       balances.push({
         walletId: wallet.id,
         orgId: wallet.orgId,
@@ -298,8 +298,8 @@ export class WalletMonitoringService {
         timestamp: now,
         metadata: {
           contractAddress: `0x${Math.random().toString(16).substr(2, 40)}`,
-          tokenType: 'erc20'
-        }
+          tokenType: 'erc20',
+        },
       });
     }
 
@@ -313,7 +313,7 @@ export class WalletMonitoringService {
       137: 'MATIC',
       56: 'BNB',
       42161: 'ETH',
-      10: 'ETH'
+      10: 'ETH',
     };
     return symbols[chainId] || 'ETH';
   }
@@ -325,7 +325,7 @@ export class WalletMonitoringService {
       137: 'Polygon',
       56: 'Binance Coin',
       42161: 'Ethereum',
-      10: 'Ethereum'
+      10: 'Ethereum',
     };
     return names[chainId] || 'Ethereum';
   }
@@ -334,15 +334,15 @@ export class WalletMonitoringService {
   private async updateWalletTransactions(wallet: Wallet): Promise<void> {
     // Simulate transaction checking - in real implementation, you'd query the blockchain
     const transactions = await this.fetchWalletTransactions(wallet);
-    
+
     const existing = this.walletTransactions.get(wallet.id) || [];
     existing.push(...transactions);
-    
+
     // Keep only last 1000 transaction records per wallet
     if (existing.length > 1000) {
       existing.splice(0, existing.length - 1000);
     }
-    
+
     this.walletTransactions.set(wallet.id, existing);
   }
 
@@ -381,8 +381,9 @@ export class WalletMonitoringService {
         fees: {
           gasFee: (gasUsed * gasPrice * 1e9).toString(),
           gasFeeUSD: (gasUsed * gasPrice * 1e9) / 1e18 * 2000, // Assume $2000 per ETH
-          totalFeeUSD: (gasUsed * gasPrice * 1e9) / 1e18 * 2000
-        }
+          totalFeeUSD: (gasUsed * gasPrice * 1e9) / 1e18 * 2000,
+        },
+        tokens: [], // Empty array for now
       });
     }
 
@@ -392,15 +393,15 @@ export class WalletMonitoringService {
   // Update wallet activities
   private async updateWalletActivities(wallet: Wallet): Promise<void> {
     const activities = await this.generateWalletActivities(wallet);
-    
+
     const existing = this.walletActivities.get(wallet.id) || [];
     existing.push(...activities);
-    
+
     // Keep only last 1000 activity records per wallet
     if (existing.length > 1000) {
       existing.splice(0, existing.length - 1000);
     }
-    
+
     this.walletActivities.set(wallet.id, existing);
   }
 
@@ -412,9 +413,9 @@ export class WalletMonitoringService {
     // Simulate occasional activities
     if (Math.random() < 0.05) { // 5% chance of new activity
       const activityTypes: WalletActivity['activityType'][] = [
-        'transaction', 'balance_change', 'token_transfer', 'defi_interaction', 'nft_activity'
+        'transaction', 'balance_change', 'token_transfer', 'defi_interaction', 'nft_activity',
       ];
-      
+
       const activityType = activityTypes[Math.floor(Math.random() * activityTypes.length)];
       const value = Math.random() * 1000;
       const valueUSD = value * 2000; // Assume $2000 per ETH
@@ -430,7 +431,7 @@ export class WalletMonitoringService {
         value,
         valueUSD,
         tokenSymbol: this.getNativeTokenSymbol(wallet.chainId),
-        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`
+        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
       });
     }
 
@@ -444,7 +445,7 @@ export class WalletMonitoringService {
       balance_change: `Balance changed by ${value.toFixed(4)} ETH`,
       token_transfer: `Token transfer of ${value.toFixed(4)} tokens`,
       defi_interaction: `DeFi interaction with ${value.toFixed(4)} ETH`,
-      nft_activity: `NFT activity involving ${value.toFixed(4)} ETH`
+      nft_activity: `NFT activity involving ${value.toFixed(4)} ETH`,
     };
     return descriptions[activityType] || 'Wallet activity detected';
   }
@@ -456,8 +457,8 @@ export class WalletMonitoringService {
     const activities = this.walletActivities.get(wallet.id) || [];
 
     // Check for large transactions
-    const recentTransactions = transactions.filter(tx => 
-      tx.timestamp > new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+    const recentTransactions = transactions.filter(tx =>
+      tx.timestamp > new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
     );
 
     for (const tx of recentTransactions) {
@@ -470,7 +471,7 @@ export class WalletMonitoringService {
           message: `Large transaction of $${valueUSD.toFixed(2)} detected`,
           value: valueUSD,
           threshold: 10000,
-          metadata: { transactionHash: tx.txHash }
+          metadata: { transactionHash: tx.txHash },
         });
       }
     }
@@ -480,7 +481,7 @@ export class WalletMonitoringService {
       const latest = balances[balances.length - 1];
       const previous = balances[balances.length - 2];
       const balanceChange = latest.balanceUSD - previous.balanceUSD;
-      
+
       if (balanceChange < -1000) { // $1,000 drop threshold
         await this.createWalletAlert(wallet, {
           type: 'balance_drop',
@@ -488,14 +489,14 @@ export class WalletMonitoringService {
           title: 'Significant Balance Drop',
           message: `Balance dropped by $${Math.abs(balanceChange).toFixed(2)}`,
           value: Math.abs(balanceChange),
-          threshold: 1000
+          threshold: 1000,
         });
       }
     }
 
     // Check for unusual activity
-    const recentActivities = activities.filter(activity => 
-      activity.timestamp > new Date(Date.now() - 60 * 60 * 1000) // Last hour
+    const recentActivities = activities.filter(activity =>
+      activity.timestamp > new Date(Date.now() - 60 * 60 * 1000), // Last hour
     );
 
     if (recentActivities.length > 10) { // More than 10 activities in an hour
@@ -505,7 +506,7 @@ export class WalletMonitoringService {
         title: 'Unusual Activity Detected',
         message: `${recentActivities.length} activities in the last hour`,
         value: recentActivities.length,
-        threshold: 10
+        threshold: 10,
       });
     }
   }
@@ -533,7 +534,7 @@ export class WalletMonitoringService {
       threshold: alertData.threshold,
       timestamp: new Date(),
       isAcknowledged: false,
-      metadata: alertData.metadata
+      metadata: alertData.metadata,
     };
 
     const key = `${wallet.orgId}:${wallet.id}`;
@@ -545,7 +546,7 @@ export class WalletMonitoringService {
       alertId: alert.id,
       walletId: wallet.id,
       type: alert.type,
-      severity: alert.severity
+      severity: alert.severity,
     });
   }
 
@@ -559,7 +560,7 @@ export class WalletMonitoringService {
       } catch (error) {
         walletLogger.error('Failed to update wallet portfolio', {
           walletId,
-          error: error.message
+          error: (error as Error).message,
         });
       }
     }
@@ -568,14 +569,14 @@ export class WalletMonitoringService {
   // Update wallet portfolio
   private async updateWalletPortfolio(wallet: Wallet): Promise<void> {
     const balances = this.walletBalances.get(wallet.id) || [];
-    const latestBalances = balances.filter(b => 
-      b.timestamp > new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+    const latestBalances = balances.filter(b =>
+      b.timestamp > new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
     );
 
     if (latestBalances.length === 0) return;
 
     const totalValueUSD = latestBalances.reduce((sum, b) => sum + b.balanceUSD, 0);
-    
+
     const tokens = latestBalances.map(balance => ({
       symbol: balance.symbol,
       name: balance.name,
@@ -583,7 +584,7 @@ export class WalletMonitoringService {
       balanceUSD: balance.balanceUSD,
       percentage: totalValueUSD > 0 ? (balance.balanceUSD / totalValueUSD) * 100 : 0,
       priceUSD: balance.priceUSD,
-      change24h: Math.random() * 20 - 10 // -10% to +10% change
+      change24h: Math.random() * 20 - 10, // -10% to +10% change
     }));
 
     const portfolio: WalletPortfolio = {
@@ -595,7 +596,7 @@ export class WalletMonitoringService {
       tokens,
       nfts: [], // Would be populated from NFT data
       defiPositions: [], // Would be populated from DeFi data
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
 
     this.walletPortfolios.set(wallet.id, portfolio);
@@ -632,7 +633,7 @@ export class WalletMonitoringService {
   // Get wallet alerts
   getWalletAlerts(orgId: string, walletId?: string, limit: number = 100): WalletAlert[] {
     const allAlerts: WalletAlert[] = [];
-    
+
     for (const [key, alerts] of this.walletAlerts.entries()) {
       if (key.startsWith(`${orgId}:`)) {
         if (!walletId || key.includes(`:${walletId}`)) {
@@ -675,7 +676,7 @@ export class WalletMonitoringService {
     totalActivities: number;
     totalAlerts: number;
     totalPortfolios: number;
-  } {
+    } {
     let totalBalances = 0;
     for (const balances of this.walletBalances.values()) {
       totalBalances += balances.length;
@@ -703,7 +704,7 @@ export class WalletMonitoringService {
       totalTransactions,
       totalActivities,
       totalAlerts,
-      totalPortfolios: this.walletPortfolios.size
+      totalPortfolios: this.walletPortfolios.size,
     };
   }
 

@@ -4,128 +4,75 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: the-gorge-postgres
     environment:
-      POSTGRES_DB: ${DB_NAME:-the_gorge}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      POSTGRES_DB: the_gorge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
-    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-the_gorge}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d the_gorge"]
       interval: 10s
       timeout: 5s
-      retries: 5
-    networks:
-      - the-gorge-network
+      retries: 3
 
   # Backend API
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runner
-    container_name: the-gorge-api
-    environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-the_gorge}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-password}
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-key-change-in-production}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
-      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
-      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
-      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
-    ports:
-      - "${PORT:-3000}:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - the-gorge-network
-    volumes:
-      - ./logs:/app/logs
-
-  # Development API (with hot reload)
-  api-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: dev-deps
-    container_name: the-gorge-api-dev
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-the_gorge}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-password}
-      JWT_SECRET: dev-jwt-secret
-      JWT_REFRESH_SECRET: dev-refresh-secret
-      JWT_EXPIRES_IN: 1h
-      JWT_REFRESH_EXPIRES_IN: 7d
-      CORS_ORIGIN: http://localhost:5173
+    build: .
     ports:
       - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    command: ["npm", "run", "dev"]
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - ./logs:/app/logs
-    networks:
-      - the-gorge-network
-    profiles:
-      - dev
-
-  # Database Migration Service
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: dev-deps
-    container_name: the-gorge-migrate
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
+      NODE_ENV: production
       DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-the_gorge}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: the_gorge
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-change-this-password}
+      JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-this-refresh-secret}
+      LOG_LEVEL: info
+      MOCK_DATABASE: false
     depends_on:
       postgres:
         condition: service_healthy
-    command: ["npm", "run", "migrate"]
-    networks:
-      - the-gorge-network
-    profiles:
-      - migrate
+      migrate:
+        condition: service_completed_successfully
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Database migrations
+  migrate:
+    build: .
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_NAME: the_gorge
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-change-this-password}
+      MOCK_DATABASE: false
+    command: npm run migrate:run
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # Database seeding
+  seed:
+    build: .
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_NAME: the_gorge
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-change-this-password}
+      MOCK_DATABASE: false
+    command: npm run seed:run
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
 
 volumes:
   postgres_data:
-    driver: local
-
-networks:
-  the-gorge-network:
-    driver: bridge

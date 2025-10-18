@@ -89,7 +89,7 @@ export class AuditLoggingService {
       ...event,
       id: this.generateEventId(),
       timestamp: new Date(),
-      riskScore: this.calculateRiskScore(event)
+      riskScore: this.calculateRiskScore(event),
     };
 
     this.auditEvents.set(auditEvent.id, auditEvent);
@@ -104,7 +104,7 @@ export class AuditLoggingService {
       severity: auditEvent.severity,
       category: auditEvent.category,
       outcome: auditEvent.outcome,
-      riskScore: auditEvent.riskScore
+      riskScore: auditEvent.riskScore,
     });
 
     return auditEvent;
@@ -119,7 +119,7 @@ export class AuditLoggingService {
     details: Record<string, any> = {},
     ipAddress?: string,
     userAgent?: string,
-    sessionId?: string
+    sessionId?: string,
   ): Promise<AuditEvent> {
     const severity = this.getAuthenticationSeverity(action);
     const outcome = action.includes('failed') ? 'failure' : 'success';
@@ -137,7 +137,7 @@ export class AuditLoggingService {
       severity,
       category: 'authentication',
       outcome,
-      tags: ['auth', action]
+      tags: ['auth', action],
     });
   }
 
@@ -151,7 +151,7 @@ export class AuditLoggingService {
     resourceId?: string,
     details: Record<string, any> = {},
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<AuditEvent> {
     const severity = action === 'access_denied' ? 'high' : 'medium';
     const outcome = action === 'access_denied' ? 'failure' : 'success';
@@ -169,7 +169,7 @@ export class AuditLoggingService {
       severity,
       category: 'authorization',
       outcome,
-      tags: ['authz', action]
+      tags: ['authz', action],
     });
   }
 
@@ -183,7 +183,7 @@ export class AuditLoggingService {
     resourceId?: string,
     details: Record<string, any> = {},
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<AuditEvent> {
     const severity = this.getDataAccessSeverity(action, details);
     const outcome = 'success';
@@ -201,7 +201,7 @@ export class AuditLoggingService {
       severity,
       category: 'data_access',
       outcome,
-      tags: ['data', action]
+      tags: ['data', action],
     });
   }
 
@@ -215,7 +215,7 @@ export class AuditLoggingService {
     resourceId?: string,
     details: Record<string, any> = {},
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<AuditEvent> {
     const severity = this.getDataModificationSeverity(action, details);
     const outcome = 'success';
@@ -233,7 +233,7 @@ export class AuditLoggingService {
       severity,
       category: 'data_modification',
       outcome,
-      tags: ['data', action]
+      tags: ['data', action],
     });
   }
 
@@ -246,7 +246,7 @@ export class AuditLoggingService {
     resource: string,
     details: Record<string, any> = {},
     severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
-    outcome: 'success' | 'failure' | 'error' = 'success'
+    outcome: 'success' | 'failure' | 'error' = 'success',
   ): Promise<AuditEvent> {
     return this.logEvent({
       orgId,
@@ -258,7 +258,7 @@ export class AuditLoggingService {
       severity,
       category: 'system',
       outcome,
-      tags: ['system', action]
+      tags: ['system', action],
     });
   }
 
@@ -271,7 +271,7 @@ export class AuditLoggingService {
     resource: string,
     details: Record<string, any> = {},
     severity: 'low' | 'medium' | 'high' | 'critical' = 'high',
-    outcome: 'success' | 'failure' | 'error' = 'failure'
+    outcome: 'success' | 'failure' | 'error' = 'failure',
   ): Promise<AuditEvent> {
     return this.logEvent({
       orgId,
@@ -283,7 +283,7 @@ export class AuditLoggingService {
       severity,
       category: 'security',
       outcome,
-      tags: ['security', action]
+      tags: ['security', action],
     });
   }
 
@@ -342,8 +342,8 @@ export class AuditLoggingService {
 
     // Filter by time range
     if (timeRange) {
-      events = events.filter(e => 
-        e.timestamp >= timeRange.start && e.timestamp <= timeRange.end
+      events = events.filter(e =>
+        e.timestamp >= timeRange.start && e.timestamp <= timeRange.end,
       );
     }
 
@@ -358,12 +358,12 @@ export class AuditLoggingService {
         low: 0,
         medium: 0,
         high: 0,
-        critical: 0
+        critical: 0,
       },
       timeRange: {
         start: timeRange?.start || new Date(0),
-        end: timeRange?.end || new Date()
-      }
+        end: timeRange?.end || new Date(),
+      },
     };
 
     // Count by category
@@ -420,7 +420,7 @@ export class AuditLoggingService {
   async getEventsByUser(userId: string, limit: number = 100): Promise<AuditEvent[]> {
     return this.queryEvents({
       userId,
-      limit
+      limit,
     });
   }
 
@@ -428,7 +428,7 @@ export class AuditLoggingService {
   async getEventsByResource(resource: string, resourceId?: string, limit: number = 100): Promise<AuditEvent[]> {
     return this.queryEvents({
       resource,
-      limit
+      limit,
     });
   }
 
@@ -455,7 +455,7 @@ export class AuditLoggingService {
         event.outcome,
         event.riskScore,
         event.ipAddress || '',
-        event.userAgent || ''
+        event.userAgent || '',
       ]);
 
       return [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -472,18 +472,18 @@ export class AuditLoggingService {
 
     // Base score by severity
     switch (event.severity) {
-      case 'low': score += 10; break;
-      case 'medium': score += 30; break;
-      case 'high': score += 60; break;
-      case 'critical': score += 90; break;
+    case 'low': score += 10; break;
+    case 'medium': score += 30; break;
+    case 'high': score += 60; break;
+    case 'critical': score += 90; break;
     }
 
     // Adjust by category
     switch (event.category) {
-      case 'security': score += 20; break;
-      case 'data_modification': score += 15; break;
-      case 'authorization': score += 10; break;
-      case 'authentication': score += 5; break;
+    case 'security': score += 20; break;
+    case 'data_modification': score += 15; break;
+    case 'authorization': score += 10; break;
+    case 'authentication': score += 5; break;
     }
 
     // Adjust by outcome
@@ -500,13 +500,13 @@ export class AuditLoggingService {
 
   private getAuthenticationSeverity(action: string): 'low' | 'medium' | 'high' | 'critical' {
     switch (action) {
-      case 'login_failed': return 'high';
-      case 'password_reset': return 'medium';
-      case 'mfa_enabled':
-      case 'mfa_disabled': return 'medium';
-      case 'login': return 'low';
-      case 'logout': return 'low';
-      default: return 'low';
+    case 'login_failed': return 'high';
+    case 'password_reset': return 'medium';
+    case 'mfa_enabled':
+    case 'mfa_disabled': return 'medium';
+    case 'login': return 'low';
+    case 'logout': return 'low';
+    default: return 'low';
     }
   }
 
@@ -519,12 +519,12 @@ export class AuditLoggingService {
 
   private getDataModificationSeverity(action: string, details: Record<string, any>): 'low' | 'medium' | 'high' | 'critical' {
     switch (action) {
-      case 'delete': return 'high';
-      case 'bulk_delete': return 'critical';
-      case 'bulk_update': return 'high';
-      case 'update': return 'medium';
-      case 'create': return 'low';
-      default: return 'medium';
+    case 'delete': return 'high';
+    case 'bulk_delete': return 'critical';
+    case 'bulk_update': return 'high';
+    case 'update': return 'medium';
+    case 'create': return 'low';
+    default: return 'medium';
     }
   }
 
@@ -559,7 +559,7 @@ export class AuditLoggingService {
     totalEvents: number;
     retentionDays: number;
     indexSizes: Record<string, number>;
-  } {
+    } {
     return {
       totalEvents: this.auditEvents.size,
       retentionDays: this.retentionDays,
@@ -570,8 +570,8 @@ export class AuditLoggingService {
         resource: this.eventIndex.get('resource')?.size || 0,
         category: this.eventIndex.get('category')?.size || 0,
         severity: this.eventIndex.get('severity')?.size || 0,
-        outcome: this.eventIndex.get('outcome')?.size || 0
-      }
+        outcome: this.eventIndex.get('outcome')?.size || 0,
+      },
     };
   }
 }

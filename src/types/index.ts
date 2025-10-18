@@ -72,8 +72,11 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  firstName: string;
+  lastName: string;
   role: string;
   avatar?: string;
+  organizationId?: string;
   createdAt: Date;
   rpcConfigs: RPCConfig[];
 }
@@ -118,7 +121,7 @@ export interface SocketEvents {
   'addRPC': (rpcConfig: Omit<RPCConfig, 'id' | 'createdAt' | 'updatedAt'>) => void;
   'updateRPC': (rpcId: string, updates: Partial<RPCConfig>) => void;
   'deleteRPC': (rpcId: string) => void;
-  
+
   // Server to Client
   'initialData': (data: { rpcs: RPCStatus[], alerts: Alert[] }) => void;
   'rpcStatusUpdate': (rpcId: string, status: RPCStatus) => void;
@@ -155,7 +158,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'mainnet',
     currency: 'ETH',
     explorer: 'https://etherscan.io',
-    rpcUrls: ['https://eth-mainnet.g.alchemy.com/v2/', 'https://mainnet.infura.io/v3/']
+    rpcUrls: ['https://eth-mainnet.g.alchemy.com/v2/', 'https://mainnet.infura.io/v3/'],
   },
   {
     name: 'Polygon',
@@ -163,7 +166,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'mainnet',
     currency: 'MATIC',
     explorer: 'https://polygonscan.com',
-    rpcUrls: ['https://polygon-rpc.com', 'https://rpc-mainnet.matic.network']
+    rpcUrls: ['https://polygon-rpc.com', 'https://rpc-mainnet.matic.network'],
   },
   {
     name: 'BSC',
@@ -171,7 +174,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'mainnet',
     currency: 'BNB',
     explorer: 'https://bscscan.com',
-    rpcUrls: ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.defibit.io']
+    rpcUrls: ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.defibit.io'],
   },
   {
     name: 'Arbitrum One',
@@ -179,7 +182,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'mainnet',
     currency: 'ETH',
     explorer: 'https://arbiscan.io',
-    rpcUrls: ['https://arb1.arbitrum.io/rpc', 'https://arbitrum-one.publicnode.com']
+    rpcUrls: ['https://arb1.arbitrum.io/rpc', 'https://arbitrum-one.publicnode.com'],
   },
   {
     name: 'Optimism',
@@ -187,7 +190,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'mainnet',
     currency: 'ETH',
     explorer: 'https://optimistic.etherscan.io',
-    rpcUrls: ['https://mainnet.optimism.io', 'https://optimism.publicnode.com']
+    rpcUrls: ['https://mainnet.optimism.io', 'https://optimism.publicnode.com'],
   },
   {
     name: 'Avalanche C-Chain',
@@ -195,7 +198,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'mainnet',
     currency: 'AVAX',
     explorer: 'https://snowtrace.io',
-    rpcUrls: ['https://api.avax.network/ext/bc/C/rpc', 'https://rpc.ankr.com/avalanche']
+    rpcUrls: ['https://api.avax.network/ext/bc/C/rpc', 'https://rpc.ankr.com/avalanche'],
   },
   {
     name: 'Fantom',
@@ -203,7 +206,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'mainnet',
     currency: 'FTM',
     explorer: 'https://ftmscan.com',
-    rpcUrls: ['https://rpc.ftm.tools', 'https://rpc.fantom.network']
+    rpcUrls: ['https://rpc.ftm.tools', 'https://rpc.fantom.network'],
   },
   {
     name: 'Ethereum Goerli',
@@ -211,7 +214,7 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'testnet',
     currency: 'ETH',
     explorer: 'https://goerli.etherscan.io',
-    rpcUrls: ['https://goerli.infura.io/v3/', 'https://rpc.goerli.mudit.blog']
+    rpcUrls: ['https://goerli.infura.io/v3/', 'https://rpc.goerli.mudit.blog'],
   },
   {
     name: 'Polygon Mumbai',
@@ -219,6 +222,6 @@ export const EVM_NETWORKS_INFO: NetworkInfo[] = [
     type: 'testnet',
     currency: 'MATIC',
     explorer: 'https://mumbai.polygonscan.com',
-    rpcUrls: ['https://rpc-mumbai.maticvigil.com', 'https://polygon-mumbai.infura.io/v3/']
-  }
+    rpcUrls: ['https://rpc-mumbai.maticvigil.com', 'https://polygon-mumbai.infura.io/v3/'],
+  },
 ];

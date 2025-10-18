@@ -1,20 +1,27 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
-import rpcRoutes from './rpc.routes';
+import createRpcRoutes from './rpc.routes';
+// import createOrganizationRoutes from './organization.routes';
+// import createAlertRoutes from './alert.routes';
+import { MonitoringService } from '../services/monitoringService';
 
-const router = Router();
+export default function createApiRoutes(monitoringService: MonitoringService) {
+  const router = Router();
 
-// API versioning
-router.use('/auth', authRoutes);
-router.use('/rpcs', rpcRoutes);
+  // API versioning
+  router.use('/auth', authRoutes);
+  router.use('/rpcs', createRpcRoutes(monitoringService));
+  // router.use('/organizations', createOrganizationRoutes());
+  // router.use('/alerts', createAlertRoutes());
 
-// Health check endpoint
-router.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date(),
-    version: process.env.npm_package_version || '1.0.0'
+  // Health check endpoint
+  router.get('/health', (req, res) => {
+    res.json({
+      status: 'healthy',
+      timestamp: new Date(),
+      version: process.env.npm_package_version || '1.0.0',
+    });
   });
-});
 
-export default router;
+  return router;
+}

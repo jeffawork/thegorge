@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { database } from '../config/database';
+import { database } from '../database';
 import { authLogger } from '../utils/logger';
 import { User } from '../types';
 
@@ -40,7 +40,7 @@ export class AuthServiceSimple {
     this.jwtSecret = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '1h';
     this.refreshTokenExpiresIn = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
-    
+
     authLogger.info('AuthServiceSimple initialized');
   }
 
@@ -52,7 +52,7 @@ export class AuthServiceSimple {
       // Check if user already exists
       const existingUser = await database.query(
         'SELECT id FROM users WHERE email = $1',
-        [data.email]
+        [data.email],
       );
 
       if (existingUser.rows.length > 0) {
@@ -68,7 +68,7 @@ export class AuthServiceSimple {
         `INSERT INTO users (email, password_hash, name, role, is_active)
          VALUES ($1, $2, $3, $4, $5)
          RETURNING id, email, name, role, avatar_url, is_active, created_at`,
-        [data.email, passwordHash, data.name, 'user', true]
+        [data.email, passwordHash, data.name, 'user', true],
       );
 
       const user = userResult.rows[0];
@@ -77,7 +77,7 @@ export class AuthServiceSimple {
       const orgId = data.organizationId || '00000000-0000-0000-0000-000000000000';
       await database.query(
         'INSERT INTO organization_users (organization_id, user_id, role) VALUES ($1, $2, $3)',
-        [orgId, user.id, 'member']
+        [orgId, user.id, 'member'],
       );
 
       // Generate tokens
@@ -86,26 +86,28 @@ export class AuthServiceSimple {
       authLogger.info('User registered successfully', {
         userId: user.id,
         email: user.email,
-        organizationId: orgId
+        organizationId: orgId,
       });
 
       return {
         user: {
           id: user.id,
           email: user.email,
+          firstName: user.first_name || '',
+          lastName: user.last_name || '',
           name: user.name,
           role: user.role,
           avatar: user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3b82f6&color=ffffff`,
           createdAt: user.created_at,
-          rpcConfigs: []
+          rpcConfigs: [],
         },
         token: tokens.accessToken,
-        refreshToken: tokens.refreshToken
+        refreshToken: tokens.refreshToken,
       };
     } catch (error) {
       authLogger.error('User registration failed', {
         email: data.email,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -124,7 +126,7 @@ export class AuthServiceSimple {
          LEFT JOIN organization_users ou ON u.id = ou.user_id
          LEFT JOIN organizations o ON ou.organization_id = o.id
          WHERE u.email = $1 AND u.is_active = true`,
-        [credentials.email]
+        [credentials.email],
       );
 
       if (userResult.rows.length === 0) {
@@ -142,46 +144,48 @@ export class AuthServiceSimple {
       // Update last login
       await database.query(
         'UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1',
-        [user.id]
+        [user.id],
       );
 
       // Get user's RPC configs
       const rpcConfigsResult = await database.query(
         'SELECT * FROM rpc_configs WHERE user_id = $1 ORDER BY created_at DESC',
-        [user.id]
+        [user.id],
       );
 
       // Generate tokens
       const tokens = await this.generateTokens(
-        user.id, 
-        user.email, 
-        user.role, 
-        user.organization_id
+        user.id,
+        user.email,
+        user.role,
+        user.organization_id,
       );
 
       authLogger.info('User logged in successfully', {
         userId: user.id,
         email: user.email,
-        organizationId: user.organization_id
+        organizationId: user.organization_id,
       });
 
       return {
         user: {
           id: user.id,
           email: user.email,
+          firstName: user.first_name || '',
+          lastName: user.last_name || '',
           name: user.name,
           role: user.role,
           avatar: user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3b82f6&color=ffffff`,
           createdAt: user.created_at,
-          rpcConfigs: rpcConfigsResult.rows
+          rpcConfigs: rpcConfigsResult.rows,
         },
         token: tokens.accessToken,
-        refreshToken: tokens.refreshToken
+        refreshToken: tokens.refreshToken,
       };
     } catch (error) {
       authLogger.error('User login failed', {
         email: credentials.email,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -193,11 +197,11 @@ export class AuthServiceSimple {
   async verifyToken(token: string): Promise<JwtPayload> {
     try {
       const decoded = jwt.verify(token, this.jwtSecret) as JwtPayload;
-      
+
       // Verify user still exists and is active
       const userResult = await database.query(
         'SELECT id, is_active FROM users WHERE id = $1',
-        [decoded.userId]
+        [decoded.userId],
       );
 
       if (userResult.rows.length === 0 || !userResult.rows[0].is_active) {
@@ -207,7 +211,7 @@ export class AuthServiceSimple {
       return decoded;
     } catch (error) {
       authLogger.error('Token verification failed', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw new Error('Invalid token');
     }
@@ -219,11 +223,11 @@ export class AuthServiceSimple {
   async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
     try {
       const decoded = jwt.verify(refreshToken, this.jwtSecret) as JwtPayload;
-      
+
       // Verify user still exists and is active
       const userResult = await database.query(
         'SELECT id, email, role FROM users WHERE id = $1 AND is_active = true',
-        [decoded.userId]
+        [decoded.userId],
       );
 
       if (userResult.rows.length === 0) {
@@ -237,17 +241,17 @@ export class AuthServiceSimple {
         userId: user.id,
         email: user.email,
         role: user.role,
-        organizationId: decoded.organizationId
+        organizationId: decoded.organizationId,
       };
 
       const accessToken = jwt.sign(payload, this.jwtSecret, {
-        expiresIn: this.jwtExpiresIn
+        expiresIn: this.jwtExpiresIn,
       } as jwt.SignOptions);
 
       return { accessToken };
     } catch (error) {
       authLogger.error('Token refresh failed', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw new Error('Invalid refresh token');
     }
@@ -257,24 +261,24 @@ export class AuthServiceSimple {
    * Generate access and refresh tokens
    */
   private async generateTokens(
-    userId: string, 
-    email: string, 
-    role: string, 
-    organizationId?: string
+    userId: string,
+    email: string,
+    role: string,
+    organizationId?: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = {
       userId,
       email,
       role,
-      organizationId
+      organizationId,
     };
 
     const accessToken = jwt.sign(payload, this.jwtSecret, {
-      expiresIn: this.jwtExpiresIn
+      expiresIn: this.jwtExpiresIn,
     } as jwt.SignOptions);
 
     const refreshToken = jwt.sign(payload, this.jwtSecret, {
-      expiresIn: this.refreshTokenExpiresIn
+      expiresIn: this.refreshTokenExpiresIn,
     } as jwt.SignOptions);
 
     return { accessToken, refreshToken };
@@ -288,7 +292,7 @@ export class AuthServiceSimple {
       // Get current password hash
       const userResult = await database.query(
         'SELECT password_hash FROM users WHERE id = $1',
-        [userId]
+        [userId],
       );
 
       if (userResult.rows.length === 0) {
@@ -310,14 +314,14 @@ export class AuthServiceSimple {
       // Update password
       await database.query(
         'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        [newPasswordHash, userId]
+        [newPasswordHash, userId],
       );
 
       authLogger.info('Password changed successfully', { userId });
     } catch (error) {
       authLogger.error('Password change failed', {
         userId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

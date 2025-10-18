@@ -28,16 +28,16 @@ export class SeedRunner {
       for (const file of files) {
         const filePath = join(this.seedsPath, file);
         const sql = readFileSync(filePath, 'utf8');
-        
+
         // Extract seed ID from filename (e.g., "001_users.sql" -> "001")
         const id = file.split('_')[0];
         const name = file.replace('.sql', '').replace(`${id}_`, '');
-        
+
         seeds.push({
           id,
           name,
           filename: file,
-          sql
+          sql,
         });
       }
 
@@ -45,7 +45,7 @@ export class SeedRunner {
     } catch (error) {
       databaseLogger.error('Failed to read seeds', {
         path: this.seedsPath,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -54,7 +54,7 @@ export class SeedRunner {
   async runSeeds(): Promise<void> {
     try {
       await database.connect();
-      
+
       const seeds = await this.getSeeds();
 
       if (seeds.length === 0) {
@@ -71,7 +71,7 @@ export class SeedRunner {
       databaseLogger.info('All seeds completed successfully');
     } catch (error) {
       databaseLogger.error('Seeding failed', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -86,7 +86,7 @@ export class SeedRunner {
       databaseLogger.info(`Seed completed: ${seed.name}`);
     } catch (error) {
       databaseLogger.error(`Seed failed: ${seed.name}`, {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -101,7 +101,7 @@ export class SeedRunner {
         'DELETE FROM refresh_tokens',
         'DELETE FROM organization_users',
         'DELETE FROM users',
-        'DELETE FROM organizations'
+        'DELETE FROM organizations',
       ];
 
       for (const query of clearQueries) {
@@ -111,7 +111,7 @@ export class SeedRunner {
       databaseLogger.info('Seed data cleared');
     } catch (error) {
       databaseLogger.error('Failed to clear seed data', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

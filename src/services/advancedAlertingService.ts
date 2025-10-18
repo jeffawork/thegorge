@@ -148,11 +148,11 @@ export class AdvancedAlertingService {
         template: {
           title: 'RPC {{rpcName}} is down',
           description: 'RPC endpoint {{rpcUrl}} has been down for {{duration}}',
-          summary: 'RPC endpoint {{rpcName}} is not responding'
+          summary: 'RPC endpoint {{rpcName}} is not responding',
         },
         variables: ['rpcName', 'rpcUrl', 'duration'],
         isSystem: true,
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       {
         id: 'high-response-time',
@@ -162,11 +162,11 @@ export class AdvancedAlertingService {
         template: {
           title: 'High response time for {{rpcName}}',
           description: 'Response time is {{responseTime}}ms (threshold: {{threshold}}ms)',
-          summary: 'RPC {{rpcName}} response time is {{responseTime}}ms'
+          summary: 'RPC {{rpcName}} response time is {{responseTime}}ms',
         },
         variables: ['rpcName', 'responseTime', 'threshold'],
         isSystem: true,
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       {
         id: 'error-rate-spike',
@@ -176,12 +176,12 @@ export class AdvancedAlertingService {
         template: {
           title: 'Error rate spike for {{rpcName}}',
           description: 'Error rate is {{errorRate}}% (threshold: {{threshold}}%)',
-          summary: 'RPC {{rpcName}} error rate is {{errorRate}}%'
+          summary: 'RPC {{rpcName}} error rate is {{errorRate}}%',
         },
         variables: ['rpcName', 'errorRate', 'threshold'],
         isSystem: true,
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ];
 
     templates.forEach(template => {
@@ -199,22 +199,22 @@ export class AdvancedAlertingService {
             level: 1,
             delay: 0,
             notificationChannels: ['email', 'slack'],
-            conditions: { maxRetries: 3, timeWindow: 5 }
+            conditions: { maxRetries: 3, timeWindow: 5 },
           },
           {
             level: 2,
             delay: 15,
             notificationChannels: ['pagerduty'],
-            conditions: { maxRetries: 2, timeWindow: 10 }
+            conditions: { maxRetries: 2, timeWindow: 10 },
           },
           {
             level: 3,
             delay: 30,
             notificationChannels: ['webhook'],
-            conditions: { maxRetries: 1, timeWindow: 15 }
-          }
+            conditions: { maxRetries: 1, timeWindow: 15 },
+          },
         ],
-        isActive: true
+        isActive: true,
       },
       {
         id: 'default-high',
@@ -224,17 +224,17 @@ export class AdvancedAlertingService {
             level: 1,
             delay: 0,
             notificationChannels: ['email', 'slack'],
-            conditions: { maxRetries: 2, timeWindow: 10 }
+            conditions: { maxRetries: 2, timeWindow: 10 },
           },
           {
             level: 2,
             delay: 30,
             notificationChannels: ['webhook'],
-            conditions: { maxRetries: 1, timeWindow: 20 }
-          }
+            conditions: { maxRetries: 1, timeWindow: 20 },
+          },
         ],
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     policies.forEach(policy => {
@@ -266,7 +266,7 @@ export class AdvancedAlertingService {
       id: this.generateAlertRuleId(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      triggerCount: 0
+      triggerCount: 0,
     };
 
     this.alertRules.set(alertRule.id, alertRule);
@@ -312,17 +312,17 @@ export class AdvancedAlertingService {
 
     try {
       const isTriggered = await this.checkAlertConditions(rule);
-      
+
       if (isTriggered) {
         await this.triggerAlert(rule);
       } else {
-        await this.resolveAlert(rule);
+        await this.resolveAlertRule(rule);
       }
 
       rule.lastEvaluated = new Date();
       this.alertRules.set(ruleId, rule);
     } catch (error) {
-      alertingLogger.error('Error evaluating alert rule', { ruleId, error: error.message });
+      alertingLogger.error('Error evaluating alert rule', { ruleId, error: (error as Error).message });
     }
   }
 
@@ -337,7 +337,7 @@ export class AdvancedAlertingService {
   // Trigger an alert
   private async triggerAlert(rule: AlertRule): Promise<void> {
     const existingAlert = this.getActiveAlert(rule.orgId, rule.id);
-    
+
     if (existingAlert) {
       // Update existing alert
       existingAlert.updatedAt = new Date();
@@ -359,7 +359,7 @@ export class AdvancedAlertingService {
         startsAt: new Date(),
         updatedAt: new Date(),
         escalationLevel: 1,
-        notificationSent: false
+        notificationSent: false,
       };
 
       this.createAlert(alert);
@@ -372,10 +372,10 @@ export class AdvancedAlertingService {
     }
   }
 
-  // Resolve an alert
-  private async resolveAlert(rule: AlertRule): Promise<void> {
+  // Resolve an alert rule
+  private async resolveAlertRule(rule: AlertRule): Promise<void> {
     const existingAlert = this.getActiveAlert(rule.orgId, rule.id);
-    
+
     if (existingAlert) {
       existingAlert.status = 'resolved';
       existingAlert.endsAt = new Date();
@@ -413,7 +413,7 @@ export class AdvancedAlertingService {
       alertname: rule.name,
       severity: rule.severity,
       orgId: rule.orgId,
-      ruleId: rule.id
+      ruleId: rule.id,
     };
   }
 
@@ -422,7 +422,7 @@ export class AdvancedAlertingService {
     return {
       summary: rule.description,
       description: `Alert rule "${rule.name}" has been triggered`,
-      runbook_url: `https://docs.example.com/alerts/${rule.id}`
+      runbook_url: `https://docs.example.com/alerts/${rule.id}`,
     };
   }
 
@@ -437,7 +437,7 @@ export class AdvancedAlertingService {
       alertId: alert.id,
       orgId: alert.orgId,
       ruleId: alert.ruleId,
-      severity: alert.severity
+      severity: alert.severity,
     });
   }
 
@@ -446,7 +446,7 @@ export class AdvancedAlertingService {
     const key = `${alert.orgId}:${alert.ruleId}`;
     const existing = this.alerts.get(key) || [];
     const index = existing.findIndex(a => a.id === alert.id);
-    
+
     if (index !== -1) {
       existing[index] = alert;
       this.alerts.set(key, existing);
@@ -474,7 +474,7 @@ export class AdvancedAlertingService {
         status: 'firing',
         startsAt: alert.startsAt,
         updatedAt: new Date(),
-        notificationSent: false
+        notificationSent: false,
       };
     }
 
@@ -487,7 +487,7 @@ export class AdvancedAlertingService {
   private updateAlertGroup(alert: Alert): void {
     const groupKey = this.generateAlertGroupKey(alert);
     const group = this.alertGroups.get(groupKey);
-    
+
     if (group) {
       const allResolved = group.alerts.every(a => a.status === 'resolved');
       if (allResolved) {
@@ -506,7 +506,7 @@ export class AdvancedAlertingService {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, value]) => `${key}=${value}`)
       .join(',');
-    
+
     return `${alert.orgId}:${labels}`;
   }
 
@@ -545,13 +545,13 @@ export class AdvancedAlertingService {
       startsAt: new Date(),
       updatedAt: new Date(),
       escalationLevel: 1,
-      notificationSent: false
+      notificationSent: false,
     };
 
     this.createAlert(alert);
     correlation.lastMatched = new Date();
     correlation.matchCount++;
-    this.alertCorrelations.set(correlationId, correlation);
+    this.alertCorrelations.set(correlation.id, correlation);
   }
 
   // Process escalations
@@ -564,7 +564,7 @@ export class AdvancedAlertingService {
 
       const highestSeverity = this.getHighestSeverity(firingAlerts);
       const escalationPolicy = this.getEscalationPolicyForSeverity(highestSeverity);
-      
+
       if (escalationPolicy) {
         await this.processEscalationSteps(group, escalationPolicy);
       }
@@ -574,9 +574,9 @@ export class AdvancedAlertingService {
   // Get highest severity from alerts
   private getHighestSeverity(alerts: Alert[]): 'low' | 'medium' | 'high' | 'critical' {
     const severityOrder = { low: 0, medium: 1, high: 2, critical: 3 };
-    return alerts.reduce((highest, alert) => 
-      severityOrder[alert.severity] > severityOrder[highest] ? alert.severity : highest, 
-      'low' as 'low' | 'medium' | 'high' | 'critical'
+    return alerts.reduce((highest, alert) =>
+      severityOrder[alert.severity] > severityOrder[highest] ? alert.severity : highest,
+      'low' as 'low' | 'medium' | 'high' | 'critical',
     );
   }
 
@@ -608,7 +608,7 @@ export class AdvancedAlertingService {
         await this.sendNotification(group, channelId);
         alertingLogger.info('Notification sent', { groupId: group.id, channelId });
       } catch (error) {
-        alertingLogger.error('Failed to send notification', { groupId: group.id, channelId, error: error.message });
+        alertingLogger.error('Failed to send notification', { groupId: group.id, channelId, error: (error as Error).message });
       }
     }
   }
@@ -657,7 +657,7 @@ export class AdvancedAlertingService {
   // Get alerts for organization
   async getAlerts(orgId: string, status?: string, limit: number = 100): Promise<Alert[]> {
     const allAlerts: Alert[] = [];
-    
+
     for (const [key, alerts] of this.alerts.entries()) {
       if (key.startsWith(`${orgId}:`)) {
         allAlerts.push(...alerts);
@@ -677,7 +677,7 @@ export class AdvancedAlertingService {
   // Get alert groups for organization
   async getAlertGroups(orgId: string, status?: string, limit: number = 100): Promise<AlertGroup[]> {
     const allGroups: AlertGroup[] = [];
-    
+
     for (const [key, group] of this.alertGroups.entries()) {
       if (key.startsWith(`${orgId}:`)) {
         allGroups.push(group);
@@ -705,7 +705,7 @@ export class AdvancedAlertingService {
     firingGroups: number;
     totalCorrelations: number;
     activeCorrelations: number;
-  } {
+    } {
     let totalAlerts = 0;
     let firingAlerts = 0;
     let resolvedAlerts = 0;
@@ -730,7 +730,7 @@ export class AdvancedAlertingService {
       totalGroups: this.alertGroups.size,
       firingGroups,
       totalCorrelations: this.alertCorrelations.size,
-      activeCorrelations: Array.from(this.alertCorrelations.values()).filter(c => c.isActive).length
+      activeCorrelations: Array.from(this.alertCorrelations.values()).filter(c => c.isActive).length,
     };
   }
 

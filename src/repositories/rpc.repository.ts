@@ -24,15 +24,15 @@ export class RpcRepository extends BaseRepository<RpcConfig> {
       errorCount: row.error_count,
       lastError: row.last_error,
       createdAt: row.created_at,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at,
     });
   }
 
   protected getInsertFields(): string[] {
     return [
-      'id', 'user_id', 'name', 'url', 'network', 'chain_id', 
+      'id', 'user_id', 'name', 'url', 'network', 'chain_id',
       'timeout', 'enabled', 'priority', 'is_healthy', 'error_count',
-      'created_at', 'updated_at'
+      'created_at', 'updated_at',
     ];
   }
 
@@ -50,7 +50,7 @@ export class RpcRepository extends BaseRepository<RpcConfig> {
       entity.isHealthy,
       entity.errorCount,
       entity.createdAt,
-      entity.updatedAt
+      entity.updatedAt,
     ];
   }
 
@@ -146,39 +146,39 @@ export class RpcRepository extends BaseRepository<RpcConfig> {
     const fields = this.getInsertFields();
     const values = this.getInsertValues(rpc);
     const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
-    
+
     const query = `INSERT INTO ${this.tableName} (${fields.join(', ')}) VALUES (${placeholders}) RETURNING *`;
     const result = await this.pool.query(query, values);
-    
+
     return this.mapRowToModel(result.rows[0]);
   }
 
   async update(id: string, rpc: RpcConfig): Promise<RpcConfig> {
     const fields = this.getUpdateFields(rpc);
     const values = this.getUpdateValues(rpc);
-    
+
     if (fields.length === 1) { // Only updated_at
       return this.findByIdOrFail(id);
     }
 
     const query = `UPDATE ${this.tableName} SET ${fields.join(', ')} WHERE id = $${values.length} RETURNING *`;
     const result = await this.pool.query(query, [...values, id]);
-    
+
     if (result.rows.length === 0) {
       throw new ResourceNotFoundException(`RPC config with id ${id} not found`);
     }
-    
+
     return this.mapRowToModel(result.rows[0]);
   }
 
   async findByUserAndId(userId: string, rpcId: string): Promise<RpcConfig | null> {
     const query = 'SELECT * FROM rpc_configs WHERE user_id = $1 AND id = $2';
     const result = await this.pool.query(query, [userId, rpcId]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     return this.mapRowToModel(result.rows[0]);
   }
 
@@ -200,7 +200,7 @@ export class RpcRepository extends BaseRepository<RpcConfig> {
         updated_at = $3
       WHERE id = $5
     `;
-    
+
     await this.pool.query(query, [isHealthy, responseTime, new Date(), error, id]);
   }
 

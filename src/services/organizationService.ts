@@ -25,7 +25,7 @@ export class OrganizationService {
         apiCallsPerMonth: 10000,
         maxAlerts: 50,
         maxCustomMetrics: 10,
-        maxWebhooks: 2
+        maxWebhooks: 2,
       },
       settings: {
         timezone: 'UTC',
@@ -35,7 +35,7 @@ export class OrganizationService {
           uptime: 99.9,
           responseTime: 5000,
           errorRate: 1.0,
-          availability: 99.5
+          availability: 99.5,
         },
         notificationPreferences: {
           emailAlerts: true,
@@ -46,19 +46,19 @@ export class OrganizationService {
             enabled: false,
             start: '22:00',
             end: '08:00',
-            timezone: 'UTC'
-          }
+            timezone: 'UTC',
+          },
         },
         dataRetention: {
           metrics: 7,
           logs: 3,
           alerts: 30,
-          traces: 1
-        }
+          traces: 1,
+        },
       },
       createdAt: new Date(),
       updatedAt: new Date(),
-      isActive: true
+      isActive: true,
     };
 
     this.organizations.set('default', defaultOrg);
@@ -75,7 +75,7 @@ export class OrganizationService {
         { resource: 'alerts', actions: ['read', 'write', 'delete', 'admin'] },
         { resource: 'rpc', actions: ['read', 'write', 'delete', 'admin'] },
         { resource: 'users', actions: ['read', 'write', 'delete', 'admin'] },
-        { resource: 'billing', actions: ['read', 'write', 'admin'] }
+        { resource: 'billing', actions: ['read', 'write', 'admin'] },
       ],
       preferences: {
         dashboardLayout: 'default',
@@ -86,12 +86,12 @@ export class OrganizationService {
         notifications: {
           email: true,
           inApp: true,
-          push: false
-        }
+          push: false,
+        },
       },
       createdAt: new Date(),
       updatedAt: new Date(),
-      isActive: true
+      isActive: true,
     };
 
     this.users.set('default-user', defaultUser);
@@ -103,7 +103,7 @@ export class OrganizationService {
       ...orgData,
       id: this.generateId(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.organizations.set(org.id, org);
@@ -122,7 +122,7 @@ export class OrganizationService {
     const updatedOrg = {
       ...org,
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.organizations.set(orgId, updatedOrg);
@@ -166,7 +166,7 @@ export class OrganizationService {
       ...userData,
       id: this.generateId(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.users.set(user.id, user);
@@ -189,7 +189,7 @@ export class OrganizationService {
     const updatedUser = {
       ...user,
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.users.set(userId, updatedUser);
@@ -214,7 +214,7 @@ export class OrganizationService {
   async recordUsage(orgId: string, userId: string, usage: Partial<UsageMetrics>): Promise<void> {
     const key = `${orgId}:${userId}`;
     const existing = this.usageMetrics.get(key) || [];
-    
+
     const usageRecord: UsageMetrics = {
       orgId,
       userId,
@@ -225,11 +225,11 @@ export class OrganizationService {
       rpcRequests: 0,
       alertsGenerated: 0,
       customMetrics: 0,
-      ...usage
+      ...usage,
     };
 
     existing.push(usageRecord);
-    
+
     // Keep only last 1000 records per user
     if (existing.length > 1000) {
       existing.splice(0, existing.length - 1000);
@@ -240,11 +240,11 @@ export class OrganizationService {
 
   async getUsageStats(orgId: string, timeRange: { start: Date; end: Date }): Promise<UsageMetrics[]> {
     const allUsage: UsageMetrics[] = [];
-    
+
     for (const [key, usage] of this.usageMetrics.entries()) {
       if (key.startsWith(`${orgId}:`)) {
-        const filtered = usage.filter(u => 
-          u.timestamp >= timeRange.start && u.timestamp <= timeRange.end
+        const filtered = usage.filter(u =>
+          u.timestamp >= timeRange.start && u.timestamp <= timeRange.end,
         );
         allUsage.push(...filtered);
       }
@@ -262,7 +262,7 @@ export class OrganizationService {
     const users = await this.getUsersByOrganization(orgId);
     const usage = await this.getUsageStats(orgId, {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
-      end: new Date()
+      end: new Date(),
     });
 
     const totalApiCalls = usage.reduce((sum, u) => sum + u.apiCalls, 0);
@@ -279,7 +279,7 @@ export class OrganizationService {
       apiCallsThisMonth: totalApiCalls,
       dataTransferThisMonth: totalDataTransfer,
       uptime: 99.9, // This will be calculated from actual data
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
   }
 
@@ -287,7 +287,7 @@ export class OrganizationService {
   hasPermission(user: User, resource: string, action: string): boolean {
     const permission = user.permissions.find(p => p.resource === resource);
     if (!permission) return false;
-    
+
     return permission.actions.includes(action) || permission.actions.includes('admin');
   }
 

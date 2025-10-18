@@ -3,14 +3,14 @@ import { BaseException } from '../exceptions';
 import { apiLogger } from '../utils/logger';
 
 export abstract class BaseController {
-  protected handleError(error: any, req: Request, res: Response, next: NextFunction): void {
+  protected handleError(error: any, req: Request, res: Response): void {
     apiLogger.error('Controller error', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       path: req.path,
       method: req.method,
       ip: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get('User-Agent'),
     });
 
     if (error instanceof BaseException) {
@@ -19,7 +19,7 @@ export abstract class BaseController {
         error: error.message,
         code: error.code,
         timestamp: error.timestamp,
-        details: error.details
+        details: error.details,
       });
       return;
     }
@@ -29,7 +29,7 @@ export abstract class BaseController {
       success: false,
       error: 'Internal server error',
       code: 'INTERNAL_ERROR',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -38,7 +38,7 @@ export abstract class BaseController {
       success: true,
       data,
       message,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -47,7 +47,7 @@ export abstract class BaseController {
       success: true,
       data,
       message,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -65,7 +65,7 @@ export abstract class BaseController {
   protected getPaginationParams(req: Request): { limit?: number; offset?: number } {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
-    
+
     return { limit, offset };
   }
 }

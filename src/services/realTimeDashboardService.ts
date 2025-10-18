@@ -183,7 +183,7 @@ export class RealTimeDashboardService {
     userId: string,
     name: string,
     description: string = '',
-    layout: 'grid' | 'freeform' = 'grid'
+    layout: 'grid' | 'freeform' = 'grid',
   ): Promise<Dashboard> {
     const dashboard: Dashboard = {
       id: this.generateDashboardId(),
@@ -196,7 +196,7 @@ export class RealTimeDashboardService {
       isPublic: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      lastViewed: new Date()
+      lastViewed: new Date(),
     };
 
     this.dashboards.set(dashboard.id, dashboard);
@@ -208,7 +208,7 @@ export class RealTimeDashboardService {
   // Add widget to dashboard
   async addWidget(
     dashboardId: string,
-    widget: Omit<DashboardWidget, 'id' | 'lastUpdated'>
+    widget: Omit<DashboardWidget, 'id' | 'lastUpdated'>,
   ): Promise<DashboardWidget> {
     const dashboard = this.dashboards.get(dashboardId);
     if (!dashboard) {
@@ -218,7 +218,7 @@ export class RealTimeDashboardService {
     const newWidget: DashboardWidget = {
       ...widget,
       id: this.generateWidgetId(),
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
 
     dashboard.widgets.push(newWidget);
@@ -276,7 +276,7 @@ export class RealTimeDashboardService {
     this.io.to(`dashboard:${dashboardId}`).emit('widget-updated', {
       widgetId,
       data,
-      lastUpdated: widget.lastUpdated
+      lastUpdated: widget.lastUpdated,
     });
   }
 
@@ -294,23 +294,23 @@ export class RealTimeDashboardService {
     // Notify other subscribers
     this.io.to(`dashboard:${dashboardId}`).emit('widget-position-updated', {
       widgetId,
-      position: widget.position
+      position: widget.position,
     });
   }
 
   // Start widget updates
   private startWidgetUpdates(dashboardId: string, widgetId: string, refreshInterval: number): void {
     const intervalKey = `${dashboardId}:${widgetId}`;
-    
-    const interval = setInterval(async () => {
-      await this.updateWidgetData(dashboardId, widgetId);
+
+    const interval = setInterval(async() => {
+      await this.updateWidgetDataInternal(dashboardId, widgetId);
     }, refreshInterval);
 
     this.widgetUpdateIntervals.set(intervalKey, interval);
   }
 
   // Update widget data based on type
-  private async updateWidgetData(dashboardId: string, widgetId: string): Promise<void> {
+  private async updateWidgetDataInternal(dashboardId: string, widgetId: string): Promise<void> {
     const dashboard = this.dashboards.get(dashboardId);
     if (!dashboard) return;
 
@@ -320,23 +320,23 @@ export class RealTimeDashboardService {
     let newData: any;
 
     switch (widget.type) {
-      case 'metric':
-        newData = await this.generateMetricData(dashboard.orgId, widget.data);
-        break;
-      case 'chart':
-        newData = await this.generateChartData(dashboard.orgId, widget.data);
-        break;
-      case 'table':
-        newData = await this.generateTableData(dashboard.orgId, widget.data);
-        break;
-      case 'alert':
-        newData = await this.generateAlertData(dashboard.orgId, widget.data);
-        break;
-      case 'status':
-        newData = await this.generateStatusData(dashboard.orgId, widget.data);
-        break;
-      default:
-        return;
+    case 'metric':
+      newData = await this.generateMetricData(dashboard.orgId, widget.data);
+      break;
+    case 'chart':
+      newData = await this.generateChartData(dashboard.orgId, widget.data);
+      break;
+    case 'table':
+      newData = await this.generateTableData(dashboard.orgId, widget.data);
+      break;
+    case 'alert':
+      newData = await this.generateAlertData(dashboard.orgId, widget.data);
+      break;
+    case 'status':
+      newData = await this.generateStatusData(dashboard.orgId, widget.data);
+      break;
+    default:
+      return;
     }
 
     await this.updateWidgetData(dashboardId, widgetId, newData);
@@ -355,8 +355,8 @@ export class RealTimeDashboardService {
       unit: latestMetrics[latestMetrics.length - 1]?.unit || '',
       history: latestMetrics.map(m => ({
         value: m.value,
-        timestamp: m.timestamp
-      }))
+        timestamp: m.timestamp,
+      })),
     };
   }
 
@@ -373,7 +373,7 @@ export class RealTimeDashboardService {
       data: filteredMetrics.map(m => m.value),
       backgroundColor: config.backgroundColor || 'rgba(54, 162, 235, 0.2)',
       borderColor: config.borderColor || 'rgba(54, 162, 235, 1)',
-      fill: config.fill || false
+      fill: config.fill || false,
     }];
 
     return { labels, datasets };
@@ -385,25 +385,25 @@ export class RealTimeDashboardService {
     const metrics = this.realTimeMetrics.get(orgId) || [];
 
     switch (config.dataType) {
-      case 'alerts':
-        return alerts.slice(-20).map(alert => ({
-          id: alert.id,
-          severity: alert.severity,
-          message: alert.message,
-          timestamp: alert.timestamp,
-          isAcknowledged: alert.isAcknowledged
-        }));
-      case 'metrics':
-        return metrics.slice(-20).map(metric => ({
-          id: metric.id,
-          name: metric.name,
-          value: metric.value,
-          unit: metric.unit,
-          trend: metric.trend,
-          timestamp: metric.timestamp
-        }));
-      default:
-        return [];
+    case 'alerts':
+      return alerts.slice(-20).map(alert => ({
+        id: alert.id,
+        severity: alert.severity,
+        message: alert.message,
+        timestamp: alert.timestamp,
+        isAcknowledged: alert.isAcknowledged,
+      }));
+    case 'metrics':
+      return metrics.slice(-20).map(metric => ({
+        id: metric.id,
+        name: metric.name,
+        value: metric.value,
+        unit: metric.unit,
+        trend: metric.trend,
+        timestamp: metric.timestamp,
+      }));
+    default:
+      return [];
     }
   }
 
@@ -419,7 +419,7 @@ export class RealTimeDashboardService {
       unacknowledged: unacknowledged.length,
       critical: critical.length,
       high: high.length,
-      recent: alerts.slice(-5)
+      recent: alerts.slice(-5),
     };
   }
 
@@ -432,7 +432,7 @@ export class RealTimeDashboardService {
       status: latest ? 'online' : 'offline',
       lastUpdate: latest?.timestamp || new Date(),
       uptime: this.calculateUptime(orgId),
-      health: this.calculateHealth(orgId)
+      health: this.calculateHealth(orgId),
     };
   }
 
@@ -463,7 +463,7 @@ export class RealTimeDashboardService {
       unit: 'status',
       trend: 'stable',
       changePercent: 0,
-      timestamp: now
+      timestamp: now,
     });
 
     // Response Time metrics
@@ -476,7 +476,7 @@ export class RealTimeDashboardService {
       unit: 'ms',
       trend: responseTime > 500 ? 'up' : 'down',
       changePercent: Math.random() * 20 - 10, // -10% to +10%
-      timestamp: now
+      timestamp: now,
     });
 
     // Throughput metrics
@@ -489,7 +489,7 @@ export class RealTimeDashboardService {
       unit: 'TPS',
       trend: throughput > 500 ? 'up' : 'down',
       changePercent: Math.random() * 30 - 15, // -15% to +15%
-      timestamp: now
+      timestamp: now,
     });
 
     // Error Rate metrics
@@ -502,7 +502,7 @@ export class RealTimeDashboardService {
       unit: '%',
       trend: errorRate > 2 ? 'up' : 'down',
       changePercent: Math.random() * 50 - 25, // -25% to +25%
-      timestamp: now
+      timestamp: now,
     });
 
     return metrics;
@@ -530,14 +530,14 @@ export class RealTimeDashboardService {
     if (Math.random() < 0.1) { // 10% chance of new alert
       const severities: Array<'low' | 'medium' | 'high' | 'critical'> = ['low', 'medium', 'high', 'critical'];
       const severity = severities[Math.floor(Math.random() * severities.length)];
-      
+
       alerts.push({
         id: `alert-${Date.now()}`,
         orgId,
         severity,
         message: `Simulated ${severity} alert for organization ${orgId}`,
         timestamp: now,
-        isAcknowledged: false
+        isAcknowledged: false,
       });
     }
 
@@ -548,7 +548,7 @@ export class RealTimeDashboardService {
   private updateDashboardWidgets(): void {
     for (const [dashboardId, dashboard] of this.dashboards.entries()) {
       for (const widget of dashboard.widgets) {
-        this.updateWidgetData(dashboardId, widget.id);
+        this.updateWidgetDataInternal(dashboardId, widget.id);
       }
     }
   }
@@ -566,7 +566,7 @@ export class RealTimeDashboardService {
         this.io.to(`org:${orgId}`).emit('alert-acknowledged', {
           alertId,
           acknowledgedBy: userId,
-          acknowledgedAt: alert.acknowledgedAt
+          acknowledgedAt: alert.acknowledgedAt,
         });
 
         dashboardLogger.info('Alert acknowledged', { alertId, userId, orgId });
@@ -655,7 +655,7 @@ export class RealTimeDashboardService {
     activeConnections: number;
     totalMetrics: number;
     totalAlerts: number;
-  } {
+    } {
     let totalWidgets = 0;
     for (const dashboard of this.dashboards.values()) {
       totalWidgets += dashboard.widgets.length;
@@ -676,7 +676,7 @@ export class RealTimeDashboardService {
       totalWidgets,
       activeConnections: Array.from(this.activeConnections.values()).reduce((sum, set) => sum + set.size, 0),
       totalMetrics,
-      totalAlerts
+      totalAlerts,
     };
   }
 

@@ -11,17 +11,17 @@ CREATE INDEX IF NOT EXISTS idx_rpc_configs_enabled ON rpc_configs(enabled);
 
 -- Index for alerts
 CREATE INDEX IF NOT EXISTS idx_alerts_user_id ON alerts(user_id);
-CREATE INDEX IF NOT EXISTS idx_alerts_status ON alerts(status);
+CREATE INDEX IF NOT EXISTS idx_alerts_resolved ON alerts(resolved);
 CREATE INDEX IF NOT EXISTS idx_alerts_created_at ON alerts(created_at);
 
 -- Index for metrics
-CREATE INDEX IF NOT EXISTS idx_metrics_rpc_id ON metrics(rpc_id);
+CREATE INDEX IF NOT EXISTS idx_metrics_rpc_config_id ON metrics(rpc_config_id);
 CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON metrics(timestamp);
-CREATE INDEX IF NOT EXISTS idx_metrics_type ON metrics(type);
+CREATE INDEX IF NOT EXISTS idx_metrics_metric_type ON metrics(metric_type);
 
 -- Index for audit logs
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 
 -- Index for API keys

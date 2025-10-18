@@ -3,7 +3,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { MonitoringService } from './services/monitoringService';
-import apiRoutes from './routes';
+import createApiRoutes from './routes';
 import { EVM_NETWORKS } from './types';
 import { database } from './database';
 import logger from './utils/logger';
@@ -34,7 +34,7 @@ let userService: any;
 
 async function initializeApp() {
   try {
-    // Initialize database
+    // Initialize database (in mock mode for development)
     logger.info('Connecting to database...');
     await database.connect();
     logger.info('Database connected successfully');
@@ -59,7 +59,7 @@ async function initializeApp() {
     logger.info('All services initialized successfully');
     
     // Set up API routes after services are initialized
-    app.use('/api', apiRoutes);
+    app.use('/api', createApiRoutes(monitoringService));
     
     // Start the server
     await startServer();
