@@ -1,5 +1,5 @@
 import React from 'react';
-import AuthForm from '@/components/AuthComponents/AuthForm';
+import AuthForm from '@/app/(auth)/_component/AuthForm';
 
 const ForgotPasswordPage = () => {
   return (

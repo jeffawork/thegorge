@@ -28,7 +28,9 @@ function StepProfessionalInfo() {
         )}
       </div>
       <div>
-        <Label htmlFor="company">Company</Label>
+        <Label className="text-primary-foreground/45" htmlFor="company">
+          Company
+        </Label>
         <Input {...register('company')} placeholder="Company" />
         {errors.company && (
           <p className="text-sm text-red-500">

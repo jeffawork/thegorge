@@ -42,6 +42,9 @@ describe('Web3Service', () => {
 
   describe('addRPC', () => {
     it('should add a new RPC configuration', async () => {
+      // Mock the testConnection method to return true
+      jest.spyOn(web3Service, 'testConnection').mockResolvedValue(true);
+      
       const result = await web3Service.addRPC(mockConfigs[0]);
       expect(result).toBe(true);
     });
@@ -49,6 +52,9 @@ describe('Web3Service', () => {
 
   describe('getRPCConfigs', () => {
     it('should return all RPC configurations', async () => {
+      // Mock the testConnection method to return true
+      jest.spyOn(web3Service, 'testConnection').mockResolvedValue(true);
+      
       await web3Service.addRPC(mockConfigs[0]);
       const configs = web3Service.getRPCConfigs();
       expect(configs).toHaveLength(1);

@@ -42,39 +42,39 @@ export class RateLimitingService {
     // Default organization limits based on plan
     this.organizationLimits.set('free', {
       windowMs: 60 * 1000, // 1 minute
-      maxRequests: 100 // 100 requests per minute
+      maxRequests: 100, // 100 requests per minute
     });
 
     this.organizationLimits.set('pro', {
       windowMs: 60 * 1000, // 1 minute
-      maxRequests: 1000 // 1000 requests per minute
+      maxRequests: 1000, // 1000 requests per minute
     });
 
     this.organizationLimits.set('enterprise', {
       windowMs: 60 * 1000, // 1 minute
-      maxRequests: 10000 // 10000 requests per minute
+      maxRequests: 10000, // 10000 requests per minute
     });
 
     // Default user limits
     this.userLimits.set('default', {
       windowMs: 60 * 1000, // 1 minute
-      maxRequests: 50 // 50 requests per minute per user
+      maxRequests: 50, // 50 requests per minute per user
     });
 
     // Endpoint-specific limits
     this.endpointLimits.set('/api/metrics', {
       windowMs: 60 * 1000,
-      maxRequests: 10 // 10 requests per minute for metrics
+      maxRequests: 10, // 10 requests per minute for metrics
     });
 
     this.endpointLimits.set('/api/alerts', {
       windowMs: 60 * 1000,
-      maxRequests: 20 // 20 requests per minute for alerts
+      maxRequests: 20, // 20 requests per minute for alerts
     });
 
     this.endpointLimits.set('/api/rpcs', {
       windowMs: 60 * 1000,
-      maxRequests: 30 // 30 requests per minute for RPCs
+      maxRequests: 30, // 30 requests per minute for RPCs
     });
   }
 
@@ -83,10 +83,10 @@ export class RateLimitingService {
     org: Organization,
     user: User,
     endpoint: string,
-    ip?: string
+    ip?: string,
   ): Promise<RateLimitResult> {
     const now = Date.now();
-    
+
     // Get limits for organization, user, and endpoint
     const orgLimit = this.organizationLimits.get(org.plan) || this.organizationLimits.get('free')!;
     const userLimit = this.userLimits.get('default')!;
@@ -111,9 +111,9 @@ export class RateLimitingService {
           limit: orgResult.limit,
           resetTime: new Date(orgResult.resetTime),
           remaining: orgResult.remaining,
-          retryAfter: orgResult.retryAfter
+          retryAfter: orgResult.retryAfter,
         },
-        reason: 'Organization rate limit exceeded'
+        reason: 'Organization rate limit exceeded',
       };
     }
 
@@ -130,9 +130,9 @@ export class RateLimitingService {
           limit: userResult.limit,
           resetTime: new Date(userResult.resetTime),
           remaining: userResult.remaining,
-          retryAfter: userResult.retryAfter
+          retryAfter: userResult.retryAfter,
         },
-        reason: 'User rate limit exceeded'
+        reason: 'User rate limit exceeded',
       };
     }
 
@@ -150,9 +150,9 @@ export class RateLimitingService {
             limit: endpointResult.limit,
             resetTime: new Date(endpointResult.resetTime),
             remaining: endpointResult.remaining,
-            retryAfter: endpointResult.retryAfter
+            retryAfter: endpointResult.retryAfter,
           },
-          reason: 'Endpoint rate limit exceeded'
+          reason: 'Endpoint rate limit exceeded',
         };
       }
     }
@@ -161,7 +161,7 @@ export class RateLimitingService {
     if (ipKey) {
       const ipLimit = {
         windowMs: 60 * 1000,
-        maxRequests: 200 // 200 requests per minute per IP
+        maxRequests: 200, // 200 requests per minute per IP
       };
       const ipResult = await this.checkLimit(ipKey, ipLimit, now);
       if (!ipResult.allowed) {
@@ -175,9 +175,9 @@ export class RateLimitingService {
             limit: ipResult.limit,
             resetTime: new Date(ipResult.resetTime),
             remaining: ipResult.remaining,
-            retryAfter: ipResult.retryAfter
+            retryAfter: ipResult.retryAfter,
           },
-          reason: 'IP rate limit exceeded'
+          reason: 'IP rate limit exceeded',
         };
       }
     }
@@ -192,15 +192,15 @@ export class RateLimitingService {
         current: Math.min(orgResult.current, userResult.current),
         limit: Math.min(orgResult.limit, userResult.limit),
         resetTime: new Date(Math.min(orgResult.resetTime, userResult.resetTime)),
-        remaining: Math.min(orgResult.remaining, userResult.remaining)
-      }
+        remaining: Math.min(orgResult.remaining, userResult.remaining),
+      },
     };
   }
 
   private async checkLimit(
     key: string,
     config: RateLimitConfig,
-    now: number
+    now: number,
   ): Promise<{
     allowed: boolean;
     current: number;
@@ -220,14 +220,14 @@ export class RateLimitingService {
         current: 1,
         limit: config.maxRequests,
         resetTime,
-        remaining: config.maxRequests - 1
+        remaining: config.maxRequests - 1,
       };
     }
 
     // Existing window
     const current = existing.count + 1;
     const allowed = current <= config.maxRequests;
-    
+
     if (allowed) {
       existing.count = current;
       this.requestCounts.set(key, existing);
@@ -242,7 +242,7 @@ export class RateLimitingService {
       limit: config.maxRequests,
       resetTime: existing.resetTime,
       remaining,
-      retryAfter
+      retryAfter,
     };
   }
 
@@ -290,8 +290,8 @@ export class RateLimitingService {
 
     // Return the most restrictive quota
     const quotas = [orgInfo, userInfo, endpointInfo].filter(Boolean);
-    const mostRestrictive = quotas.reduce((min, current) => 
-      current.remaining < min.remaining ? current : min
+    const mostRestrictive = quotas.reduce((min, current) =>
+      current.remaining < min.remaining ? current : min,
     );
 
     return {
@@ -301,14 +301,14 @@ export class RateLimitingService {
       current: mostRestrictive.current,
       limit: mostRestrictive.limit,
       resetTime: new Date(mostRestrictive.resetTime),
-      remaining: mostRestrictive.remaining
+      remaining: mostRestrictive.remaining,
     };
   }
 
   private getCounterInfo(
     key: string,
     config: RateLimitConfig,
-    now: number
+    now: number,
   ): {
     current: number;
     limit: number;
@@ -316,13 +316,13 @@ export class RateLimitingService {
     remaining: number;
   } {
     const existing = this.requestCounts.get(key);
-    
+
     if (!existing || existing.resetTime <= now) {
       return {
         current: 0,
         limit: config.maxRequests,
         resetTime: now + config.windowMs,
-        remaining: config.maxRequests
+        remaining: config.maxRequests,
       };
     }
 
@@ -330,7 +330,7 @@ export class RateLimitingService {
       current: existing.count,
       limit: config.maxRequests,
       resetTime: existing.resetTime,
-      remaining: Math.max(0, config.maxRequests - existing.count)
+      remaining: Math.max(0, config.maxRequests - existing.count),
     };
   }
 
@@ -338,10 +338,10 @@ export class RateLimitingService {
   async setOrganizationLimits(orgId: string, plan: string, customLimits?: Partial<RateLimitConfig>): Promise<void> {
     const baseLimit = this.organizationLimits.get(plan) || this.organizationLimits.get('free')!;
     const customKey = `org_custom:${orgId}`;
-    
+
     this.organizationLimits.set(customKey, {
       ...baseLimit,
-      ...customLimits
+      ...customLimits,
     });
 
     rateLimitLogger.info('Organization limits updated', { orgId, plan, customLimits });
@@ -351,10 +351,10 @@ export class RateLimitingService {
   async setUserLimits(userId: string, customLimits: Partial<RateLimitConfig>): Promise<void> {
     const baseLimit = this.userLimits.get('default')!;
     const customKey = `user_custom:${userId}`;
-    
+
     this.userLimits.set(customKey, {
       ...baseLimit,
-      ...customLimits
+      ...customLimits,
     });
 
     rateLimitLogger.info('User limits updated', { userId, customLimits });
@@ -364,12 +364,12 @@ export class RateLimitingService {
   async setEndpointLimits(endpoint: string, customLimits: Partial<RateLimitConfig>): Promise<void> {
     const baseLimit = this.endpointLimits.get(endpoint) || {
       windowMs: 60 * 1000,
-      maxRequests: 100
+      maxRequests: 100,
     };
-    
+
     this.endpointLimits.set(endpoint, {
       ...baseLimit,
-      ...customLimits
+      ...customLimits,
     });
 
     rateLimitLogger.info('Endpoint limits updated', { endpoint, customLimits });
@@ -418,7 +418,7 @@ export class RateLimitingService {
       topEndpoints: Array.from(endpointStats.entries())
         .map(([endpoint, requests]) => ({ endpoint, requests }))
         .sort((a, b) => b.requests - a.requests)
-        .slice(0, 10)
+        .slice(0, 10),
     };
   }
 
@@ -462,7 +462,7 @@ export class RateLimitingService {
           current: data.count,
           limit: limit.maxRequests,
           resetTime: new Date(data.resetTime),
-          remaining: Math.max(0, limit.maxRequests - data.count)
+          remaining: Math.max(0, limit.maxRequests - data.count),
         });
       }
     }
@@ -479,18 +479,18 @@ export class RateLimitingService {
       const endpoint = key.replace('endpoint:', '');
       return this.endpointLimits.get(endpoint) || {
         windowMs: 60 * 1000,
-        maxRequests: 100
+        maxRequests: 100,
       };
     } else if (key.startsWith('ip:')) {
       return {
         windowMs: 60 * 1000,
-        maxRequests: 200
+        maxRequests: 200,
       };
     }
-    
+
     return {
       windowMs: 60 * 1000,
-      maxRequests: 100
+      maxRequests: 100,
     };
   }
 }

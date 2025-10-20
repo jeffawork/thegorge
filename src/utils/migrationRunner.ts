@@ -44,38 +44,38 @@ export class MigrationRunner {
     const result: MigrationResult = {
       success: true,
       executedMigrations: [],
-      errors: []
+      errors: [],
     };
 
     try {
       databaseLogger.info('Starting database migrations');
-      
+
       const client = await this.pool.connect();
-      
+
       try {
         // Create migrations table if it doesn't exist
         await this.createMigrationsTable(client);
-        
+
         // Get migration files
         const migrationFiles = this.getMigrationFiles();
         databaseLogger.info(`Found ${migrationFiles.length} migration files`);
-        
+
         // Get executed migrations
         const executedMigrations = await this.getExecutedMigrations(client);
         const executedFilenames = executedMigrations.map(row => row.filename);
-        
+
         // Find new migrations
-        const newMigrations = migrationFiles.filter(file => 
-          !executedFilenames.includes(file)
+        const newMigrations = migrationFiles.filter(file =>
+          !executedFilenames.includes(file),
         );
-        
+
         if (newMigrations.length === 0) {
           databaseLogger.info('Database is up to date, no new migrations to run');
           return result;
         }
-        
+
         databaseLogger.info(`Running ${newMigrations.length} new migrations`);
-        
+
         // Execute each migration
         for (const filename of newMigrations) {
           try {
@@ -90,20 +90,20 @@ export class MigrationRunner {
             throw error; // Stop on first error
           }
         }
-        
+
         databaseLogger.info('All migrations completed successfully');
-        
+
       } finally {
         client.release();
       }
-      
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       result.errors.push(`Migration runner error: ${errorMessage}`);
       result.success = false;
       databaseLogger.error('Migration runner failed:', { error: errorMessage });
     }
-    
+
     return result;
   }
 
@@ -127,12 +127,12 @@ export class MigrationRunner {
    */
   private getMigrationFiles(): string[] {
     const migrationsDir = path.join(process.cwd(), 'migrations');
-    
+
     if (!fs.existsSync(migrationsDir)) {
       databaseLogger.warn('No migrations directory found');
       return [];
     }
-    
+
     return fs.readdirSync(migrationsDir)
       .filter(file => file.endsWith('.sql'))
       .sort();
@@ -143,7 +143,7 @@ export class MigrationRunner {
    */
   private async getExecutedMigrations(client: any): Promise<MigrationRecord[]> {
     const result = await client.query(
-      `SELECT filename FROM ${this.MIGRATION_TABLE} ORDER BY id`
+      `SELECT filename FROM ${this.MIGRATION_TABLE} ORDER BY id`,
     );
     return result.rows;
   }
@@ -154,28 +154,28 @@ export class MigrationRunner {
   private async executeMigration(client: any, filename: string): Promise<void> {
     const migrationPath = path.join(process.cwd(), 'migrations', filename);
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
-    
+
     // Calculate checksum for integrity
     const crypto = require('crypto');
     const checksum = crypto.createHash('sha256').update(migrationSQL).digest('hex');
-    
+
     // Extract description from filename or SQL comments
     const description = this.extractDescription(filename, migrationSQL);
-    
+
     await client.query('BEGIN');
-    
+
     try {
       // Execute migration SQL
       await client.query(migrationSQL);
-      
+
       // Record migration as executed
       await client.query(
         `INSERT INTO ${this.MIGRATION_TABLE} (filename, checksum, description) VALUES ($1, $2, $3)`,
-        [filename, checksum, description]
+        [filename, checksum, description],
       );
-      
+
       await client.query('COMMIT');
-      
+
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -191,7 +191,7 @@ export class MigrationRunner {
     if (commentMatch) {
       return commentMatch[1].trim();
     }
-    
+
     // Fallback to filename without extension and numbers
     return filename
       .replace(/^\d+_/, '') // Remove leading numbers
@@ -209,17 +209,17 @@ export class MigrationRunner {
     pending: string[];
   }> {
     const client = await this.pool.connect();
-    
+
     try {
       const migrationFiles = this.getMigrationFiles();
       const executedMigrations = await this.getExecutedMigrations(client);
       const executedFilenames = executedMigrations.map(row => row.filename);
       const pending = migrationFiles.filter(file => !executedFilenames.includes(file));
-      
+
       return {
         total: migrationFiles.length,
         executed: executedMigrations.length,
-        pending
+        pending,
       };
     } finally {
       client.release();
@@ -243,6 +243,6 @@ export function createMigrationRunner(): MigrationRunner {
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'password',
   };
-  
+
   return new MigrationRunner(config);
 }

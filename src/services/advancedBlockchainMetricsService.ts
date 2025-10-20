@@ -162,7 +162,7 @@ export class AdvancedBlockchainMetricsService {
       totalBlocks,
       mevPercentage: (mevBlocks / totalBlocks) * 100,
       averageMEVPerBlock: mevValue / totalBlocks,
-      topMEVExtractors: this.generateMEVExtractors(mevValue)
+      topMEVExtractors: this.generateMEVExtractors(mevValue),
     };
 
     // Store the data
@@ -180,13 +180,13 @@ export class AdvancedBlockchainMetricsService {
   private generateMEVExtractors(totalMEV: number): Array<{ address: string; mevValue: number; transactions: number }> {
     const extractors = [];
     const numExtractors = Math.floor(Math.random() * 5) + 1;
-    
+
     for (let i = 0; i < numExtractors; i++) {
       const mevValue = totalMEV * (Math.random() * 0.5 + 0.1); // 10-60% of total
       extractors.push({
         address: `0x${Math.random().toString(16).substr(2, 40)}`,
         mevValue,
-        transactions: Math.floor(Math.random() * 20)
+        transactions: Math.floor(Math.random() * 20),
       });
     }
 
@@ -217,7 +217,7 @@ export class AdvancedBlockchainMetricsService {
       medianGasPrice,
       gasPricePercentiles: this.calculatePercentiles(gasPrices),
       transactionTypes: this.generateTransactionTypes(totalTransactions),
-      transactionSizes: this.generateTransactionSizes()
+      transactionSizes: this.generateTransactionSizes(),
     };
 
     // Store the data
@@ -246,7 +246,7 @@ export class AdvancedBlockchainMetricsService {
   private calculatePercentiles(values: number[]): { p10: number; p25: number; p50: number; p75: number; p90: number; p95: number; p99: number } {
     const sorted = values.sort((a, b) => a - b);
     const len = sorted.length;
-    
+
     return {
       p10: sorted[Math.floor(len * 0.1)],
       p25: sorted[Math.floor(len * 0.25)],
@@ -254,7 +254,7 @@ export class AdvancedBlockchainMetricsService {
       p75: sorted[Math.floor(len * 0.75)],
       p90: sorted[Math.floor(len * 0.9)],
       p95: sorted[Math.floor(len * 0.95)],
-      p99: sorted[Math.floor(len * 0.99)]
+      p99: sorted[Math.floor(len * 0.99)],
     };
   }
 
@@ -264,7 +264,7 @@ export class AdvancedBlockchainMetricsService {
       contractCreation: Math.floor(total * 0.05),
       contractInteraction: Math.floor(total * 0.3),
       tokenTransfer: Math.floor(total * 0.2),
-      defi: Math.floor(total * 0.05)
+      defi: Math.floor(total * 0.05),
     };
   }
 
@@ -273,7 +273,7 @@ export class AdvancedBlockchainMetricsService {
       average: Math.random() * 1000 + 100,
       median: Math.random() * 500 + 50,
       max: Math.random() * 10000 + 1000,
-      min: Math.random() * 100 + 10
+      min: Math.random() * 100 + 10,
     };
   }
 
@@ -306,7 +306,7 @@ export class AdvancedBlockchainMetricsService {
       blockUtilization,
       gasPriceVolatility,
       networkThroughput,
-      congestionLevel
+      congestionLevel,
     };
 
     // Store the data
@@ -345,7 +345,7 @@ export class AdvancedBlockchainMetricsService {
       activeProtocols,
       protocolMetrics: this.generateProtocolMetrics(activeProtocols),
       liquidityPools: this.generateLiquidityPools(),
-      arbitrageOpportunities: this.generateArbitrageOpportunities()
+      arbitrageOpportunities: this.generateArbitrageOpportunities(),
     };
 
     // Store the data
@@ -363,14 +363,14 @@ export class AdvancedBlockchainMetricsService {
   private generateProtocolMetrics(count: number): Array<{ name: string; tvl: number; transactions: number; users: number; apy: number }> {
     const protocols = [];
     const protocolNames = ['Uniswap', 'Compound', 'Aave', 'MakerDAO', 'Curve', 'SushiSwap', 'Balancer', 'Yearn'];
-    
+
     for (let i = 0; i < count; i++) {
       protocols.push({
         name: protocolNames[i % protocolNames.length] + ` V${Math.floor(Math.random() * 3) + 1}`,
         tvl: Math.random() * 100000000 + 1000000,
         transactions: Math.floor(Math.random() * 10000) + 100,
         users: Math.floor(Math.random() * 1000) + 10,
-        apy: Math.random() * 20 + 1
+        apy: Math.random() * 20 + 1,
       });
     }
 
@@ -380,14 +380,14 @@ export class AdvancedBlockchainMetricsService {
   private generateLiquidityPools(): Array<{ address: string; protocol: string; tvl: number; volume24h: number; fees24h: number }> {
     const pools = [];
     const protocols = ['Uniswap', 'SushiSwap', 'Balancer', 'Curve'];
-    
+
     for (let i = 0; i < 20; i++) {
       pools.push({
         address: `0x${Math.random().toString(16).substr(2, 40)}`,
         protocol: protocols[Math.floor(Math.random() * protocols.length)],
         tvl: Math.random() * 10000000 + 100000,
         volume24h: Math.random() * 1000000 + 10000,
-        fees24h: Math.random() * 10000 + 100
+        fees24h: Math.random() * 10000 + 100,
       });
     }
 
@@ -397,7 +397,7 @@ export class AdvancedBlockchainMetricsService {
   private generateArbitrageOpportunities(): Array<{ tokenPair: string; priceDifference: number; potentialProfit: number; gasCost: number; netProfit: number }> {
     const opportunities = [];
     const tokenPairs = ['ETH/USDC', 'WBTC/ETH', 'USDC/USDT', 'DAI/USDC', 'LINK/ETH'];
-    
+
     for (let i = 0; i < 10; i++) {
       const priceDifference = Math.random() * 0.05 + 0.001; // 0.1% - 5%
       const potentialProfit = Math.random() * 1000 + 100;
@@ -410,7 +410,7 @@ export class AdvancedBlockchainMetricsService {
           priceDifference,
           potentialProfit,
           gasCost,
-          netProfit
+          netProfit,
         });
       }
     }
@@ -436,7 +436,7 @@ export class AdvancedBlockchainMetricsService {
       bridgeFees,
       averageBridgeTime,
       bridgeSuccessRate: Math.random() * 10 + 90, // 90-100% success rate
-      activeBridges: this.generateActiveBridges()
+      activeBridges: this.generateActiveBridges(),
     };
 
     // Store the data
@@ -454,14 +454,14 @@ export class AdvancedBlockchainMetricsService {
   private generateActiveBridges(): Array<{ name: string; transactions: number; volume: number; fees: number; successRate: number }> {
     const bridges = [];
     const bridgeNames = ['Polygon Bridge', 'Arbitrum Bridge', 'Optimism Bridge', 'Avalanche Bridge', 'BSC Bridge'];
-    
+
     for (let i = 0; i < 5; i++) {
       bridges.push({
         name: bridgeNames[i],
         transactions: Math.floor(Math.random() * 500) + 50,
         volume: Math.random() * 2000000 + 200000,
         fees: Math.random() * 20000 + 2000,
-        successRate: Math.random() * 5 + 95
+        successRate: Math.random() * 5 + 95,
       });
     }
 
@@ -511,7 +511,7 @@ export class AdvancedBlockchainMetricsService {
     totalCongestionRecords: number;
     totalDeFiRecords: number;
     totalCrossChainRecords: number;
-  } {
+    } {
     let totalMEVRecords = 0;
     let totalTransactionRecords = 0;
     let totalCongestionRecords = 0;
@@ -539,7 +539,7 @@ export class AdvancedBlockchainMetricsService {
       totalTransactionRecords,
       totalCongestionRecords,
       totalDeFiRecords,
-      totalCrossChainRecords
+      totalCrossChainRecords,
     };
   }
 

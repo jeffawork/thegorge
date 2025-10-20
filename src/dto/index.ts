@@ -14,18 +14,18 @@ export {
   ChangePasswordDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-  RefreshTokenDto
+  RefreshTokenDto,
 } from './auth.dto';
 
 // RPC DTOs
 export {
   CreateRpcDto,
-  UpdateRpcDto
+  UpdateRpcDto,
 } from './rpc.dto';
 
 // User DTOs (legacy - now in auth.dto)
 export {
   CreateUserDto,
   UpdateUserDto,
-  UpdateProfileDto as UpdateUserProfileDto
+  UpdateProfileDto as UpdateUserProfileDto,
 } from './user.dto';

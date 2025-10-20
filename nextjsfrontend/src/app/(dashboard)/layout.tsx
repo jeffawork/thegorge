@@ -7,9 +7,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <section>
-      <AuthProvider>{children}</AuthProvider>
-      {/* {children} */}
-    </section>
+    <main className="bg-foreground">
+      {/* <AuthProvider>{children}</AuthProvider> */}
+      {children}
+    </main>
   );
 }

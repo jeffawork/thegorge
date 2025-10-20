@@ -8,18 +8,18 @@ import { validationLogger } from '../utils/logger';
 export const validate = (schema: Joi.ObjectSchema, property: 'body' | 'query' | 'params' = 'body') => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const data = req[property];
-    
+
     const { error, value } = schema.validate(data, {
       abortEarly: false,
       stripUnknown: true,
-      allowUnknown: false
+      allowUnknown: false,
     });
 
     if (error) {
       const errorDetails = error.details.map(detail => ({
         field: detail.path.join('.'),
         message: detail.message,
-        value: detail.context?.value
+        value: detail.context?.value,
       }));
 
       validationLogger.warn('Validation failed', {
@@ -27,14 +27,14 @@ export const validate = (schema: Joi.ObjectSchema, property: 'body' | 'query' | 
         errors: errorDetails,
         path: req.path,
         method: req.method,
-        ip: req.ip
+        ip: req.ip,
       });
 
       res.status(400).json({
         success: false,
         error: 'Validation failed',
         details: errorDetails,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
       return;
     }
@@ -54,13 +54,13 @@ export const schemas = {
     email: Joi.string().email().required().max(255),
     password: Joi.string().min(8).max(128).required(),
     name: Joi.string().min(2).max(255).required(),
-    organizationId: Joi.string().uuid().optional()
+    organizationId: Joi.string().uuid().optional(),
   }),
 
   // User login
   login: Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
   }),
 
   // RPC configuration
@@ -77,9 +77,9 @@ export const schemas = {
       errorRate: Joi.number().min(0).max(100),
       peerCount: Joi.number().integer().min(0),
       blockLag: Joi.number().integer().min(0),
-      syncLag: Joi.number().integer().min(0)
+      syncLag: Joi.number().integer().min(0),
     }).default({}),
-    maxHistoryEntries: Joi.number().integer().min(10).max(10000).default(100)
+    maxHistoryEntries: Joi.number().integer().min(10).max(10000).default(100),
   }),
 
   // Alert creation
@@ -88,7 +88,7 @@ export const schemas = {
     type: Joi.string().valid('response_time', 'error_rate', 'peer_count', 'block_lag', 'sync_lag', 'offline').required(),
     severity: Joi.string().valid('low', 'medium', 'high', 'critical').required(),
     message: Joi.string().min(1).max(1000).required(),
-    details: Joi.object().default({})
+    details: Joi.object().default({}),
   }),
 
   // Alert rule
@@ -99,26 +99,26 @@ export const schemas = {
       metric: Joi.string().required(),
       operator: Joi.string().valid('>', '<', '>=', '<=', '=', '!=').required(),
       threshold: Joi.number().required(),
-      duration: Joi.number().integer().min(1).max(3600).default(300) // seconds
+      duration: Joi.number().integer().min(1).max(3600).default(300), // seconds
     }).required(),
     actions: Joi.array().items(Joi.object({
       type: Joi.string().valid('email', 'webhook', 'slack').required(),
-      config: Joi.object().required()
+      config: Joi.object().required(),
     })).default([]),
-    isActive: Joi.boolean().default(true)
+    isActive: Joi.boolean().default(true),
   }),
 
   // Password change
   changePassword: Joi.object({
     currentPassword: Joi.string().required(),
     newPassword: Joi.string().min(8).max(128).required(),
-    confirmPassword: Joi.string().valid(Joi.ref('newPassword')).required()
+    confirmPassword: Joi.string().valid(Joi.ref('newPassword')).required(),
   }),
 
   // User profile update
   updateProfile: Joi.object({
     name: Joi.string().min(2).max(255).optional(),
-    avatar: Joi.string().uri().max(500).optional()
+    avatar: Joi.string().uri().max(500).optional(),
   }),
 
   // Pagination
@@ -126,29 +126,29 @@ export const schemas = {
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(20),
     sortBy: Joi.string().max(50).optional(),
-    sortOrder: Joi.string().valid('asc', 'desc').default('desc')
+    sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
   }),
 
   // Date range
   dateRange: Joi.object({
     startDate: Joi.date().iso().optional(),
-    endDate: Joi.date().iso().min(Joi.ref('startDate')).optional()
+    endDate: Joi.date().iso().min(Joi.ref('startDate')).optional(),
   }),
 
   // UUID parameter
   uuidParam: Joi.object({
-    id: Joi.string().uuid().required()
+    id: Joi.string().uuid().required(),
   }),
 
   // Organization ID parameter
   orgParam: Joi.object({
-    organizationId: Joi.string().uuid().required()
+    organizationId: Joi.string().uuid().required(),
   }),
 
   // User ID parameter
   userParam: Joi.object({
-    userId: Joi.string().uuid().required()
-  })
+    userId: Joi.string().uuid().required(),
+  }),
 };
 
 /**
@@ -156,12 +156,12 @@ export const schemas = {
  */
 export const validateRPCUrl = (req: Request, res: Response, next: NextFunction): void => {
   const { url } = req.body;
-  
+
   if (!url) {
     res.status(400).json({
       success: false,
       error: 'RPC URL is required',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
     return;
   }
@@ -169,13 +169,13 @@ export const validateRPCUrl = (req: Request, res: Response, next: NextFunction):
   // Basic URL validation
   try {
     const urlObj = new URL(url);
-    
+
     // Check if it's HTTP or HTTPS
     if (!['http:', 'https:'].includes(urlObj.protocol)) {
       res.status(400).json({
         success: false,
         error: 'RPC URL must use HTTP or HTTPS protocol',
-        timestamp: new Date()
+        timestamp: new Date(),
       });
       return;
     }
@@ -183,12 +183,12 @@ export const validateRPCUrl = (req: Request, res: Response, next: NextFunction):
     // Check for common RPC endpoints
     const path = urlObj.pathname.toLowerCase();
     const validPaths = ['/', '/rpc', '/api', '/v1', '/eth', '/jsonrpc'];
-    
+
     if (!validPaths.some(validPath => path === validPath || path.startsWith(validPath + '/'))) {
       validationLogger.warn('Unusual RPC URL path', {
         url: url,
         path: path,
-        ip: req.ip
+        ip: req.ip,
       });
     }
 
@@ -197,7 +197,7 @@ export const validateRPCUrl = (req: Request, res: Response, next: NextFunction):
     res.status(400).json({
       success: false,
       error: 'Invalid RPC URL format',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 };
@@ -212,9 +212,9 @@ export const validateRateLimit = (req: Request, res: Response, next: NextFunctio
     ip: req.ip,
     path: req.path,
     method: req.method,
-    userAgent: req.get('User-Agent')
+    userAgent: req.get('User-Agent'),
   });
-  
+
   next();
 };
 

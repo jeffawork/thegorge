@@ -1,5 +1,5 @@
 import React from 'react';
-import { RegistrationRouter } from './RegistrationRouter';
+import { RegistrationRouter } from './shared/RegistrationRouter';
 
 const SignUpForm = () => {
   return (

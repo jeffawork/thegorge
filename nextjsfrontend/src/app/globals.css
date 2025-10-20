@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 
+
 @layer base {
 /*  Light Mode (default) */
 :root {
@@ -97,11 +98,12 @@
 
 }
 
-
 @layer components {
   .glass-card {
     background: rgba(26, 29, 41, 0.8);
-    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    /* border-radius: 4px; */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     position: relative;
@@ -178,6 +180,19 @@
     animation: blockchainPulse 2s infinite;
   }
 }
+
+/* Thin, modern scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 
 @layer base {
   * {

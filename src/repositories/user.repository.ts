@@ -11,32 +11,38 @@ export class UserRepository extends BaseRepository<User> {
     return new User({
       id: row.id,
       email: row.email,
+      passwordHash: row.password_hash,
+      firstName: row.first_name || row.firstName,
+      lastName: row.last_name || row.lastName,
       name: row.name,
       role: row.role,
-      avatar: row.avatar,
+      avatar: row.avatar_url || row.avatar,
       organizationId: row.organization_id,
       lastLoginAt: row.last_login_at,
       isActive: row.is_active,
       createdAt: row.created_at,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at,
     });
   }
 
   protected getInsertFields(): string[] {
-    return ['id', 'email', 'name', 'role', 'avatar', 'organization_id', 'is_active', 'created_at', 'updated_at'];
+    return ['id', 'email', 'password_hash', 'first_name', 'last_name', 'name', 'role', 'avatar_url', 'organization_id', 'is_active', 'created_at', 'updated_at'];
   }
 
   protected getInsertValues(entity: User): any[] {
     return [
       entity.id,
       entity.email,
+      entity.passwordHash,
+      entity.firstName,
+      entity.lastName,
       entity.name,
       entity.role,
       entity.avatar,
       entity.organizationId,
       entity.isActive,
       entity.createdAt,
-      entity.updatedAt
+      entity.updatedAt,
     ];
   }
 
@@ -45,13 +51,25 @@ export class UserRepository extends BaseRepository<User> {
     const values = [];
     let paramIndex = 1;
 
-    if (entity.name !== undefined) {
-      fields.push(`name = $${paramIndex++}`);
-      values.push(entity.name);
-    }
     if (entity.email !== undefined) {
       fields.push(`email = $${paramIndex++}`);
       values.push(entity.email);
+    }
+    if (entity.passwordHash !== undefined) {
+      fields.push(`password_hash = $${paramIndex++}`);
+      values.push(entity.passwordHash);
+    }
+    if (entity.firstName !== undefined) {
+      fields.push(`first_name = $${paramIndex++}`);
+      values.push(entity.firstName);
+    }
+    if (entity.lastName !== undefined) {
+      fields.push(`last_name = $${paramIndex++}`);
+      values.push(entity.lastName);
+    }
+    if (entity.name !== undefined) {
+      fields.push(`name = $${paramIndex++}`);
+      values.push(entity.name);
     }
     if (entity.role !== undefined) {
       fields.push(`role = $${paramIndex++}`);
@@ -83,8 +101,11 @@ export class UserRepository extends BaseRepository<User> {
   protected getUpdateValues(entity: User): any[] {
     const values = [];
 
-    if (entity.name !== undefined) values.push(entity.name);
     if (entity.email !== undefined) values.push(entity.email);
+    if (entity.passwordHash !== undefined) values.push(entity.passwordHash);
+    if (entity.firstName !== undefined) values.push(entity.firstName);
+    if (entity.lastName !== undefined) values.push(entity.lastName);
+    if (entity.name !== undefined) values.push(entity.name);
     if (entity.role !== undefined) values.push(entity.role);
     if (entity.avatar !== undefined) values.push(entity.avatar);
     if (entity.organizationId !== undefined) values.push(entity.organizationId);
@@ -100,11 +121,11 @@ export class UserRepository extends BaseRepository<User> {
   async findByEmail(email: string): Promise<User | null> {
     const query = 'SELECT * FROM users WHERE email = $1';
     const result = await this.pool.query(query, [email]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     return this.mapRowToModel(result.rows[0]);
   }
 
@@ -126,28 +147,28 @@ export class UserRepository extends BaseRepository<User> {
     const fields = this.getInsertFields();
     const values = this.getInsertValues(user);
     const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
-    
+
     const query = `INSERT INTO ${this.tableName} (${fields.join(', ')}) VALUES (${placeholders}) RETURNING *`;
     const result = await this.pool.query(query, values);
-    
+
     return this.mapRowToModel(result.rows[0]);
   }
 
   async update(id: string, user: User): Promise<User> {
     const fields = this.getUpdateFields(user);
     const values = this.getUpdateValues(user);
-    
+
     if (fields.length === 1) { // Only updated_at
       return this.findByIdOrFail(id);
     }
 
     const query = `UPDATE ${this.tableName} SET ${fields.join(', ')} WHERE id = $${values.length} RETURNING *`;
     const result = await this.pool.query(query, [...values, id]);
-    
+
     if (result.rows.length === 0) {
       throw new UserNotFoundException(`User with id ${id} not found`);
     }
-    
+
     return this.mapRowToModel(result.rows[0]);
   }
 

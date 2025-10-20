@@ -30,13 +30,13 @@ export const formatResponseTime = (ms: number): string => {
  */
 export const formatBytes = (bytes: number, decimals = 2): string => {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  
+
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 };
 
@@ -72,7 +72,7 @@ export const calculateAverage = (numbers: number[]): number => {
  */
 export const calculatePercentile = (numbers: number[], percentile: number): number => {
   if (numbers.length === 0) return 0;
-  
+
   const sorted = [...numbers].sort((a, b) => a - b);
   const index = Math.ceil((percentile / 100) * sorted.length) - 1;
   return sorted[Math.max(0, index)] || 0;
@@ -83,10 +83,10 @@ export const calculatePercentile = (numbers: number[], percentile: number): numb
  */
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void => {
   let timeoutId: NodeJS.Timeout;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(null, args), delay);
@@ -98,10 +98,10 @@ export const debounce = <T extends (...args: any[]) => any>(
  */
 export const throttle = <T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void => {
   let lastCall = 0;
-  
+
   return (...args: Parameters<T>) => {
     const now = Date.now();
     if (now - lastCall >= delay) {
@@ -124,24 +124,24 @@ export const sleep = (ms: number): Promise<void> => {
 export const retry = async <T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
-  delay: number = 1000
+  delay: number = 1000,
 ): Promise<T> => {
   let lastError: Error;
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       if (attempt === maxRetries) {
         throw lastError;
       }
-      
+
       await sleep(delay * attempt); // Exponential backoff
     }
   }
-  
+
   throw lastError!;
 };
 
@@ -150,13 +150,13 @@ export const retry = async <T>(
  */
 export const withTimeout = <T>(
   promise: Promise<T>,
-  timeoutMs: number
+  timeoutMs: number,
 ): Promise<T> => {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Operation timed out')), timeoutMs);
-    })
+    }),
   ]);
 };
 
@@ -218,26 +218,26 @@ export const getRelativeTime = (date: Date): string => {
  */
 export class RateLimiter {
   private requests: number[] = [];
-  
+
   constructor(
     private maxRequests: number,
-    private windowMs: number
+    private windowMs: number,
   ) {}
-  
+
   isAllowed(): boolean {
     const now = Date.now();
-    
+
     // Remove old requests outside the window
     this.requests = this.requests.filter(time => now - time < this.windowMs);
-    
+
     if (this.requests.length < this.maxRequests) {
       this.requests.push(now);
       return true;
     }
-    
+
     return false;
   }
-  
+
   getRetryAfter(): number {
     if (this.requests.length === 0) return 0;
     const oldestRequest = Math.min(...this.requests);
@@ -252,12 +252,12 @@ export class CircuitBreaker {
   private failures = 0;
   private lastFailure?: Date;
   private state: 'closed' | 'open' | 'half-open' = 'closed';
-  
+
   constructor(
     private maxFailures: number,
-    private timeoutMs: number
+    private timeoutMs: number,
   ) {}
-  
+
   async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (this.state === 'open') {
       if (this.shouldAttemptReset()) {
@@ -266,7 +266,7 @@ export class CircuitBreaker {
         throw new Error('Circuit breaker is open');
       }
     }
-    
+
     try {
       const result = await operation();
       this.onSuccess();
@@ -276,26 +276,26 @@ export class CircuitBreaker {
       throw error;
     }
   }
-  
+
   private onSuccess(): void {
     this.failures = 0;
     this.state = 'closed';
   }
-  
+
   private onFailure(): void {
     this.failures++;
     this.lastFailure = new Date();
-    
+
     if (this.failures >= this.maxFailures) {
       this.state = 'open';
     }
   }
-  
+
   private shouldAttemptReset(): boolean {
     if (!this.lastFailure) return false;
     return Date.now() - this.lastFailure.getTime() >= this.timeoutMs;
   }
-  
+
   getState(): string {
     return this.state;
   }

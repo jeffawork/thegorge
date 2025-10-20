@@ -21,7 +21,7 @@ export class AlertService {
   async addAlert(alertData: Omit<Alert, 'id'>): Promise<Alert> {
     const alert: Alert = {
       ...alertData,
-      id: uuidv4()
+      id: uuidv4(),
     };
 
     this.alerts.set(alert.id, alert);
@@ -40,7 +40,7 @@ export class AlertService {
       alertId: alert.id,
       rpcId: alert.rpcId,
       type: alert.type,
-      severity: alert.severity
+      severity: alert.severity,
     });
 
     return alert;
@@ -121,7 +121,7 @@ export class AlertService {
     alertLogger.info('Alert resolved', {
       alertId,
       resolvedBy: alert.resolvedBy,
-      rpcId: alert.rpcId
+      rpcId: alert.rpcId,
     });
 
     return alert;
@@ -145,7 +145,7 @@ export class AlertService {
       low: 0,
       medium: 0,
       high: 0,
-      critical: 0
+      critical: 0,
     };
 
     const byType: Record<Alert['type'], number> = {
@@ -154,7 +154,7 @@ export class AlertService {
       peer_count: 0,
       block_lag: 0,
       sync_lag: 0,
-      offline: 0
+      offline: 0,
     };
 
     for (const alert of userAlerts) {
@@ -167,7 +167,7 @@ export class AlertService {
       active: activeAlerts.length,
       resolved: resolvedAlerts.length,
       bySeverity,
-      byType
+      byType,
     };
   }
 
@@ -237,10 +237,10 @@ export class AlertService {
       }
     }
 
-    alertLogger.info('Bulk alert resolution completed', { 
-      total: alertIds.length, 
+    alertLogger.info('Bulk alert resolution completed', {
+      total: alertIds.length,
       resolved: resolvedCount,
-      resolvedBy 
+      resolvedBy,
     });
 
     return resolvedCount;

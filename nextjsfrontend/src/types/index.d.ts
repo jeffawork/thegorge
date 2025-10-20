@@ -1,3 +1,4 @@
+import { registerSchema } from "@/lib/utils";
 
 declare global {
   // Authentication types
@@ -9,13 +10,6 @@ declare global {
 
 
   // Registeration Types
-
-  export interface CourseFormData {
-  basicInfo: Partial<BasicInfo>;
-  advancedInfo: Partial<AdvancedInfo>;
-  curriculum: Partial<Curriculum>;
-  publishInfo: Partial<PublishInfo>;
-}
 
 // Authentication Store tyoes
  interface User {
@@ -40,6 +34,82 @@ interface loginCredentials {
  password: string;
 }
 
+type registerCredentials = z.infer<typeof registerSchema>;
+
+// RpcApi types 
+
+interface RpcCredentials {
+  name: string
+  url: string
+  network: string
+  chainId: number
+  timeout: number
+  enabled: boolean
+  priority: number
+}
+interface RpcTestCredentials {
+  name: string
+  url: string
+  network: string
+  chainId: number
+  timeout: number
+}
+
+interface UpdateRpcCredentials {
+  name: string
+  url: string
+  priority: number
+}
+
+// Dashboard
+interface ActivePanelProps {
+  activeTab: string
+  onTabChange: (tab: string) => void
+  collapsed?: boolean;
+}
+
+interface RPCSyncState {
+  id: string
+  name: string
+  url: string
+  chainId: number
+  syncStatus: 'synced' | 'syncing' | 'behind' | 'stuck' | 'unknown'
+  currentBlock: number
+  latestBlock: number
+  syncProgress: number
+  blocksBehind: number
+  syncSpeed: number
+  healthScore: number
+  lastUpdate: Date
+}
+
+// wllet pge
+interface WalletData {
+  id: string
+  name: string
+  address: string
+  chainId: number
+  totalValueUSD: number
+  change24h: number
+  tokens: Array<{
+    symbol: string
+    name: string
+    balance: string
+    balanceUSD: number
+    percentage: number
+    priceUSD: number
+    change24h: number
+    logoUrl?: string
+  }>
+  nfts: Array<{
+    contractAddress: string
+    tokenId: string
+    name: string
+    imageUrl?: string
+    valueUSD?: number
+  }>
+  lastUpdated: Date
+}
 
 
 }

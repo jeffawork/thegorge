@@ -43,7 +43,7 @@ const SignInForm = () => {
       <div>
         <div className="mb-2">
           <h1 className="text-gradient mb-2 text-center text-3xl font-bold">
-            Welcome to The Gorge
+            Welcome Back!
           </h1>
           <p className="text-center font-medium text-primary-foreground/45">
             Sign in to your RPC monitoring dashboard

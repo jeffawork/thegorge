@@ -106,7 +106,7 @@ export class CostTrackingService {
       ...costItem,
       id: this.generateCostId(),
       totalCost,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     const key = `${costItem.orgId}:${costItem.userId || 'global'}`;
@@ -118,7 +118,7 @@ export class CostTrackingService {
       orgId: costItem.orgId,
       resourceType: costItem.resourceType,
       quantity: costItem.quantity,
-      totalCost
+      totalCost,
     });
 
     return item;
@@ -149,7 +149,7 @@ export class CostTrackingService {
         quantity: usage.apiCalls,
         unit: 'calls',
         unitCost: this.costRates.get('api_call') || 0,
-        period: { start: periodStart, end: periodEnd }
+        period: { start: periodStart, end: periodEnd },
       });
     }
 
@@ -163,7 +163,7 @@ export class CostTrackingService {
         quantity: dataTransferGB,
         unit: 'GB',
         unitCost: this.costRates.get('data_transfer_gb') || 0,
-        period: { start: periodStart, end: periodEnd }
+        period: { start: periodStart, end: periodEnd },
       });
     }
 
@@ -177,7 +177,7 @@ export class CostTrackingService {
         quantity: storageGB,
         unit: 'GB',
         unitCost: this.costRates.get('storage_gb_month') || 0,
-        period: { start: periodStart, end: periodEnd }
+        period: { start: periodStart, end: periodEnd },
       });
     }
 
@@ -190,7 +190,7 @@ export class CostTrackingService {
         quantity: usage.rpcRequests,
         unit: 'requests',
         unitCost: this.costRates.get('rpc_request') || 0,
-        period: { start: periodStart, end: periodEnd }
+        period: { start: periodStart, end: periodEnd },
       });
     }
   }
@@ -198,15 +198,15 @@ export class CostTrackingService {
   // Get cost breakdown for organization
   async getCostBreakdown(
     orgId: string,
-    period: { start: Date; end: Date }
+    period: { start: Date; end: Date },
   ): Promise<CostBreakdown> {
     const allCosts: CostItem[] = [];
-    
+
     // Collect all costs for the organization
     for (const [key, costs] of this.costItems.entries()) {
       if (key.startsWith(`${orgId}:`)) {
-        const filtered = costs.filter(c => 
-          c.timestamp >= period.start && c.timestamp <= period.end
+        const filtered = costs.filter(c =>
+          c.timestamp >= period.start && c.timestamp <= period.end,
         );
         allCosts.push(...filtered);
       }
@@ -248,7 +248,7 @@ export class CostTrackingService {
       byUser,
       byResource,
       trends,
-      projections
+      projections,
     };
   }
 
@@ -305,7 +305,7 @@ export class CostTrackingService {
     return {
       nextMonth: dailyAverage * 30,
       nextQuarter: dailyAverage * 90,
-      nextYear: dailyAverage * 365
+      nextYear: dailyAverage * 365,
     };
   }
 
@@ -327,7 +327,7 @@ export class CostTrackingService {
       ...budget,
       orgId,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.budgets.set(orgId, budgetData);
@@ -353,8 +353,8 @@ export class CostTrackingService {
 
       // Check warning threshold
       if (percentage >= budget.alertThresholds.warning && percentage < budget.alertThresholds.critical) {
-        await this.createCostAlert(orgId, 'cost_threshold', 'medium', 
-          `Budget warning: ${percentage.toFixed(1)}% of ${budget.period} budget used`, 
+        await this.createCostAlert(orgId, 'cost_threshold', 'medium',
+          `Budget warning: ${percentage.toFixed(1)}% of ${budget.period} budget used`,
           totalCost, budgetAmount);
       }
 
@@ -376,26 +376,26 @@ export class CostTrackingService {
     let end: Date;
 
     switch (budget.period) {
-      case 'daily':
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-        break;
-      case 'weekly':
-        const dayOfWeek = now.getDay();
-        start = new Date(now.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
-        end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'monthly':
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-        break;
-      case 'yearly':
-        start = new Date(now.getFullYear(), 0, 1);
-        end = new Date(now.getFullYear() + 1, 0, 1);
-        break;
-      default:
-        start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        end = now;
+    case 'daily':
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+      break;
+    case 'weekly':
+      const dayOfWeek = now.getDay();
+      start = new Date(now.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
+      end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'monthly':
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      break;
+    case 'yearly':
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date(now.getFullYear() + 1, 0, 1);
+      break;
+    default:
+      start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      end = now;
     }
 
     return { start, end };
@@ -423,11 +423,11 @@ export class CostTrackingService {
     severity: CostAlert['severity'],
     message: string,
     currentCost: number,
-    threshold: number
+    threshold: number,
   ): Promise<void> {
     const alertId = `${orgId}:${type}:${Date.now()}`;
     const key = `${orgId}:${type}`;
-    
+
     const existingAlerts = this.costAlerts.get(key) || [];
     const existingAlert = existingAlerts.find(a => !a.acknowledged);
 
@@ -448,7 +448,7 @@ export class CostTrackingService {
         currentCost,
         threshold,
         timestamp: new Date(),
-        acknowledged: false
+        acknowledged: false,
       };
 
       existingAlerts.push(alert);
@@ -461,7 +461,7 @@ export class CostTrackingService {
   // Get cost alerts for organization
   async getCostAlerts(orgId: string): Promise<CostAlert[]> {
     const allAlerts: CostAlert[] = [];
-    
+
     for (const [key, alerts] of this.costAlerts.entries()) {
       if (key.startsWith(`${orgId}:`)) {
         allAlerts.push(...alerts);
@@ -491,7 +491,7 @@ export class CostTrackingService {
     const recommendations: string[] = [];
     const breakdown = await this.getCostBreakdown(orgId, {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      end: new Date()
+      end: new Date(),
     });
 
     // Check for high API costs
@@ -529,12 +529,12 @@ export class CostTrackingService {
   }> {
     const endDate = new Date();
     const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
-    
+
     const breakdown = await this.getCostBreakdown(orgId, { start: startDate, end: endDate });
-    
+
     const dates = breakdown.trends.daily.map(day => day.date);
     const costs = breakdown.trends.daily.map(day => day.cost);
-    
+
     let cumulative = 0;
     const cumulativeCosts = costs.map(cost => {
       cumulative += cost;
@@ -544,7 +544,7 @@ export class CostTrackingService {
     return {
       dates,
       costs,
-      cumulative: cumulativeCosts
+      cumulative: cumulativeCosts,
     };
   }
 

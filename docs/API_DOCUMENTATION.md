@@ -14,9 +14,11 @@ The Gorge API provides comprehensive blockchain infrastructure monitoring capabi
 ## 🔐 **Authentication**
 
 ### **POST** `/auth/login`
+
 Authenticate user and receive access token.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -26,6 +28,7 @@ Authenticate user and receive access token.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -51,9 +54,11 @@ Authenticate user and receive access token.
 ---
 
 ### **POST** `/auth/register`
+
 Register a new user account.
 
 **Request Body (Individual):**
+
 ```json
 {
   "registrationType": "individual",
@@ -75,6 +80,7 @@ Register a new user account.
 ```
 
 **Request Body (Organization):**
+
 ```json
 {
   "registrationType": "organization",
@@ -101,6 +107,7 @@ Register a new user account.
 ```
 
 **Request Body (Join Organization):**
+
 ```json
 {
   "registrationType": "join_organization",
@@ -119,6 +126,7 @@ Register a new user account.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -144,9 +152,11 @@ Register a new user account.
 ---
 
 ### **POST** `/auth/refresh`
+
 Refresh access token using refresh token.
 
 **Request Body:**
+
 ```json
 {
   "refreshToken": "refresh-token-here"
@@ -154,6 +164,7 @@ Refresh access token using refresh token.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -170,14 +181,17 @@ Refresh access token using refresh token.
 ---
 
 ### **GET** `/auth/profile`
+
 Get current user profile.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -238,14 +252,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **PUT** `/auth/profile`
+
 Update current user profile.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "firstName": "John",
@@ -262,6 +279,7 @@ Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -295,14 +313,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **PUT** `/auth/change-password`
+
 Change user password.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "currentPassword": "oldpassword123",
@@ -312,6 +333,7 @@ Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -324,9 +346,11 @@ Authorization: Bearer <access-token>
 ---
 
 ### **POST** `/auth/forgot-password`
+
 Request password reset email.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com"
@@ -334,6 +358,7 @@ Request password reset email.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -348,9 +373,11 @@ Request password reset email.
 ---
 
 ### **POST** `/auth/reset-password`
+
 Reset password using reset token.
 
 **Request Body:**
+
 ```json
 {
   "token": "reset-token-here",
@@ -360,6 +387,7 @@ Reset password using reset token.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -374,14 +402,17 @@ Reset password using reset token.
 ---
 
 ### **POST** `/auth/logout`
+
 Logout user and invalidate tokens.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -396,18 +427,22 @@ Authorization: Bearer <access-token>
 ## 🔗 **RPC Management**
 
 ### **GET** `/rpcs`
+
 Get all RPC configurations for the authenticated user.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Query Parameters:**
+
 - `limit` (optional): Number of results per page (default: 50)
 - `offset` (optional): Number of results to skip (default: 0)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -439,14 +474,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **GET** `/rpcs/{rpcId}`
+
 Get specific RPC configuration.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -476,14 +514,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **POST** `/rpcs`
+
 Create new RPC configuration.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Ethereum Mainnet",
@@ -497,6 +538,7 @@ Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -526,14 +568,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **PUT** `/rpcs/{rpcId}`
+
 Update RPC configuration.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Ethereum Mainnet Updated",
@@ -544,6 +589,7 @@ Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -573,14 +619,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **DELETE** `/rpcs/{rpcId}`
+
 Delete RPC configuration.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -593,14 +642,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **GET** `/rpcs/{rpcId}/status`
+
 Get current status of RPC endpoint.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -623,18 +675,22 @@ Authorization: Bearer <access-token>
 ---
 
 ### **GET** `/rpcs/{rpcId}/metrics`
+
 Get metrics for RPC endpoint.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Query Parameters:**
+
 - `timeRange` (optional): Time range for metrics (default: "24h")
   - Options: "1h", "24h", "7d", "30d"
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -676,14 +732,17 @@ Authorization: Bearer <access-token>
 ---
 
 ### **PUT** `/rpcs/{rpcId}/toggle`
+
 Toggle RPC enabled/disabled status.
 
 **Headers:**
+
 ```
 Authorization: Bearer <access-token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "enabled": false
@@ -691,6 +750,7 @@ Authorization: Bearer <access-token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -720,9 +780,11 @@ Authorization: Bearer <access-token>
 ---
 
 ### **POST** `/rpcs/test`
+
 Test RPC connection without saving.
 
 **Request Body:**
+
 ```json
 {
   "name": "Test RPC",
@@ -734,6 +796,7 @@ Test RPC connection without saving.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -754,9 +817,11 @@ Test RPC connection without saving.
 ## 🏥 **Health & System**
 
 ### **GET** `/health`
+
 Get system health status.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -783,6 +848,7 @@ Get system health status.
 ## 📊 **Error Responses**
 
 ### **400 Bad Request**
+
 ```json
 {
   "success": false,
@@ -799,6 +865,7 @@ Get system health status.
 ```
 
 ### **401 Unauthorized**
+
 ```json
 {
   "success": false,
@@ -809,6 +876,7 @@ Get system health status.
 ```
 
 ### **403 Forbidden**
+
 ```json
 {
   "success": false,
@@ -819,6 +887,7 @@ Get system health status.
 ```
 
 ### **404 Not Found**
+
 ```json
 {
   "success": false,
@@ -829,6 +898,7 @@ Get system health status.
 ```
 
 ### **429 Too Many Requests**
+
 ```json
 {
   "success": false,
@@ -842,6 +912,7 @@ Get system health status.
 ```
 
 ### **500 Internal Server Error**
+
 ```json
 {
   "success": false,
@@ -855,13 +926,13 @@ Get system health status.
 
 ## 🔒 **Rate Limiting**
 
-| Endpoint Category | Rate Limit | Window |
-|------------------|------------|--------|
-| Authentication | 5 requests | 15 minutes |
-| Registration | 3 requests | 15 minutes |
-| RPC Creation | 10 requests | 15 minutes |
-| General API | 100 requests | 15 minutes |
-| Password Reset | 3 requests | 15 minutes |
+| Endpoint Category | Rate Limit   | Window     |
+| ----------------- | ------------ | ---------- |
+| Authentication    | 5 requests   | 15 minutes |
+| Registration      | 3 requests   | 15 minutes |
+| RPC Creation      | 10 requests  | 15 minutes |
+| General API       | 100 requests | 15 minutes |
+| Password Reset    | 3 requests   | 15 minutes |
 
 ---
 
@@ -874,6 +945,7 @@ Authorization: Bearer <your-jwt-token>
 ```
 
 **Token Expiration:**
+
 - Access Token: 1 hour
 - Refresh Token: 7 days
 
@@ -882,53 +954,57 @@ Authorization: Bearer <your-jwt-token>
 ## 📝 **Data Types**
 
 ### **EVM Networks**
+
 ```typescript
 enum EVM_NETWORKS {
-  ETHEREUM = 'ethereum',
-  POLYGON = 'polygon',
-  BSC = 'bsc',
-  ARBITRUM = 'arbitrum',
-  OPTIMISM = 'optimism',
-  AVALANCHE = 'avalanche',
-  FANTOM = 'fantom',
-  ETHEREUM_GOERLI = 'ethereum-goerli',
-  POLYGON_MUMBAI = 'polygon-mumbai'
+  ETHEREUM = "ethereum",
+  POLYGON = "polygon",
+  BSC = "bsc",
+  ARBITRUM = "arbitrum",
+  OPTIMISM = "optimism",
+  AVALANCHE = "avalanche",
+  FANTOM = "fantom",
+  ETHEREUM_GOERLI = "ethereum-goerli",
+  POLYGON_MUMBAI = "polygon-mumbai",
 }
 ```
 
 ### **User Roles**
+
 ```typescript
 enum UserRole {
-  SUPER_ADMIN = 'super_admin',
-  ADMIN = 'admin',
-  ORG_ADMIN = 'org_admin',
-  DEVELOPER = 'developer',
-  VIEWER = 'viewer',
-  BILLING = 'billing',
-  USER = 'user'
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  ORG_ADMIN = "org_admin",
+  DEVELOPER = "developer",
+  VIEWER = "viewer",
+  BILLING = "billing",
+  USER = "user",
 }
 ```
 
 ### **Organization Plans**
+
 ```typescript
 enum OrganizationPlan {
-  FREE = 'free',
-  PRO = 'pro',
-  ENTERPRISE = 'enterprise'
+  FREE = "free",
+  PRO = "pro",
+  ENTERPRISE = "enterprise",
 }
 ```
 
 ### **Industries**
+
 ```typescript
 enum Industry {
-  DEFI = 'defi',
-  NFT = 'nft',
-  GAMING = 'gaming',
-  ENTERPRISE = 'enterprise',
-  STARTUP = 'startup',
-  RESEARCH = 'research',
-  EDUCATION = 'education',
-  OTHER = 'other'
+  DEFI = "defi",
+  NFT = "nft",
+  GAMING = "gaming",
+  ENTERPRISE = "enterprise",
+  STARTUP = "startup",
+  RESEARCH = "research",
+  EDUCATION = "education",
+  OTHER = "other",
 }
 ```
 
@@ -947,6 +1023,7 @@ enum Industry {
 ## 📞 **Support**
 
 For API support and questions:
+
 - **Email:** support@thegorge.com
 - **Documentation:** https://docs.thegorge.com
 - **Status Page:** https://status.thegorge.com
@@ -956,6 +1033,7 @@ For API support and questions:
 ## 🔄 **Changelog**
 
 ### **v1.0.0** (2024-01-01)
+
 - Initial API release
 - User authentication and registration
 - RPC management endpoints

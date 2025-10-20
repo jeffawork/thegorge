@@ -97,20 +97,20 @@ export class RPCSyncMonitoringService {
           rpc: true,
           websocket: true,
           tracing: true,
-          debug: true
+          debug: true,
         },
         storageRequirements: {
           minGB: 1000,
           recommendedGB: 2000,
-          maxGB: 5000
+          maxGB: 5000,
         },
         performance: {
           maxRPS: 1000,
           avgResponseTime: 200,
-          maxConcurrentConnections: 100
+          maxConcurrentConnections: 100,
         },
         supportedChains: [1, 137, 56, 42161, 10],
-        isActive: true
+        isActive: true,
       },
       {
         id: 'full-node',
@@ -124,20 +124,20 @@ export class RPCSyncMonitoringService {
           rpc: true,
           websocket: true,
           tracing: false,
-          debug: false
+          debug: false,
         },
         storageRequirements: {
           minGB: 500,
           recommendedGB: 1000,
-          maxGB: 2000
+          maxGB: 2000,
         },
         performance: {
           maxRPS: 2000,
           avgResponseTime: 100,
-          maxConcurrentConnections: 200
+          maxConcurrentConnections: 200,
         },
         supportedChains: [1, 137, 56, 42161, 10],
-        isActive: true
+        isActive: true,
       },
       {
         id: 'light-client',
@@ -151,20 +151,20 @@ export class RPCSyncMonitoringService {
           rpc: true,
           websocket: false,
           tracing: false,
-          debug: false
+          debug: false,
         },
         storageRequirements: {
           minGB: 10,
           recommendedGB: 50,
-          maxGB: 100
+          maxGB: 100,
         },
         performance: {
           maxRPS: 500,
           avgResponseTime: 500,
-          maxConcurrentConnections: 50
+          maxConcurrentConnections: 50,
         },
         supportedChains: [1, 137, 56, 42161, 10],
-        isActive: true
+        isActive: true,
       },
       {
         id: 'validator-node',
@@ -178,21 +178,21 @@ export class RPCSyncMonitoringService {
           rpc: true,
           websocket: true,
           tracing: true,
-          debug: true
+          debug: true,
         },
         storageRequirements: {
           minGB: 800,
           recommendedGB: 1500,
-          maxGB: 3000
+          maxGB: 3000,
         },
         performance: {
           maxRPS: 1500,
           avgResponseTime: 150,
-          maxConcurrentConnections: 150
+          maxConcurrentConnections: 150,
         },
         supportedChains: [1, 137, 56, 42161, 10],
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     types.forEach(type => {
@@ -212,7 +212,7 @@ export class RPCSyncMonitoringService {
     try {
       const syncState = await this.checkSyncState(rpcId, orgId, chainId, rpcUrl);
       this.syncStates.set(rpcId, syncState);
-      
+
       // Store in history
       const history = this.syncHistory.get(rpcId) || [];
       history.push(syncState);
@@ -229,12 +229,12 @@ export class RPCSyncMonitoringService {
         orgId,
         syncStatus: syncState.syncStatus,
         syncProgress: syncState.syncProgress,
-        blocksBehind: syncState.blocksBehind
+        blocksBehind: syncState.blocksBehind,
       });
 
       return syncState;
     } catch (error) {
-      rpcLogger.error('Failed to monitor RPC sync', { rpcId, orgId, error: error.message });
+      rpcLogger.error('Failed to monitor RPC sync', { rpcId, orgId, error: (error as Error).message });
       throw error;
     }
   }
@@ -246,7 +246,7 @@ export class RPCSyncMonitoringService {
     const latestBlock = currentBlock + Math.floor(Math.random() * 100) - 50; // ±50 blocks
     const blocksBehind = Math.max(0, latestBlock - currentBlock);
     const syncProgress = Math.min(100, (currentBlock / latestBlock) * 100);
-    
+
     let syncStatus: RPCSyncState['syncStatus'];
     if (blocksBehind === 0) {
       syncStatus = 'synced';
@@ -283,8 +283,8 @@ export class RPCSyncMonitoringService {
         nodeVersion: 'v1.12.0',
         networkId: chainId,
         protocolVersion: '0x5',
-        clientType: 'geth'
-      }
+        clientType: 'geth',
+      },
     };
   }
 
@@ -293,21 +293,21 @@ export class RPCSyncMonitoringService {
     let score = 100;
 
     switch (syncStatus) {
-      case 'synced':
-        score = 100;
-        break;
-      case 'syncing':
-        score = 90 - (blocksBehind * 0.5);
-        break;
-      case 'behind':
-        score = 70 - (blocksBehind * 0.3);
-        break;
-      case 'stuck':
-        score = 30;
-        break;
-      case 'unknown':
-        score = 0;
-        break;
+    case 'synced':
+      score = 100;
+      break;
+    case 'syncing':
+      score = 90 - (blocksBehind * 0.5);
+      break;
+    case 'behind':
+      score = 70 - (blocksBehind * 0.3);
+      break;
+    case 'stuck':
+      score = 30;
+      break;
+    case 'unknown':
+      score = 0;
+      break;
     }
 
     // Adjust based on sync progress
@@ -359,7 +359,7 @@ export class RPCSyncMonitoringService {
         blocksBehind: syncState.blocksBehind,
         syncProgress: syncState.syncProgress,
         timestamp: new Date(),
-        isAcknowledged: false
+        isAcknowledged: false,
       });
     }
 
@@ -377,7 +377,7 @@ export class RPCSyncMonitoringService {
         blocksBehind: syncState.blocksBehind,
         syncProgress: syncState.syncProgress,
         timestamp: new Date(),
-        isAcknowledged: false
+        isAcknowledged: false,
       });
     }
 
@@ -395,7 +395,7 @@ export class RPCSyncMonitoringService {
         blocksBehind: syncState.blocksBehind,
         syncProgress: syncState.syncProgress,
         timestamp: new Date(),
-        isAcknowledged: false
+        isAcknowledged: false,
       });
     }
 
@@ -410,7 +410,7 @@ export class RPCSyncMonitoringService {
         alertId: alert.id,
         rpcId: alert.rpcId,
         type: alert.type,
-        severity: alert.severity
+        severity: alert.severity,
       });
     }
   }
@@ -434,7 +434,7 @@ export class RPCSyncMonitoringService {
   // Get sync alerts for organization
   getSyncAlerts(orgId: string, rpcId?: string, limit: number = 100): SyncAlert[] {
     const allAlerts: SyncAlert[] = [];
-    
+
     for (const [key, alerts] of this.syncAlerts.entries()) {
       if (key.startsWith(`${orgId}:`)) {
         if (!rpcId || key.includes(`:${rpcId}`)) {
@@ -478,12 +478,12 @@ export class RPCSyncMonitoringService {
     // This would make actual RPC calls to determine capabilities
     // For now, return a random type
     const types = Array.from(this.rpcTypes.values());
-    const supportedTypes = types.filter(type => 
-      type.supportedChains.includes(chainId) && type.isActive
+    const supportedTypes = types.filter(type =>
+      type.supportedChains.includes(chainId) && type.isActive,
     );
-    
+
     return Promise.resolve(
-      supportedTypes[Math.floor(Math.random() * supportedTypes.length)] || null
+      supportedTypes[Math.floor(Math.random() * supportedTypes.length)] || null,
     );
   }
 
@@ -507,11 +507,11 @@ export class RPCSyncMonitoringService {
       syncingRPCs: states.filter(s => s.syncStatus === 'syncing').length,
       behindRPCs: states.filter(s => s.syncStatus === 'behind').length,
       stuckRPCs: states.filter(s => s.syncStatus === 'stuck').length,
-      averageHealthScore: states.length > 0 
-        ? states.reduce((sum, s) => sum + s.healthScore, 0) / states.length 
+      averageHealthScore: states.length > 0
+        ? states.reduce((sum, s) => sum + s.healthScore, 0) / states.length
         : 0,
       totalAlerts: alerts.length,
-      unacknowledgedAlerts: alerts.filter(a => !a.isAcknowledged).length
+      unacknowledgedAlerts: alerts.filter(a => !a.isAcknowledged).length,
     };
 
     return stats;
@@ -524,7 +524,7 @@ export class RPCSyncMonitoringService {
         // In real implementation, you'd have the RPC URL stored
         await this.monitorRPCSync(rpcId, syncState.orgId, syncState.chainId, '');
       } catch (error) {
-        rpcLogger.error('Failed to monitor sync state', { rpcId, error: error.message });
+        rpcLogger.error('Failed to monitor sync state', { rpcId, error: (error as Error).message });
       }
     }
   }
@@ -535,7 +535,7 @@ export class RPCSyncMonitoringService {
     totalAlerts: number;
     totalHistoryRecords: number;
     averageHealthScore: number;
-  } {
+    } {
     let totalAlerts = 0;
     for (const alerts of this.syncAlerts.values()) {
       totalAlerts += alerts.length;
@@ -547,15 +547,15 @@ export class RPCSyncMonitoringService {
     }
 
     const allStates = Array.from(this.syncStates.values());
-    const averageHealthScore = allStates.length > 0 
-      ? allStates.reduce((sum, s) => sum + s.healthScore, 0) / allStates.length 
+    const averageHealthScore = allStates.length > 0
+      ? allStates.reduce((sum, s) => sum + s.healthScore, 0) / allStates.length
       : 0;
 
     return {
       totalSyncStates: this.syncStates.size,
       totalAlerts,
       totalHistoryRecords,
-      averageHealthScore
+      averageHealthScore,
     };
   }
 

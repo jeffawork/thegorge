@@ -9,10 +9,24 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'user' CHECK (role IN ('admin', 'user', 'viewer')),
+    role VARCHAR(50) DEFAULT 'user' CHECK (role IN ('super_admin', 'admin', 'org_admin', 'developer', 'viewer', 'billing', 'user')),
     avatar_url VARCHAR(500),
+    phone_number VARCHAR(20),
+    job_title VARCHAR(255),
+    company VARCHAR(255),
+    website VARCHAR(500),
+    bio TEXT,
+    timezone VARCHAR(50) DEFAULT 'UTC',
+    organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+    department VARCHAR(255),
+    manager_email VARCHAR(255),
     is_active BOOLEAN DEFAULT true,
+    email_verified BOOLEAN DEFAULT false,
+    marketing_consent BOOLEAN DEFAULT false,
+    two_factor_enabled BOOLEAN DEFAULT false,
     last_login_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -136,6 +150,15 @@ CREATE TABLE IF NOT EXISTS api_keys (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Password reset tokens table
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(500) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Audit logs table
 CREATE TABLE IF NOT EXISTS audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -153,6 +176,9 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
+CREATE INDEX IF NOT EXISTS idx_users_organization_id ON users(organization_id);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_email_verified ON users(email_verified);
 CREATE INDEX IF NOT EXISTS idx_rpc_configs_user_id ON rpc_configs(user_id);
 CREATE INDEX IF NOT EXISTS idx_rpc_configs_org_id ON rpc_configs(organization_id);
 CREATE INDEX IF NOT EXISTS idx_rpc_configs_enabled ON rpc_configs(enabled);
@@ -167,6 +193,9 @@ CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON metrics(timestamp);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_org_id ON audit_logs(organization_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -197,13 +226,16 @@ VALUES (
 ) ON CONFLICT (slug) DO NOTHING;
 
 -- Insert default admin user (password: admin123)
-INSERT INTO users (id, email, password_hash, name, role, is_active) 
+INSERT INTO users (id, email, password_hash, first_name, last_name, name, role, is_active, email_verified) 
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'admin@thegorge.com',
     '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- admin123
+    'Admin',
+    'User',
     'Admin User',
     'admin',
+    true,
     true
 ) ON CONFLICT (email) DO NOTHING;
 

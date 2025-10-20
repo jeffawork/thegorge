@@ -8,6 +8,8 @@ function StepPersonalInfo() {
   const {
     register,
     formState: { errors },
+    trigger,
+    getValues,
   } = useFormContext();
 
   // Personal Information Step for Individual Registration
@@ -34,6 +36,11 @@ function StepPersonalInfo() {
             Last Name
           </Label>
           <Input {...register('lastName')} placeholder="Last Name" />
+          {errors.lastName && (
+            <p className="text-sm text-red-500">
+              {errors.lastName.message as string}
+            </p>
+          )}
         </div>
         <div>
           <Label className="text-primary-foreground/45" htmlFor="email">
@@ -90,6 +97,10 @@ function StepPersonalInfo() {
             placeholder="Confirm Password"
             type="password"
             variant="password"
+            onChange={(e) => {
+              // Update field and validate in real time
+              trigger('confirmPassword');
+            }}
           />
           {errors.confirmPassword && (
             <p className="text-sm text-red-500">

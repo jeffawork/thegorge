@@ -48,7 +48,7 @@ export class RpcConfig extends BaseModel {
       isHealthy: this.isHealthy,
       responseTime: this.responseTime,
       errorCount: this.errorCount,
-      lastError: this.lastError
+      lastError: this.lastError,
     };
   }
 
@@ -57,7 +57,7 @@ export class RpcConfig extends BaseModel {
     this.isHealthy = isHealthy;
     this.responseTime = responseTime;
     this.lastCheckedAt = new Date();
-    
+
     if (!isHealthy && error) {
       this.errorCount++;
       this.lastError = error;

@@ -17,7 +17,7 @@ const configSchema = Joi.object({
   RPC_CONFIG: Joi.string().required(),
   DASHBOARD_REFRESH_INTERVAL: Joi.number().default(5000),
   MAX_HISTORY_ENTRIES: Joi.number().default(100),
-  CLEANUP_INTERVAL_HOURS: Joi.number().default(24)
+  CLEANUP_INTERVAL_HOURS: Joi.number().default(24),
 });
 
 // Extract only the environment variables we need and convert types
@@ -33,7 +33,7 @@ const envVars = {
   RPC_CONFIG: process.env.RPC_CONFIG,
   DASHBOARD_REFRESH_INTERVAL: process.env.DASHBOARD_REFRESH_INTERVAL ? parseInt(process.env.DASHBOARD_REFRESH_INTERVAL, 10) : undefined,
   MAX_HISTORY_ENTRIES: process.env.MAX_HISTORY_ENTRIES ? parseInt(process.env.MAX_HISTORY_ENTRIES, 10) : undefined,
-  CLEANUP_INTERVAL_HOURS: process.env.CLEANUP_INTERVAL_HOURS ? parseInt(process.env.CLEANUP_INTERVAL_HOURS, 10) : undefined
+  CLEANUP_INTERVAL_HOURS: process.env.CLEANUP_INTERVAL_HOURS ? parseInt(process.env.CLEANUP_INTERVAL_HOURS, 10) : undefined,
 };
 
 const { error, value } = configSchema.validate(envVars);
@@ -46,7 +46,7 @@ if (error) {
 let rpcConfigs: RPCConfig[] = [];
 try {
   rpcConfigs = JSON.parse(value.RPC_CONFIG);
-  
+
   // Validate RPC configs
   const rpcSchema = Joi.array().items(
     Joi.object({
@@ -56,10 +56,10 @@ try {
       network: Joi.string().required(),
       timeout: Joi.number().optional(),
       enabled: Joi.boolean().default(true),
-      priority: Joi.number().default(1)
-    })
+      priority: Joi.number().default(1),
+    }),
   );
-  
+
   const { error: rpcError } = rpcSchema.validate(rpcConfigs);
   if (rpcError) {
     throw new Error(`RPC config validation error: ${rpcError.message}`);
@@ -83,9 +83,9 @@ export const config = {
     responseTime: value.ALERT_THRESHOLD_RESPONSE_TIME as number,
     errorRate: value.ALERT_THRESHOLD_ERROR_RATE as number,
     peerCount: value.ALERT_THRESHOLD_PEER_COUNT as number,
-    blockLag: value.ALERT_THRESHOLD_BLOCK_LAG as number
+    blockLag: value.ALERT_THRESHOLD_BLOCK_LAG as number,
   },
-  rpcConfigs: rpcConfigs.filter(rpc => rpc.enabled !== false)
+  rpcConfigs: rpcConfigs.filter(rpc => rpc.enabled !== false),
 };
 
 // Validate that we have at least one RPC configured

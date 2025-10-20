@@ -1,7 +1,7 @@
 import React from 'react';
-import SignUpForm from '@/app/(auth)/sign-up/_components/SignUpForm';
-import SignInForm from '@/app/(auth)/sign-in/_components/SignInForm';
-import ForgotPasswordForm from '@/app/(auth)/forgot-password/_components/ForgotPasswordForm';
+import ForgotPasswordForm from '../forgot-password/_components/ForgotPasswordForm';
+import SignInForm from '../sign-in/_components/SignInForm';
+import SignUpForm from '../sign-up/_components/SignUpForm';
 
 const AuthForm = ({ formType }: { formType: AuthFormTypes }) => {
   const formMap: Record<string, React.ReactNode> = {

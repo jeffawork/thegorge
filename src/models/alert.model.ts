@@ -8,18 +8,13 @@ export enum AlertStatus {
 }
 
 export enum AlertSeverity {
-  LOW = 'low',
   MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical'
+  // LOW, HIGH, CRITICAL removed - not currently used
 }
 
 export enum AlertType {
   RPC_DOWN = 'rpc_down',
-  HIGH_LATENCY = 'high_latency',
-  ERROR_RATE = 'error_rate',
-  QUOTA_EXCEEDED = 'quota_exceeded',
-  SECURITY_THREAT = 'security_threat'
+  // HIGH_LATENCY, ERROR_RATE, QUOTA_EXCEEDED, SECURITY_THREAT removed - not currently used
 }
 
 export class Alert extends BaseModel {
@@ -63,12 +58,12 @@ export class Alert extends BaseModel {
       metadata: this.metadata,
       resolvedAt: this.resolvedAt,
       acknowledgedAt: this.acknowledgedAt,
-      acknowledgedBy: this.acknowledgedBy
+      acknowledgedBy: this.acknowledgedBy,
     };
   }
 
   // Helper methods
-  resolve(resolvedBy?: string): void {
+  resolve(_resolvedBy?: string): void {
     this.status = AlertStatus.RESOLVED;
     this.resolvedAt = new Date();
   }

@@ -2,18 +2,21 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { StepUseCase } from '../shared/StepUseCase';
 import { StepTerms } from '../shared/StepTerms';
-import { StepNavigation } from '../StepNavigation';
+import { StepNavigation } from '../shared/StepNavigation';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useRegistrationStore } from '../_store/useRegistrationStore';
 import StepOrgDetails from './StepOrgDetails';
+import OrgPlans from './OrgPlans';
 import { organizationSchema } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
+import { useRouter } from 'next/navigation';
 
 export const OrganizationRegistration = () => {
-  const { step, type } = useRegistrationStore();
+  const { step, registrationType, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof organizationSchema>>({
     resolver: zodResolver(organizationSchema),
@@ -21,18 +24,44 @@ export const OrganizationRegistration = () => {
   });
 
   const stepFields = [
-    ['orgName', 'orgEmail', 'orgPhone', 'password', 'confirmPassword'],
-    ['industry', 'useCase', 'experience'],
-    ['termsAccepted'], // final step
+    [
+      'organizationName',
+      'organizationSlug',
+      'organizationDescription',
+      'organizationSize',
+      'industry',
+      'firstName',
+      'lastName',
+      'email',
+      'password',
+      'confirmPassword',
+    ],
+    [
+      'organizationWebsite',
+      'organizationAddress',
+      'organizationCountry',
+      'organizationTimezone',
+    ],
+    ['plan', 'expectedRpcUsage'],
+    ['industry', 'useCase', 'blockchainExperience'],
+    ['acceptTerms', 'marketingConsent'], // final step
   ];
   const handleFinalSubmit = (data: any) => {
-    console.log('Submitting Organization Registration:', { ...data, type });
+    console.log('Submitting Organization Registration:', {
+      ...data,
+      registrationType,
+    });
+    if (data) {
+      router.push('/sign-in');
+      reset();
+    }
   };
 
   const steps = [
     <StepOrgDetails key={0} />,
-    <StepUseCase key={1} />,
-    <StepTerms key={2} />,
+    <OrgPlans key={1} />,
+    <StepUseCase key={2} />,
+    <StepTerms key={3} />,
   ];
 
   return (

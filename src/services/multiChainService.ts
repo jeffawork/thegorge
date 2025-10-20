@@ -124,7 +124,7 @@ export class MultiChainService {
         nativeCurrency: {
           name: 'Ether',
           symbol: 'ETH',
-          decimals: 18
+          decimals: 18,
         },
         features: ['smart-contracts', 'defi', 'nft', 'layer2'],
         consensus: 'pos',
@@ -133,7 +133,7 @@ export class MultiChainService {
         maxGasLimit: 30000000,
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'polygon-mainnet',
@@ -145,7 +145,7 @@ export class MultiChainService {
         nativeCurrency: {
           name: 'Polygon',
           symbol: 'MATIC',
-          decimals: 18
+          decimals: 18,
         },
         features: ['smart-contracts', 'defi', 'nft', 'layer2'],
         consensus: 'pos',
@@ -154,7 +154,7 @@ export class MultiChainService {
         maxGasLimit: 30000000,
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'bsc-mainnet',
@@ -166,7 +166,7 @@ export class MultiChainService {
         nativeCurrency: {
           name: 'Binance Coin',
           symbol: 'BNB',
-          decimals: 18
+          decimals: 18,
         },
         features: ['smart-contracts', 'defi', 'nft'],
         consensus: 'pos',
@@ -175,7 +175,7 @@ export class MultiChainService {
         maxGasLimit: 30000000,
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'arbitrum-mainnet',
@@ -187,7 +187,7 @@ export class MultiChainService {
         nativeCurrency: {
           name: 'Ether',
           symbol: 'ETH',
-          decimals: 18
+          decimals: 18,
         },
         features: ['smart-contracts', 'defi', 'nft', 'layer2', 'rollup'],
         consensus: 'pos',
@@ -196,7 +196,7 @@ export class MultiChainService {
         maxGasLimit: 30000000,
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'optimism-mainnet',
@@ -208,7 +208,7 @@ export class MultiChainService {
         nativeCurrency: {
           name: 'Ether',
           symbol: 'ETH',
-          decimals: 18
+          decimals: 18,
         },
         features: ['smart-contracts', 'defi', 'nft', 'layer2', 'rollup'],
         consensus: 'pos',
@@ -217,8 +217,8 @@ export class MultiChainService {
         maxGasLimit: 30000000,
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     ];
 
     defaultChains.forEach(chain => {
@@ -248,7 +248,7 @@ export class MultiChainService {
         this.storeChainMetrics(chainId, metrics);
         multiChainLogger.debug('Chain metrics collected', { chainId, blockNumber: metrics.blockNumber });
       } catch (error) {
-        multiChainLogger.error('Failed to collect chain metrics', { chainId, error: error.message });
+        multiChainLogger.error('Failed to collect chain metrics', { chainId, error: (error as Error).message });
       }
     }
   }
@@ -286,7 +286,7 @@ export class MultiChainService {
       syncStatus: syncProgress > 95 ? 'synced' : 'syncing',
       syncProgress,
       healthScore: this.calculateHealthScore(chainId, config),
-      uptime: Math.random() * 10 + 90 // 90-100% uptime
+      uptime: Math.random() * 10 + 90, // 90-100% uptime
     };
 
     return metrics;
@@ -337,7 +337,7 @@ export class MultiChainService {
   private async generateHealthReport(chainId: string, config: ChainConfig): Promise<ChainHealthReport> {
     const metrics = this.chainMetrics.get(chainId) || [];
     const latest = metrics[metrics.length - 1];
-    
+
     if (!latest) {
       return {
         chainId,
@@ -347,15 +347,15 @@ export class MultiChainService {
           responseTime: 0,
           errorRate: 0,
           syncStatus: 0,
-          peerCount: 0
+          peerCount: 0,
         },
         issues: [{
           type: 'critical',
           message: 'No metrics available',
-          timestamp: new Date()
+          timestamp: new Date(),
         }],
         recommendations: ['Check RPC connection', 'Verify chain configuration'],
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     }
 
@@ -367,7 +367,7 @@ export class MultiChainService {
       issues.push({
         type: 'warning',
         message: `Chain is not fully synced (${latest.syncProgress.toFixed(1)}%)`,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
       recommendations.push('Wait for chain to complete synchronization');
     }
@@ -377,7 +377,7 @@ export class MultiChainService {
       issues.push({
         type: 'warning',
         message: `Low peer count (${latest.peerCount})`,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
       recommendations.push('Check network connectivity and peer discovery');
     }
@@ -387,7 +387,7 @@ export class MultiChainService {
       issues.push({
         type: 'error',
         message: `Low uptime (${latest.uptime.toFixed(1)}%)`,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
       recommendations.push('Investigate recent downtime and improve reliability');
     }
@@ -397,7 +397,7 @@ export class MultiChainService {
       issues.push({
         type: 'warning',
         message: `High gas price (${(latest.gasPrice / 1000000000).toFixed(1)} gwei)`,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
       recommendations.push('Consider using layer 2 solutions or wait for lower gas prices');
     }
@@ -412,11 +412,11 @@ export class MultiChainService {
         responseTime: 1000, // Simulated response time
         errorRate: 100 - latest.uptime,
         syncStatus: latest.syncProgress,
-        peerCount: latest.peerCount
+        peerCount: latest.peerCount,
       },
       issues,
       recommendations,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
   }
 
@@ -425,7 +425,7 @@ export class MultiChainService {
     const chain: ChainConfig = {
       ...chainConfig,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.chainConfigs.set(chain.id, chain);
@@ -441,7 +441,7 @@ export class MultiChainService {
     const updatedChain = {
       ...chain,
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.chainConfigs.set(chainId, updatedChain);
@@ -499,13 +499,13 @@ export class MultiChainService {
       transactionCount: {},
       activeAddresses: {},
       totalValueLocked: {},
-      networkHashRate: {}
+      networkHashRate: {},
     };
 
     for (const chainId of chainIds) {
       const config = this.chainConfigs.get(chainId);
       const latestMetrics = this.getChainMetrics(chainId, 1)[0];
-      
+
       if (config && latestMetrics) {
         metrics.blockTime[chainId] = config.blockTime;
         metrics.gasPrice[chainId] = latestMetrics.gasPrice;
@@ -519,7 +519,7 @@ export class MultiChainService {
     return {
       chains: chainIds,
       metrics,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
@@ -528,7 +528,7 @@ export class MultiChainService {
     const crossChainTx: CrossChainTransaction = {
       ...transaction,
       id: `cctx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      startTime: new Date()
+      startTime: new Date(),
     };
 
     const key = `${crossChainTx.sourceChain}:${crossChainTx.targetChain}`;
@@ -540,7 +540,7 @@ export class MultiChainService {
       id: crossChainTx.id,
       sourceChain: crossChainTx.sourceChain,
       targetChain: crossChainTx.targetChain,
-      amount: crossChainTx.amount
+      amount: crossChainTx.amount,
     });
 
     return crossChainTx.id;
@@ -550,7 +550,7 @@ export class MultiChainService {
   async updateCrossChainTransactionStatus(
     transactionId: string,
     status: CrossChainTransaction['status'],
-    targetTxHash?: string
+    targetTxHash?: string,
   ): Promise<boolean> {
     for (const [key, transactions] of this.crossChainTransactions.entries()) {
       const transaction = transactions.find(tx => tx.id === transactionId);
@@ -566,7 +566,7 @@ export class MultiChainService {
         multiChainLogger.info('Cross-chain transaction status updated', {
           id: transactionId,
           status,
-          targetTxHash
+          targetTxHash,
         });
         return true;
       }
@@ -577,14 +577,14 @@ export class MultiChainService {
   // Get cross-chain transactions
   getCrossChainTransactions(sourceChain?: string, targetChain?: string): CrossChainTransaction[] {
     const allTransactions: CrossChainTransaction[] = [];
-    
+
     for (const transactions of this.crossChainTransactions.values()) {
       allTransactions.push(...transactions);
     }
 
     if (sourceChain && targetChain) {
-      return allTransactions.filter(tx => 
-        tx.sourceChain === sourceChain && tx.targetChain === targetChain
+      return allTransactions.filter(tx =>
+        tx.sourceChain === sourceChain && tx.targetChain === targetChain,
       );
     } else if (sourceChain) {
       return allTransactions.filter(tx => tx.sourceChain === sourceChain);
@@ -602,7 +602,7 @@ export class MultiChainService {
     totalMetrics: number;
     totalCrossChainTransactions: number;
     averageHealthScore: number;
-  } {
+    } {
     let totalMetrics = 0;
     for (const metrics of this.chainMetrics.values()) {
       totalMetrics += metrics.length;
@@ -614,8 +614,8 @@ export class MultiChainService {
     }
 
     const healthReports = Array.from(this.chainHealthReports.values());
-    const averageHealthScore = healthReports.length > 0 
-      ? healthReports.reduce((sum, report) => sum + report.overallHealth, 0) / healthReports.length 
+    const averageHealthScore = healthReports.length > 0
+      ? healthReports.reduce((sum, report) => sum + report.overallHealth, 0) / healthReports.length
       : 0;
 
     return {
@@ -623,7 +623,7 @@ export class MultiChainService {
       activeChains: Array.from(this.chainConfigs.values()).filter(chain => chain.isActive).length,
       totalMetrics,
       totalCrossChainTransactions,
-      averageHealthScore
+      averageHealthScore,
     };
   }
 
