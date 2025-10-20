@@ -76,10 +76,10 @@ export class AnomalyDetectionService {
       parameters: {
         threshold: 2.5, // Z-score threshold
         windowSize: 100, // Number of data points to consider
-        minDataPoints: 20 // Minimum data points required
+        minDataPoints: 20, // Minimum data points required
       },
       trainingData: [],
-      isTrained: false
+      isTrained: false,
     };
 
     // Machine learning model (simplified)
@@ -90,10 +90,10 @@ export class AnomalyDetectionService {
       parameters: {
         contamination: 0.1, // Expected proportion of anomalies
         nEstimators: 100,
-        maxSamples: 256
+        maxSamples: 256,
       },
       trainingData: [],
-      isTrained: false
+      isTrained: false,
     };
 
     // Rule-based model
@@ -104,10 +104,10 @@ export class AnomalyDetectionService {
       parameters: {
         spikeThreshold: 3.0, // 3x normal value
         dropThreshold: 0.3, // 30% of normal value
-        trendChangeThreshold: 0.5 // 50% change in trend
+        trendChangeThreshold: 0.5, // 50% change in trend
       },
       trainingData: [],
-      isTrained: true
+      isTrained: true,
     };
 
     this.anomalyModels.set(statisticalModel.id, statisticalModel);
@@ -124,7 +124,7 @@ export class AnomalyDetectionService {
         pattern: 'response_time > 5000ms',
         severity: 'high',
         isActive: true,
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       {
         id: 'error-rate-surge',
@@ -133,7 +133,7 @@ export class AnomalyDetectionService {
         pattern: 'error_rate > 10%',
         severity: 'critical',
         isActive: true,
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       {
         id: 'throughput-drop',
@@ -142,7 +142,7 @@ export class AnomalyDetectionService {
         pattern: 'throughput < 50% of average',
         severity: 'medium',
         isActive: true,
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       {
         id: 'memory-leak',
@@ -151,8 +151,8 @@ export class AnomalyDetectionService {
         pattern: 'memory_usage increasing over 1 hour',
         severity: 'medium',
         isActive: true,
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ];
 
     patterns.forEach(pattern => {
@@ -173,7 +173,7 @@ export class AnomalyDetectionService {
     const dataPoint: AnomalyDataPoint = {
       timestamp: new Date(),
       value,
-      metadata
+      metadata,
     };
 
     const existing = this.historicalData.get(key) || [];
@@ -193,7 +193,7 @@ export class AnomalyDetectionService {
       if (dataPoints.length < 20) continue; // Need minimum data points
 
       const [orgId, rpcId, metricName] = key.split(':');
-      
+
       // Run different detection methods
       const statisticalResult = await this.detectStatisticalAnomaly(dataPoints);
       const ruleResult = await this.detectRuleBasedAnomaly(dataPoints, metricName);
@@ -250,7 +250,7 @@ export class AnomalyDetectionService {
       actualValue: currentValue,
       deviation: Math.abs(currentValue - mean),
       timestamp: dataPoints[dataPoints.length - 1].timestamp,
-      metadata: { zScore, mean, stdDev }
+      metadata: { zScore, mean, stdDev },
     };
   }
 
@@ -281,7 +281,7 @@ export class AnomalyDetectionService {
         actualValue: currentValue,
         deviation: currentValue - averageValue,
         timestamp: dataPoints[dataPoints.length - 1].timestamp,
-        metadata: { spikeThreshold, averageValue }
+        metadata: { spikeThreshold, averageValue },
       };
     }
 
@@ -298,7 +298,7 @@ export class AnomalyDetectionService {
         actualValue: currentValue,
         deviation: averageValue - currentValue,
         timestamp: dataPoints[dataPoints.length - 1].timestamp,
-        metadata: { dropThreshold, averageValue }
+        metadata: { dropThreshold, averageValue },
       };
     }
 
@@ -336,7 +336,7 @@ export class AnomalyDetectionService {
       actualValue: currentValue,
       deviation: 0, // ML doesn't provide expected value
       timestamp: dataPoints[dataPoints.length - 1].timestamp,
-      metadata: { isolationScore, contamination }
+      metadata: { isolationScore, contamination },
     };
   }
 
@@ -345,13 +345,13 @@ export class AnomalyDetectionService {
     // This is a simplified version - in practice, you'd use a proper isolation forest algorithm
     const sortedValues = [...values].sort((a, b) => a - b);
     const targetIndex = sortedValues.indexOf(targetValue);
-    
+
     if (targetIndex === -1) return 0.5; // Not found, assume normal
-    
+
     const leftDistance = targetIndex;
     const rightDistance = sortedValues.length - targetIndex - 1;
     const minDistance = Math.min(leftDistance, rightDistance);
-    
+
     // Normalize to 0-1 range
     return Math.min(minDistance / (sortedValues.length / 2), 1);
   }
@@ -359,9 +359,9 @@ export class AnomalyDetectionService {
   // Combine multiple detection results
   private combineDetectionResults(results: AnomalyDetectionResult[]): AnomalyDetectionResult {
     const validResults = results.filter(r => r.isAnomaly);
-    
+
     if (validResults.length === 0) {
-      return results[0] || this.createNoAnomalyResult(new AnomalyDataPoint({ timestamp: new Date(), value: 0 }));
+      return results[0] || this.createNoAnomalyResult({ timestamp: new Date(), value: 0 });
     }
 
     // Weighted combination
@@ -381,15 +381,15 @@ export class AnomalyDetectionService {
     combinedConfidence /= totalWeight;
 
     // Use the result with highest score as base
-    const bestResult = validResults.reduce((best, current) => 
-      current.anomalyScore > best.anomalyScore ? current : best
+    const bestResult = validResults.reduce((best, current) =>
+      current.anomalyScore > best.anomalyScore ? current : best,
     );
 
     return {
       ...bestResult,
       anomalyScore: combinedScore,
       confidence: combinedConfidence,
-      description: `Combined anomaly detection: ${bestResult.description}`
+      description: `Combined anomaly detection: ${bestResult.description}`,
     };
   }
 
@@ -402,7 +402,7 @@ export class AnomalyDetectionService {
       metricName,
       anomaly,
       isAcknowledged: false,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     const key = `${orgId}:${rpcId}`;
@@ -417,7 +417,7 @@ export class AnomalyDetectionService {
       metricName,
       anomalyType: anomaly.anomalyType,
       severity: anomaly.severity,
-      score: anomaly.anomalyScore
+      score: anomaly.anomalyScore,
     });
   }
 
@@ -432,7 +432,7 @@ export class AnomalyDetectionService {
       description: 'No anomaly detected',
       actualValue: dataPoint.value,
       deviation: 0,
-      timestamp: dataPoint.timestamp
+      timestamp: dataPoint.timestamp,
     };
   }
 
@@ -448,7 +448,7 @@ export class AnomalyDetectionService {
   async getAnomalyAlerts(orgId: string, rpcId?: string, limit: number = 100): Promise<AnomalyAlert[]> {
     const key = rpcId ? `${orgId}:${rpcId}` : orgId;
     const alerts = this.anomalyAlerts.get(key) || [];
-    
+
     return alerts
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit);
@@ -493,7 +493,7 @@ export class AnomalyDetectionService {
     const newPattern: AnomalyPattern = {
       ...pattern,
       id: `pattern_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     this.anomalyPatterns.set(newPattern.id, newPattern);
@@ -536,7 +536,7 @@ export class AnomalyDetectionService {
       byType,
       acknowledged: allAlerts.filter(a => a.isAcknowledged).length,
       unacknowledged: allAlerts.filter(a => !a.isAcknowledged).length,
-      averageScore: allAlerts.length > 0 ? totalScore / allAlerts.length : 0
+      averageScore: allAlerts.length > 0 ? totalScore / allAlerts.length : 0,
     };
   }
 
@@ -548,7 +548,7 @@ export class AnomalyDetectionService {
     activePatterns: number;
     totalAlerts: number;
     totalDataPoints: number;
-  } {
+    } {
     let totalAlerts = 0;
     for (const alerts of this.anomalyAlerts.values()) {
       totalAlerts += alerts.length;
@@ -565,7 +565,7 @@ export class AnomalyDetectionService {
       totalPatterns: this.anomalyPatterns.size,
       activePatterns: Array.from(this.anomalyPatterns.values()).filter(p => p.isActive).length,
       totalAlerts,
-      totalDataPoints
+      totalDataPoints,
     };
   }
 

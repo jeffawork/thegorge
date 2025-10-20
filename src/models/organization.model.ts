@@ -51,7 +51,7 @@ export class Organization extends BaseModel {
       isActive: this.isActive,
       settings: this.settings,
       limits: this.limits,
-      billing: this.billing
+      billing: this.billing,
     };
   }
 

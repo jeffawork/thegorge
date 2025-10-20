@@ -9,47 +9,47 @@ export enum UserRole {
 
 export class CreateUserDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
-  email: string;
+    email: string;
 
   @IsString({ message: 'Name must be a string' })
-  name: string;
+    name: string;
 
   @IsString({ message: 'Password must be a string' })
-  password: string;
+    password: string;
 
   @IsOptional()
   @IsEnum(UserRole, { message: 'Invalid user role' })
-  role?: UserRole;
+    role?: UserRole;
 
   @IsOptional()
   @IsString({ message: 'Organization ID must be a string' })
-  organizationId?: string;
+    organizationId?: string;
 }
 
 export class UpdateUserDto {
   @IsOptional()
   @IsString({ message: 'Name must be a string' })
-  name?: string;
+    name?: string;
 
   @IsOptional()
   @IsEmail({}, { message: 'Please provide a valid email address' })
-  email?: string;
+    email?: string;
 
   @IsOptional()
   @IsEnum(UserRole, { message: 'Invalid user role' })
-  role?: UserRole;
+    role?: UserRole;
 
   @IsOptional()
   @IsString({ message: 'Avatar URL must be a string' })
-  avatar?: string;
+    avatar?: string;
 }
 
 export class UpdateProfileDto {
   @IsOptional()
   @IsString({ message: 'Name must be a string' })
-  name?: string;
+    name?: string;
 
   @IsOptional()
   @IsString({ message: 'Avatar URL must be a string' })
-  avatar?: string;
+    avatar?: string;
 }

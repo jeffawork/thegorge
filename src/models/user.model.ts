@@ -1,8 +1,10 @@
 import { BaseModel } from './base.model';
-import { UserRole, Industry, OrganizationPlan } from '../dto/auth.dto';
+import { UserRole } from '../dto/auth.dto';
+// Industry and OrganizationPlan removed - not used in User model
 
 export class User extends BaseModel {
   public email: string;
+  public passwordHash?: string; // Added for authentication
   public firstName: string;
   public lastName: string;
   public name: string; // Computed: firstName + lastName
@@ -23,10 +25,12 @@ export class User extends BaseModel {
   public marketingConsent: boolean;
   public twoFactorEnabled: boolean;
   public preferences: UserPreferences;
+  public rpcConfigs: any[]; // RPC configurations for this user
 
   constructor(data: Partial<User> = {}) {
     super(data);
     this.email = data.email || '';
+    this.passwordHash = data.passwordHash;
     this.firstName = data.firstName || '';
     this.lastName = data.lastName || '';
     this.name = `${this.firstName} ${this.lastName}`.trim();
@@ -47,6 +51,7 @@ export class User extends BaseModel {
     this.marketingConsent = data.marketingConsent ?? false;
     this.twoFactorEnabled = data.twoFactorEnabled ?? false;
     this.preferences = data.preferences || new UserPreferences();
+    this.rpcConfigs = data.rpcConfigs || [];
   }
 
   toJSON(): Record<string, any> {
@@ -72,7 +77,8 @@ export class User extends BaseModel {
       emailVerified: this.emailVerified,
       marketingConsent: this.marketingConsent,
       twoFactorEnabled: this.twoFactorEnabled,
-      preferences: this.preferences
+      preferences: this.preferences,
+      rpcConfigs: this.rpcConfigs,
     };
   }
 
@@ -161,7 +167,7 @@ export class AlertPreferences {
       enabled: false,
       start: '22:00',
       end: '08:00',
-      timezone: 'UTC'
+      timezone: 'UTC',
     };
   }
 }

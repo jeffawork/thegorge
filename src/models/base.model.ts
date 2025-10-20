@@ -13,7 +13,7 @@ export abstract class BaseModel {
     return {
       id: this.id,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     };
   }
 }

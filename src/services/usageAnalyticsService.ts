@@ -98,7 +98,7 @@ export class UsageAnalyticsService {
   async recordUsage(orgId: string, userId: string, usage: Partial<UsageMetrics>): Promise<void> {
     const key = `${orgId}:${userId}`;
     const existing = this.usageData.get(key) || [];
-    
+
     const usageRecord: UsageMetrics = {
       orgId,
       userId,
@@ -109,11 +109,11 @@ export class UsageAnalyticsService {
       rpcRequests: 0,
       alertsGenerated: 0,
       customMetrics: 0,
-      ...usage
+      ...usage,
     };
 
     existing.push(usageRecord);
-    
+
     // Keep only last 1000 records per user
     if (existing.length > 1000) {
       existing.splice(0, existing.length - 1000);
@@ -126,12 +126,12 @@ export class UsageAnalyticsService {
   // Get usage report for an organization
   async getUsageReport(orgId: string, period: { start: Date; end: Date }): Promise<UsageReport> {
     const allUsage: UsageMetrics[] = [];
-    
+
     // Collect all usage data for the organization
     for (const [key, usage] of this.usageData.entries()) {
       if (key.startsWith(`${orgId}:`)) {
-        const filtered = usage.filter(u => 
-          u.timestamp >= period.start && u.timestamp <= period.end
+        const filtered = usage.filter(u =>
+          u.timestamp >= period.start && u.timestamp <= period.end,
         );
         allUsage.push(...filtered);
       }
@@ -153,7 +153,7 @@ export class UsageAnalyticsService {
       storage,
       rpcRequests,
       alerts,
-      costs
+      costs,
     };
   }
 
@@ -172,7 +172,7 @@ export class UsageAnalyticsService {
       total,
       byEndpoint,
       byUser,
-      byStatus
+      byStatus,
     };
   }
 
@@ -188,7 +188,7 @@ export class UsageAnalyticsService {
       total,
       inbound: total * 0.6, // Assume 60% inbound
       outbound: total * 0.4, // Assume 40% outbound
-      byUser
+      byUser,
     };
   }
 
@@ -197,7 +197,7 @@ export class UsageAnalyticsService {
     const byType: Record<string, number> = {
       metrics: total * 0.5,
       logs: total * 0.3,
-      alerts: total * 0.2
+      alerts: total * 0.2,
     };
     const byUser: Record<string, number> = {};
 
@@ -208,7 +208,7 @@ export class UsageAnalyticsService {
     return {
       total,
       byType,
-      byUser
+      byUser,
     };
   }
 
@@ -223,7 +223,7 @@ export class UsageAnalyticsService {
       total,
       byRPC,
       byNetwork,
-      byMethod
+      byMethod,
     };
   }
 
@@ -238,7 +238,7 @@ export class UsageAnalyticsService {
       bySeverity,
       byType,
       resolved: total * 0.8, // Assume 80% resolved
-      unresolved: total * 0.2
+      unresolved: total * 0.2,
     };
   }
 
@@ -261,14 +261,14 @@ export class UsageAnalyticsService {
         api: apiCost,
         dataTransfer: dataTransferCost,
         storage: storageCost,
-        rpc: rpcCost
+        rpc: rpcCost,
       },
       breakdown: {
         api: apiCost,
         storage: storageCost,
         dataTransfer: dataTransferCost,
-        rpc: rpcCost
-      }
+        rpc: rpcCost,
+      },
     };
   }
 
@@ -276,7 +276,7 @@ export class UsageAnalyticsService {
   async generateBillingInfo(orgId: string, org: Organization): Promise<BillingInfo> {
     const currentPeriod = this.getCurrentBillingPeriod();
     const usage = await this.getUsageForPeriod(orgId, currentPeriod);
-    
+
     const limits = org.limits;
     const costs = this.calculateBillingCosts(org, usage);
 
@@ -288,16 +288,16 @@ export class UsageAnalyticsService {
         apiCalls: usage.apiCalls,
         dataTransfer: usage.dataTransfer,
         storage: usage.storage,
-        rpcRequests: usage.rpcRequests
+        rpcRequests: usage.rpcRequests,
       },
       limits: {
         apiCalls: limits.apiCallsPerMonth,
         dataTransfer: limits.dataRetentionDays * 1024 * 1024 * 1024, // Rough estimate
         storage: limits.dataRetentionDays * 1024 * 1024 * 1024, // Rough estimate
-        rpcRequests: limits.maxRPCs * 1000 // Rough estimate
+        rpcRequests: limits.maxRPCs * 1000, // Rough estimate
       },
       costs,
-      nextBillingDate: this.getNextBillingDate()
+      nextBillingDate: this.getNextBillingDate(),
     };
   }
 
@@ -320,11 +320,11 @@ export class UsageAnalyticsService {
     rpcRequests: number;
   }> {
     const allUsage: UsageMetrics[] = [];
-    
+
     for (const [key, usage] of this.usageData.entries()) {
       if (key.startsWith(`${orgId}:`)) {
-        const filtered = usage.filter(u => 
-          u.timestamp >= period.start && u.timestamp <= period.end
+        const filtered = usage.filter(u =>
+          u.timestamp >= period.start && u.timestamp <= period.end,
         );
         allUsage.push(...filtered);
       }
@@ -334,7 +334,7 @@ export class UsageAnalyticsService {
       apiCalls: allUsage.reduce((sum, u) => sum + u.apiCalls, 0),
       dataTransfer: allUsage.reduce((sum, u) => sum + u.dataTransfer, 0),
       storage: allUsage.reduce((sum, u) => sum + u.storageUsed, 0),
-      rpcRequests: allUsage.reduce((sum, u) => sum + u.rpcRequests, 0)
+      rpcRequests: allUsage.reduce((sum, u) => sum + u.rpcRequests, 0),
     };
   }
 
@@ -361,7 +361,7 @@ export class UsageAnalyticsService {
     return {
       base: baseCost,
       overage,
-      total
+      total,
     };
   }
 
@@ -372,34 +372,34 @@ export class UsageAnalyticsService {
     storage: number;
   } {
     switch (plan) {
-      case 'free':
-        return {
-          base: 0,
-          apiCall: 0.0001,
-          dataTransfer: 0.01,
-          storage: 0.05
-        };
-      case 'pro':
-        return {
-          base: 29,
-          apiCall: 0.00005,
-          dataTransfer: 0.005,
-          storage: 0.03
-        };
-      case 'enterprise':
-        return {
-          base: 99,
-          apiCall: 0.00001,
-          dataTransfer: 0.001,
-          storage: 0.01
-        };
-      default:
-        return {
-          base: 0,
-          apiCall: 0.0001,
-          dataTransfer: 0.01,
-          storage: 0.05
-        };
+    case 'free':
+      return {
+        base: 0,
+        apiCall: 0.0001,
+        dataTransfer: 0.01,
+        storage: 0.05,
+      };
+    case 'pro':
+      return {
+        base: 29,
+        apiCall: 0.00005,
+        dataTransfer: 0.005,
+        storage: 0.03,
+      };
+    case 'enterprise':
+      return {
+        base: 99,
+        apiCall: 0.00001,
+        dataTransfer: 0.001,
+        storage: 0.01,
+      };
+    default:
+      return {
+        base: 0,
+        apiCall: 0.0001,
+        dataTransfer: 0.01,
+        storage: 0.05,
+      };
     }
   }
 
@@ -433,7 +433,7 @@ export class UsageAnalyticsService {
     return {
       withinLimits: violations.length === 0,
       violations,
-      warnings
+      warnings,
     };
   }
 
@@ -447,7 +447,7 @@ export class UsageAnalyticsService {
   }> {
     const endDate = new Date();
     const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
-    
+
     const dates: string[] = [];
     const apiCalls: number[] = [];
     const dataTransfer: number[] = [];
@@ -457,7 +457,7 @@ export class UsageAnalyticsService {
     for (let i = 0; i < days; i++) {
       const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
       const nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000);
-      
+
       const dayUsage = await this.getUsageForPeriod(orgId, { start: date, end: nextDate });
       const dayCosts = this.calculateCosts(orgId, [dayUsage as any]);
 
@@ -473,19 +473,19 @@ export class UsageAnalyticsService {
       apiCalls,
       dataTransfer,
       storage,
-      costs
+      costs,
     };
   }
 
   // Cleanup old data
   cleanup(): void {
     const cutoffDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // 90 days ago
-    
+
     for (const [key, usage] of this.usageData.entries()) {
       const filtered = usage.filter(u => u.timestamp > cutoffDate);
       this.usageData.set(key, filtered);
     }
-    
+
     usageLogger.info('Usage analytics cleanup completed');
   }
 }

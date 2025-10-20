@@ -1,4 +1,5 @@
-import { User, RPCConfig } from '../types';
+import { User } from '../models/user.model';
+import { RPCConfig } from '../types';
 import { userLogger } from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -15,14 +16,15 @@ export class UserService {
    * Initialize a default user for development
    */
   private initializeDefaultUser(): void {
-    const defaultUser: User = {
+    const defaultUser = new User({
       id: 'default',
-      name: 'default',
+      firstName: 'Default',
+      lastName: 'User',
       email: 'default@example.com',
-      role: 'admin',
+      role: 'admin' as any,
       createdAt: new Date(),
-      rpcConfigs: []
-    };
+      rpcConfigs: [],
+    });
 
     this.users.set(defaultUser.id, defaultUser);
     this.userRPCs.set(defaultUser.id, []);
@@ -34,14 +36,15 @@ export class UserService {
    */
   async createUser(name: string, email: string): Promise<User> {
     const userId = uuidv4();
-    const user: User = {
+    const user = new User({
       id: userId,
-      name,
+      firstName: name.split(' ')[0] || 'User',
+      lastName: name.split(' ')[1] || 'Name',
       email,
-      role: 'user',
+      role: 'user' as any,
       createdAt: new Date(),
-      rpcConfigs: []
-    };
+      rpcConfigs: [],
+    });
 
     this.users.set(userId, user);
     this.userRPCs.set(userId, []);
@@ -93,27 +96,27 @@ export class UserService {
 
     const rpcId = uuidv4();
     const now = new Date();
-    
+
     const newRPC: RPCConfig = {
       ...rpcConfig,
       id: rpcId,
       userId,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     // Add to user's RPC configs
     user.rpcConfigs.push(newRPC);
-    
+
     // Add to userRPCs map
     const userRPCs = this.userRPCs.get(userId) || [];
     userRPCs.push(newRPC);
     this.userRPCs.set(userId, userRPCs);
 
-    userLogger.info('RPC configuration added to user', { 
-      userId, 
-      rpcId, 
-      rpcName: newRPC.name 
+    userLogger.info('RPC configuration added to user', {
+      userId,
+      rpcId,
+      rpcName: newRPC.name,
     });
 
     return newRPC;
@@ -138,7 +141,7 @@ export class UserService {
     const updatedRPC = {
       ...user.rpcConfigs[rpcIndex],
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     user.rpcConfigs[rpcIndex] = updatedRPC;
@@ -182,10 +185,10 @@ export class UserService {
       this.userRPCs.set(userId, userRPCs);
     }
 
-    userLogger.info('RPC configuration removed from user', { 
-      userId, 
-      rpcId, 
-      rpcName: removedRPC.name 
+    userLogger.info('RPC configuration removed from user', {
+      userId,
+      rpcId,
+      rpcName: removedRPC.name,
     });
 
     return true;
@@ -234,7 +237,7 @@ export class UserService {
 
     // Remove user's RPCs
     this.userRPCs.delete(userId);
-    
+
     // Remove user
     this.users.delete(userId);
 

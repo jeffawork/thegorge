@@ -52,10 +52,10 @@ export class RBACService {
         name: 'super_admin',
         description: 'Super administrator with full system access',
         permissions: [
-          { resource: '*', actions: ['*'] }
+          { resource: '*', actions: ['*'] },
         ],
         isSystemRole: true,
-        canBeAssigned: false
+        canBeAssigned: false,
       },
       {
         name: 'org_admin',
@@ -66,10 +66,10 @@ export class RBACService {
           { resource: 'alerts', actions: ['read', 'write', 'delete', 'admin'] },
           { resource: 'metrics', actions: ['read', 'write', 'delete', 'admin'] },
           { resource: 'billing', actions: ['read', 'write', 'admin'] },
-          { resource: 'settings', actions: ['read', 'write', 'admin'] }
+          { resource: 'settings', actions: ['read', 'write', 'admin'] },
         ],
         isSystemRole: true,
-        canBeAssigned: true
+        canBeAssigned: true,
       },
       {
         name: 'developer',
@@ -78,10 +78,10 @@ export class RBACService {
           { resource: 'rpc', actions: ['read', 'write'] },
           { resource: 'alerts', actions: ['read', 'write'] },
           { resource: 'metrics', actions: ['read', 'write'] },
-          { resource: 'users', actions: ['read'] }
+          { resource: 'users', actions: ['read'] },
         ],
         isSystemRole: true,
-        canBeAssigned: true
+        canBeAssigned: true,
       },
       {
         name: 'viewer',
@@ -89,10 +89,10 @@ export class RBACService {
         permissions: [
           { resource: 'rpc', actions: ['read'] },
           { resource: 'alerts', actions: ['read'] },
-          { resource: 'metrics', actions: ['read'] }
+          { resource: 'metrics', actions: ['read'] },
         ],
         isSystemRole: true,
-        canBeAssigned: true
+        canBeAssigned: true,
       },
       {
         name: 'billing_manager',
@@ -101,11 +101,11 @@ export class RBACService {
           { resource: 'billing', actions: ['read', 'write', 'admin'] },
           { resource: 'usage', actions: ['read', 'write'] },
           { resource: 'metrics', actions: ['read'] },
-          { resource: 'settings', actions: ['read'] }
+          { resource: 'settings', actions: ['read'] },
         ],
         isSystemRole: true,
-        canBeAssigned: true
-      }
+        canBeAssigned: true,
+      },
     ];
 
     systemRoles.forEach(role => {
@@ -121,7 +121,7 @@ export class RBACService {
     if (!user.isActive) {
       return {
         allowed: false,
-        reason: 'User account is inactive'
+        reason: 'User account is inactive',
       };
     }
 
@@ -129,7 +129,7 @@ export class RBACService {
     if (user.orgId !== resource.orgId) {
       return {
         allowed: false,
-        reason: 'User does not belong to the resource organization'
+        reason: 'User does not belong to the resource organization',
       };
     }
 
@@ -138,7 +138,7 @@ export class RBACService {
     if (userRoles.size === 0) {
       return {
         allowed: false,
-        reason: 'User has no assigned roles'
+        reason: 'User has no assigned roles',
       };
     }
 
@@ -157,10 +157,10 @@ export class RBACService {
     const resourcePolicy = this.resourcePolicies.get(resource.type);
     if (resourcePolicy) {
       for (const policy of resourcePolicy) {
-        if (userRoles.has(policy.role) && 
-            policy.resource === resource.type && 
+        if (userRoles.has(policy.role) &&
+            policy.resource === resource.type &&
             policy.actions.includes(action)) {
-          
+
           // Check conditions if any
           if (policy.conditions && !this.evaluateConditions(policy.conditions, context)) {
             continue;
@@ -168,7 +168,7 @@ export class RBACService {
 
           return {
             allowed: true,
-            conditions: policy.conditions
+            conditions: policy.conditions,
           };
         }
       }
@@ -176,7 +176,7 @@ export class RBACService {
 
     return {
       allowed: false,
-      reason: 'Insufficient permissions'
+      reason: 'Insufficient permissions',
     };
   }
 
@@ -184,7 +184,7 @@ export class RBACService {
     role: RoleDefinition,
     resource: Resource,
     action: string,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): AccessDecision {
     for (const permission of role.permissions) {
       // Check if resource matches
@@ -198,7 +198,7 @@ export class RBACService {
 
           return {
             allowed: true,
-            conditions: permission.conditions
+            conditions: permission.conditions,
           };
         }
       }
@@ -206,7 +206,7 @@ export class RBACService {
 
     return {
       allowed: false,
-      reason: 'Role does not have required permissions'
+      reason: 'Role does not have required permissions',
     };
   }
 
@@ -215,36 +215,36 @@ export class RBACService {
 
     for (const [key, expectedValue] of Object.entries(conditions)) {
       const actualValue = context[key];
-      
+
       if (typeof expectedValue === 'object' && expectedValue.operator) {
         // Complex condition with operator
         switch (expectedValue.operator) {
-          case 'equals':
-            if (actualValue !== expectedValue.value) return false;
-            break;
-          case 'not_equals':
-            if (actualValue === expectedValue.value) return false;
-            break;
-          case 'greater_than':
-            if (actualValue <= expectedValue.value) return false;
-            break;
-          case 'less_than':
-            if (actualValue >= expectedValue.value) return false;
-            break;
-          case 'in':
-            if (!expectedValue.value.includes(actualValue)) return false;
-            break;
-          case 'not_in':
-            if (expectedValue.value.includes(actualValue)) return false;
-            break;
-          case 'contains':
-            if (!actualValue || !actualValue.includes(expectedValue.value)) return false;
-            break;
-          case 'regex':
-            if (!new RegExp(expectedValue.value).test(actualValue)) return false;
-            break;
-          default:
-            return false;
+        case 'equals':
+          if (actualValue !== expectedValue.value) return false;
+          break;
+        case 'not_equals':
+          if (actualValue === expectedValue.value) return false;
+          break;
+        case 'greater_than':
+          if (actualValue <= expectedValue.value) return false;
+          break;
+        case 'less_than':
+          if (actualValue >= expectedValue.value) return false;
+          break;
+        case 'in':
+          if (!expectedValue.value.includes(actualValue)) return false;
+          break;
+        case 'not_in':
+          if (expectedValue.value.includes(actualValue)) return false;
+          break;
+        case 'contains':
+          if (!actualValue || !actualValue.includes(expectedValue.value)) return false;
+          break;
+        case 'regex':
+          if (!new RegExp(expectedValue.value).test(actualValue)) return false;
+          break;
+        default:
+          return false;
         }
       } else {
         // Simple equality check
@@ -280,7 +280,7 @@ export class RBACService {
   async removeRole(userId: string, roleName: string): Promise<boolean> {
     const userRoles = this.getUserRoles(userId);
     const removed = userRoles.delete(roleName);
-    
+
     if (removed) {
       this.userRoles.set(userId, userRoles);
       rbacLogger.info('Role removed from user', { userId, roleName });
@@ -314,7 +314,7 @@ export class RBACService {
     const customRole: RoleDefinition = {
       ...role,
       isSystemRole: false,
-      canBeAssigned: true
+      canBeAssigned: true,
     };
 
     this.roles.set(role.name, customRole);
@@ -372,12 +372,12 @@ export class RBACService {
     resourceType: string,
     role: string,
     actions: string[],
-    conditions?: Record<string, any>
+    conditions?: Record<string, any>,
   ): Promise<void> {
     const policies = this.resourcePolicies.get(resourceType) || [];
     policies.push({ role, resource: resourceType, actions, conditions });
     this.resourcePolicies.set(resourceType, policies);
-    
+
     rbacLogger.info('Resource policy added', { resourceType, role, actions });
   }
 
@@ -385,15 +385,15 @@ export class RBACService {
   async removeResourcePolicy(
     resourceType: string,
     role: string,
-    actions: string[]
+    actions: string[],
   ): Promise<void> {
     const policies = this.resourcePolicies.get(resourceType) || [];
-    const filtered = policies.filter(p => 
-      !(p.role === role && p.actions.length === actions.length && 
-        p.actions.every(action => actions.includes(action)))
+    const filtered = policies.filter(p =>
+      !(p.role === role && p.actions.length === actions.length &&
+        p.actions.every(action => actions.includes(action))),
     );
     this.resourcePolicies.set(resourceType, filtered);
-    
+
     rbacLogger.info('Resource policy removed', { resourceType, role, actions });
   }
 
@@ -417,17 +417,17 @@ export class RBACService {
     user: User,
     resourceType: string,
     action: string,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): Promise<boolean> {
     const request: AccessRequest = {
       user,
       resource: {
         type: resourceType,
         id: '*',
-        orgId: user.orgId
+        orgId: user.orgId,
       },
       action,
-      context
+      context,
     };
 
     const decision = await this.checkAccess(request);
@@ -438,14 +438,14 @@ export class RBACService {
   async getAccessibleResources(
     user: User,
     resourceType: string,
-    action: string
+    action: string,
   ): Promise<string[]> {
     // This would typically query a database for resources the user can access
     // For now, we'll return a placeholder
     const permissions = await this.getUserPermissions(user);
-    const hasPermission = permissions.some(p => 
+    const hasPermission = permissions.some(p =>
       (p.resource === '*' || p.resource === resourceType) &&
-      (p.actions.includes('*') || p.actions.includes(action))
+      (p.actions.includes('*') || p.actions.includes(action)),
     );
 
     return hasPermission ? ['*'] : [];
@@ -458,11 +458,11 @@ export class RBACService {
     customRoles: number;
     assignedRoles: number;
     unassignedRoles: number;
-  } {
+    } {
     const totalRoles = this.roles.size;
     const systemRoles = Array.from(this.roles.values()).filter(r => r.isSystemRole).length;
     const customRoles = totalRoles - systemRoles;
-    
+
     const assignedRoles = new Set();
     for (const roles of this.userRoles.values()) {
       roles.forEach(role => assignedRoles.add(role));
@@ -473,7 +473,7 @@ export class RBACService {
       systemRoles,
       customRoles,
       assignedRoles: assignedRoles.size,
-      unassignedRoles: totalRoles - assignedRoles.size
+      unassignedRoles: totalRoles - assignedRoles.size,
     };
   }
 
@@ -493,7 +493,7 @@ export class RBACService {
       assignments.push({
         userId,
         roles: Array.from(roles),
-        assignedAt: new Date() // This would be tracked in a real implementation
+        assignedAt: new Date(), // This would be tracked in a real implementation
       });
     }
 

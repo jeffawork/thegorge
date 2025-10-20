@@ -36,7 +36,7 @@ const customKeyGenerator = (req: Request): string => {
 // Create rate limiter with custom configuration
 export const createRateLimiter = (config: Partial<RateLimitConfig> = {}): RateLimitRequestHandler => {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
-  
+
   return rateLimit({
     windowMs: finalConfig.windowMs,
     max: finalConfig.maxRequests,
@@ -44,19 +44,19 @@ export const createRateLimiter = (config: Partial<RateLimitConfig> = {}): RateLi
       success: false,
       error: finalConfig.message,
       code: 'RATE_LIMIT_EXCEEDED',
-      timestamp: new Date()
+      timestamp: new Date(),
     },
     standardHeaders: finalConfig.standardHeaders,
     legacyHeaders: finalConfig.legacyHeaders,
     skipSuccessfulRequests: finalConfig.skipSuccessfulRequests,
     skipFailedRequests: finalConfig.skipFailedRequests,
     // keyGenerator: finalConfig.keyGenerator || customKeyGenerator, // Temporarily disabled due to IPv6 validation
-    
+
     // Custom handler for rate limit exceeded
     handler: (req: Request, res: Response) => {
       const key = customKeyGenerator(req);
       const userId = req.user?.userId || 'anonymous';
-      
+
       apiLogger.warn('Rate limit exceeded', {
         ip: req.ip,
         userId,
@@ -65,32 +65,32 @@ export const createRateLimiter = (config: Partial<RateLimitConfig> = {}): RateLi
         path: req.path,
         method: req.method,
         windowMs: finalConfig.windowMs,
-        maxRequests: finalConfig.maxRequests
+        maxRequests: finalConfig.maxRequests,
       });
-      
+
       res.status(429).json({
         success: false,
         error: finalConfig.message,
         code: 'RATE_LIMIT_EXCEEDED',
         timestamp: new Date(),
-        retryAfter: Math.ceil(finalConfig.windowMs / 1000)
+        retryAfter: Math.ceil(finalConfig.windowMs / 1000),
       });
     },
-    
+
     // Skip function for certain conditions
     skip: (req: Request) => {
       // Skip rate limiting for health checks
       if (req.path === '/api/health') {
         return true;
       }
-      
+
       // Skip for authenticated admin users (if needed)
       if (req.user?.role === 'admin' && process.env.NODE_ENV === 'development') {
         return true;
       }
-      
+
       return false;
-    }
+    },
   });
 };
 
@@ -133,7 +133,7 @@ export const passwordResetRateLimit = createRateLimiter({
 // Dynamic rate limiter based on user role
 export const createDynamicRateLimiter = (req: Request, res: Response, next: NextFunction): void => {
   let limiter: RateLimitRequestHandler;
-  
+
   if (req.user?.role === 'admin') {
     limiter = createRateLimiter({
       windowMs: 15 * 60 * 1000,
@@ -150,7 +150,7 @@ export const createDynamicRateLimiter = (req: Request, res: Response, next: Next
       maxRequests: 100, // Lower limit for anonymous users
     });
   }
-  
+
   limiter(req, res, next);
 };
 

@@ -7,7 +7,7 @@ export {
   AuthorizationException,
   TokenExpiredException,
   InvalidTokenException,
-  UserNotFoundException
+  UserNotFoundException,
 } from './auth.exception';
 
 // Validation exceptions
@@ -15,5 +15,5 @@ export {
   ValidationException,
   ResourceNotFoundException,
   ConflictException,
-  RateLimitException
+  RateLimitException,
 } from './validation.exception';

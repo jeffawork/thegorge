@@ -8,7 +8,7 @@ export abstract class BaseException extends Error {
     message: string,
     statusCode: number = 500,
     code: string = 'INTERNAL_ERROR',
-    details?: any
+    details?: any,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -29,7 +29,7 @@ export abstract class BaseException extends Error {
       code: this.code,
       timestamp: this.timestamp,
       details: this.details,
-      stack: this.stack
+      stack: this.stack,
     };
   }
 }

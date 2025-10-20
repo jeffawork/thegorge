@@ -23,7 +23,7 @@ export class MonitoringService {
     this.alertService = new AlertService(this.metricsService, io);
     this.userService = new UserService();
     this.io = io || null;
-    
+
     monitoringLogger.info('MonitoringService initialized');
   }
 
@@ -52,14 +52,14 @@ export class MonitoringService {
     this.isMonitoring = true;
     const interval = 30000; // 30 seconds
 
-    monitoringLogger.info('Starting RPC monitoring', { 
-      userId, 
-      rpcCount: userRPCs.filter(rpc => rpc.enabled).length, 
-      interval 
+    monitoringLogger.info('Starting RPC monitoring', {
+      userId,
+      rpcCount: userRPCs.filter(rpc => rpc.enabled).length,
+      interval,
     });
 
     // Start monitoring interval
-    this.monitoringInterval = setInterval(async () => {
+    this.monitoringInterval = setInterval(async() => {
       await this.performHealthChecks(userId);
     }, interval);
 
@@ -94,13 +94,13 @@ export class MonitoringService {
    */
   private async initializeRPCStatus(rpcConfig: RPCConfig): Promise<void> {
     const rpcId = rpcConfig.id;
-    
+
     // Add RPC to Web3Service
     const success = await this.web3Service.addRPC(rpcConfig);
     if (!success) {
-      monitoringLogger.error('Failed to add RPC to Web3Service', { 
-        rpcId, 
-        name: rpcConfig.name 
+      monitoringLogger.error('Failed to add RPC to Web3Service', {
+        rpcId,
+        name: rpcConfig.name,
       });
       return;
     }
@@ -118,13 +118,13 @@ export class MonitoringService {
       isSyncing: false,
       network: rpcConfig.network,
       chainId: rpcConfig.chainId,
-      history: []
+      history: [],
     };
 
     this.rpcStatuses.set(rpcId, initialStatus);
-    monitoringLogger.info('RPC status initialized', { 
-      rpcId, 
-      name: rpcConfig.name 
+    monitoringLogger.info('RPC status initialized', {
+      rpcId,
+      name: rpcConfig.name,
     });
   }
 
@@ -135,29 +135,29 @@ export class MonitoringService {
     const userRPCs = this.userService.getUserRPCs(userId);
     const enabledRPCs = userRPCs.filter(rpc => rpc.enabled);
 
-    monitoringLogger.debug('Performing health checks', { 
-      userId, 
-      rpcCount: enabledRPCs.length 
+    monitoringLogger.debug('Performing health checks', {
+      userId,
+      rpcCount: enabledRPCs.length,
     });
 
     for (const rpcConfig of enabledRPCs) {
       try {
         const healthResult = await this.web3Service.performHealthCheck(rpcConfig.id);
         await this.updateRPCStatus(rpcConfig, healthResult);
-        
+
         // Record metrics
-        this.metricsService.recordHealthCheck(rpcConfig, healthResult);
-        
+        this.metricsService.recordRPCRequest(rpcConfig, healthResult.isOnline, healthResult.responseTime || 0);
+
         // Check for alerts
         await this.checkForAlerts(rpcConfig, healthResult);
-        
+
       } catch (error) {
-        monitoringLogger.error('Health check failed', { 
-          rpcId: rpcConfig.id, 
-          name: rpcConfig.name, 
-          error: error instanceof Error ? error.message : String(error) 
+        monitoringLogger.error('Health check failed', {
+          rpcId: rpcConfig.id,
+          name: rpcConfig.name,
+          error: error instanceof Error ? error.message : String(error),
         });
-        
+
         // Update status as offline
         const offlineResult: HealthCheckResult = {
           isOnline: false,
@@ -168,9 +168,9 @@ export class MonitoringService {
           isSyncing: false,
           errorMessage: error instanceof Error ? error.message : String(error),
           network: rpcConfig.network,
-          chainId: rpcConfig.chainId
+          chainId: rpcConfig.chainId,
         };
-        
+
         await this.updateRPCStatus(rpcConfig, offlineResult);
       }
     }
@@ -182,7 +182,7 @@ export class MonitoringService {
   private async updateRPCStatus(rpcConfig: RPCConfig, healthResult: HealthCheckResult): Promise<void> {
     const rpcId = rpcConfig.id;
     const currentStatus = this.rpcStatuses.get(rpcId);
-    
+
     if (!currentStatus) {
       monitoringLogger.warn('RPC status not found for update', { rpcId });
       return;
@@ -198,7 +198,7 @@ export class MonitoringService {
       isSyncing: healthResult.isSyncing,
       syncProgress: healthResult.syncProgress,
       errorMessage: healthResult.errorMessage || '',
-      isOnline: healthResult.isOnline
+      isOnline: healthResult.isOnline,
     };
 
     // Update status
@@ -218,25 +218,25 @@ export class MonitoringService {
       errorMessage: healthResult.errorMessage || '',
       history: [
         healthMetrics,
-        ...currentStatus.history.slice(0, (rpcConfig.maxHistoryEntries || 100) - 1)
-      ]
+        ...currentStatus.history.slice(0, (rpcConfig.maxHistoryEntries || 100) - 1),
+      ],
     };
 
     this.rpcStatuses.set(rpcId, updatedStatus);
-    
+
     // Emit WebSocket event for RPC status update
     if (this.io) {
       this.io.emit('rpcStatusUpdate', rpcId, updatedStatus.isOnline ? 'online' : 'offline');
     }
-    
+
     // Update metrics
-    this.metricsService.updateRPCStats(rpcConfig, updatedStatus);
-    
-    monitoringLogger.debug('RPC status updated', { 
-      rpcId, 
-      name: rpcConfig.name, 
+    this.metricsService.recordRPCRequest(rpcConfig, healthResult.isOnline, healthResult.responseTime || 0);
+
+    monitoringLogger.debug('RPC status updated', {
+      rpcId,
+      name: rpcConfig.name,
       isOnline: healthResult.isOnline,
-      responseTime: healthResult.responseTime 
+      responseTime: healthResult.responseTime,
     });
   }
 
@@ -258,7 +258,7 @@ export class MonitoringService {
         timestamp: new Date(),
         resolved: false,
         network: rpcConfig.network,
-        chainId: rpcConfig.chainId
+        chainId: rpcConfig.chainId,
       });
     }
 
@@ -273,7 +273,7 @@ export class MonitoringService {
         timestamp: new Date(),
         resolved: false,
         network: rpcConfig.network,
-        chainId: rpcConfig.chainId
+        chainId: rpcConfig.chainId,
       });
     }
 
@@ -288,7 +288,7 @@ export class MonitoringService {
         timestamp: new Date(),
         resolved: false,
         network: rpcConfig.network,
-        chainId: rpcConfig.chainId
+        chainId: rpcConfig.chainId,
       });
     }
 
@@ -300,15 +300,15 @@ export class MonitoringService {
           type: 'sync_lag',
           severity: this.determineSeverity(100 - healthResult.syncProgress, 5),
           message: `Node is syncing: ${healthResult.syncProgress}% complete`,
-          details: { 
+          details: {
             syncProgress: healthResult.syncProgress,
             currentBlock: healthResult.syncCurrentBlock,
-            highestBlock: healthResult.syncHighestBlock
+            highestBlock: healthResult.syncHighestBlock,
           },
           timestamp: new Date(),
           resolved: false,
           network: rpcConfig.network,
-          chainId: rpcConfig.chainId
+          chainId: rpcConfig.chainId,
         });
       }
     }
@@ -372,13 +372,13 @@ export class MonitoringService {
     const totalRPCs = statuses.length;
     const onlineRPCs = statuses.filter(s => s.isOnline).length;
     const offlineRPCs = totalRPCs - onlineRPCs;
-    
+
     const responseTimes = statuses
       .filter(s => s.isOnline)
       .map(s => s.responseTime);
-    
-    const averageResponseTime = responseTimes.length > 0 
-      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length 
+
+    const averageResponseTime = responseTimes.length > 0
+      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
       : 0;
 
     const alertsCount = this.alertService.getActiveAlertsCount(userId);
@@ -388,7 +388,7 @@ export class MonitoringService {
       onlineRPCs,
       offlineRPCs,
       averageResponseTime,
-      alertsCount
+      alertsCount,
     };
   }
 
@@ -401,17 +401,17 @@ export class MonitoringService {
 
     for (const [rpcId, status] of this.rpcStatuses) {
       const oldEntries = status.history.filter(
-        entry => now.getTime() - entry.timestamp.getTime() > maxAge
+        entry => now.getTime() - entry.timestamp.getTime() > maxAge,
       );
-      
+
       if (oldEntries.length > 0) {
         status.history = status.history.filter(
-          entry => now.getTime() - entry.timestamp.getTime() <= maxAge
+          entry => now.getTime() - entry.timestamp.getTime() <= maxAge,
         );
-        
-        monitoringLogger.debug('Cleaned up old history entries', { 
-          rpcId, 
-          removed: oldEntries.length 
+
+        monitoringLogger.debug('Cleaned up old history entries', {
+          rpcId,
+          removed: oldEntries.length,
         });
       }
     }

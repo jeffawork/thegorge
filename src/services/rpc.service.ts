@@ -14,7 +14,7 @@ export class RpcService {
   constructor(
     rpcRepository: RpcRepository,
     web3Service: Web3Service,
-    monitoringService: MonitoringService
+    monitoringService: MonitoringService,
   ) {
     this.rpcRepository = rpcRepository;
     this.web3Service = web3Service;
@@ -53,20 +53,20 @@ export class RpcService {
       isHealthy: testResult.isHealthy,
       responseTime: testResult.responseTime,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
     const createdRpc = await this.rpcRepository.create(rpc);
-    
+
     // TODO: Start monitoring this RPC when MonitoringService supports it
     // this.monitoringService.addRpcConfig(createdRpc);
-    
+
     return createdRpc;
   }
 
   async updateRpcConfig(userId: string, rpcId: string, updateRpcDto: UpdateRpcDto): Promise<RpcConfig> {
     const existingRpc = await this.getRpcConfig(userId, rpcId);
-    
+
     // If URL is being updated, test the new connection
     if (updateRpcDto.url && updateRpcDto.url !== existingRpc.url) {
       const testResult = await this.testRpcConnection({
@@ -76,9 +76,9 @@ export class RpcService {
         chainId: updateRpcDto.chainId || existingRpc.chainId,
         timeout: updateRpcDto.timeout || existingRpc.timeout,
         enabled: updateRpcDto.enabled ?? existingRpc.enabled,
-        priority: updateRpcDto.priority || existingRpc.priority
+        priority: updateRpcDto.priority || existingRpc.priority,
       });
-      
+
       if (!testResult.isHealthy) {
         throw new ValidationException('Updated RPC endpoint is not accessible', testResult);
       }
@@ -87,32 +87,32 @@ export class RpcService {
     const updatedRpc = new RpcConfig({
       ...existingRpc,
       ...updateRpcDto,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
     const result = await this.rpcRepository.update(rpcId, updatedRpc);
-    
+
     // TODO: Update monitoring service when MonitoringService supports it
     // this.monitoringService.updateRpcConfig(result);
-    
+
     return result;
   }
 
   async deleteRpcConfig(userId: string, rpcId: string): Promise<void> {
     await this.getRpcConfig(userId, rpcId); // Verify ownership
-    
+
     const deleted = await this.rpcRepository.delete(rpcId);
     if (!deleted) {
       throw new ResourceNotFoundException(`RPC configuration with id ${rpcId} not found`);
     }
-    
+
     // TODO: Remove from monitoring when MonitoringService supports it
     // this.monitoringService.removeRpcConfig(rpcId);
   }
 
   async getRpcStatus(userId: string, rpcId: string): Promise<any> {
     const rpc = await this.getRpcConfig(userId, rpcId);
-    
+
     return {
       id: rpc.id,
       name: rpc.name,
@@ -122,37 +122,37 @@ export class RpcService {
       lastCheckedAt: rpc.lastCheckedAt,
       errorCount: rpc.errorCount,
       lastError: rpc.lastError,
-      enabled: rpc.enabled
+      enabled: rpc.enabled,
     };
   }
 
   async testRpcConnection(rpcConfig: Partial<CreateRpcDto>): Promise<any> {
     try {
       const startTime = Date.now();
-      
+
       // Test basic connectivity
       const blockNumber = await this.web3Service.getBlockNumber(rpcConfig.url!, rpcConfig.timeout || 10000);
       const responseTime = Date.now() - startTime;
-      
+
       // Verify chain ID matches
       const chainId = await this.web3Service.getChainId(rpcConfig.url!, rpcConfig.timeout || 10000);
-      
+
       if (chainId !== rpcConfig.chainId) {
         return {
           isHealthy: false,
           responseTime,
           error: `Chain ID mismatch: expected ${rpcConfig.chainId}, got ${chainId}`,
           blockNumber,
-          chainId
+          chainId,
         };
       }
-      
+
       return {
         isHealthy: true,
         responseTime,
         blockNumber,
         chainId,
-        error: null
+        error: null,
       };
     } catch (error) {
       return {
@@ -160,14 +160,14 @@ export class RpcService {
         responseTime: null,
         error: error instanceof Error ? error.message : 'Unknown error',
         blockNumber: null,
-        chainId: null
+        chainId: null,
       };
     }
   }
 
   async getRpcMetrics(userId: string, rpcId: string, timeRange: string): Promise<any> {
     const rpc = await this.getRpcConfig(userId, rpcId);
-    
+
     // This would typically query a metrics database
     // For now, return basic metrics
     return {
@@ -179,31 +179,31 @@ export class RpcService {
         errorRate: rpc.errorCount > 0 ? (rpc.errorCount / 100) * 100 : 0,
         totalRequests: 1000, // Mock data
         successfulRequests: rpc.isHealthy ? 1000 : 950,
-        failedRequests: rpc.isHealthy ? 0 : 50
+        failedRequests: rpc.isHealthy ? 0 : 50,
       },
       healthHistory: [], // Would contain time-series data
-      alerts: [] // Would contain recent alerts
+      alerts: [], // Would contain recent alerts
     };
   }
 
   async toggleRpcStatus(userId: string, rpcId: string, enabled: boolean): Promise<RpcConfig> {
     const rpc = await this.getRpcConfig(userId, rpcId);
-    
+
     const updatedRpc = new RpcConfig({
       ...rpc,
       enabled,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
     const result = await this.rpcRepository.update(rpcId, updatedRpc);
-    
+
     // TODO: Update monitoring service when MonitoringService supports it
     // if (enabled) {
     //   this.monitoringService.addRpcConfig(result);
     // } else {
     //   this.monitoringService.removeRpcConfig(rpcId);
     // }
-    
+
     return result;
   }
 

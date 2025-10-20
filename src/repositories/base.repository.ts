@@ -16,11 +16,11 @@ export abstract class BaseRepository<T extends BaseModel> {
   async findById(id: string): Promise<T | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE id = $1`;
     const result = await this.pool.query(query, [id]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     return this.mapRowToModel(result.rows[0]);
   }
 
@@ -35,17 +35,17 @@ export abstract class BaseRepository<T extends BaseModel> {
   async findAll(limit?: number, offset?: number): Promise<T[]> {
     let query = `SELECT * FROM ${this.tableName}`;
     const params: any[] = [];
-    
+
     if (limit) {
       query += ' LIMIT $1';
       params.push(limit);
-      
+
       if (offset) {
         query += ' OFFSET $2';
         params.push(offset);
       }
     }
-    
+
     const result = await this.pool.query(query, params);
     return result.rows.map(row => this.mapRowToModel(row));
   }

@@ -62,7 +62,7 @@ export class SLAMonitoringService {
     startTime: Date;
     endTime: Date;
     duration: number;
-    severity: string;
+    severity: 'minor' | 'major' | 'critical';
   }>> = new Map();
 
   constructor() {
@@ -83,7 +83,7 @@ export class SLAMonitoringService {
     rpcId: string | undefined,
     metricType: 'uptime' | 'response_time' | 'error_rate' | 'availability',
     value: number,
-    threshold: number
+    threshold: number,
   ): Promise<void> {
     const now = new Date();
     const windowStart = new Date(now.getTime() - 60 * 1000); // 1 minute window
@@ -102,7 +102,7 @@ export class SLAMonitoringService {
       status,
       timestamp: now,
       windowStart,
-      windowEnd
+      windowEnd,
     };
 
     const key = `${orgId}:${rpcId || 'global'}`;
@@ -130,7 +130,7 @@ export class SLAMonitoringService {
       value,
       threshold,
       compliance,
-      status
+      status,
     });
   }
 
@@ -141,10 +141,10 @@ export class SLAMonitoringService {
 
     for (const [key, metrics] of this.slaMetrics.entries()) {
       const [orgId, rpcId] = key.split(':');
-      
+
       // Get recent metrics (last hour)
       const recentMetrics = metrics.filter(m => m.timestamp >= oneHourAgo);
-      
+
       if (recentMetrics.length === 0) continue;
 
       // Calculate current compliance
@@ -165,7 +165,7 @@ export class SLAMonitoringService {
     orgId: string,
     rpcId: string | undefined,
     metricType: string,
-    metrics: SLAMetric[]
+    metrics: SLAMetric[],
   ): Promise<void> {
     if (metrics.length === 0) return;
 
@@ -197,14 +197,14 @@ export class SLAMonitoringService {
     metricType: string,
     currentValue: number,
     threshold: number,
-    status: 'warning' | 'breach'
+    status: 'warning' | 'breach',
   ): Promise<void> {
     const alertId = `${orgId}:${rpcId || 'global'}:${metricType}:${Date.now()}`;
     const key = `${orgId}:${rpcId || 'global'}`;
-    
+
     const existingAlerts = this.slaAlerts.get(key) || [];
-    const existingAlert = existingAlerts.find(a => 
-      a.metricType === metricType && !a.acknowledged
+    const existingAlert = existingAlerts.find(a =>
+      a.metricType === metricType && !a.acknowledged,
     );
 
     if (existingAlert) {
@@ -226,7 +226,7 @@ export class SLAMonitoringService {
         severity: status === 'breach' ? 'critical' : 'warning',
         message: this.generateAlertMessage(metricType, currentValue, threshold, status),
         timestamp: new Date(),
-        acknowledged: false
+        acknowledged: false,
       };
 
       existingAlerts.push(alert);
@@ -239,13 +239,13 @@ export class SLAMonitoringService {
   private async resolveSLAAlert(
     orgId: string,
     rpcId: string | undefined,
-    metricType: string
+    metricType: string,
   ): Promise<void> {
     const key = `${orgId}:${rpcId || 'global'}`;
     const existingAlerts = this.slaAlerts.get(key) || [];
-    
-    const alert = existingAlerts.find(a => 
-      a.metricType === metricType && !a.acknowledged
+
+    const alert = existingAlerts.find(a =>
+      a.metricType === metricType && !a.acknowledged,
     );
 
     if (alert) {
@@ -258,11 +258,11 @@ export class SLAMonitoringService {
   private async handleSLABreach(orgId: string, rpcId: string | undefined, metric: SLAMetric): Promise<void> {
     const key = `${orgId}:${rpcId || 'global'}`;
     const breaches = this.breachHistory.get(key) || [];
-    
+
     // Check if this is a continuation of an existing breach
     const lastBreach = breaches[breaches.length - 1];
-    if (lastBreach && 
-        lastBreach.metricType === metric.metricType && 
+    if (lastBreach &&
+        lastBreach.metricType === metric.metricType &&
         lastBreach.endTime.getTime() > Date.now() - 5 * 60 * 1000) { // 5 minute gap
       // Extend existing breach
       lastBreach.endTime = metric.timestamp;
@@ -274,7 +274,7 @@ export class SLAMonitoringService {
         startTime: metric.timestamp,
         endTime: metric.timestamp,
         duration: 0,
-        severity: metric.compliance < 90 ? 'critical' : 'major'
+        severity: metric.compliance < 90 ? 'critical' : 'major',
       });
     }
 
@@ -284,7 +284,7 @@ export class SLAMonitoringService {
       rpcId,
       metricType: metric.metricType,
       compliance: metric.compliance,
-      threshold: metric.threshold
+      threshold: metric.threshold,
     });
   }
 
@@ -294,27 +294,27 @@ export class SLAMonitoringService {
       rpcId,
       metricType: metric.metricType,
       compliance: metric.compliance,
-      threshold: metric.threshold
+      threshold: metric.threshold,
     });
   }
 
   // Generate SLA report
   async generateSLAReport(orgId: string, period: { start: Date; end: Date }): Promise<SLAReport> {
     const allMetrics: SLAMetric[] = [];
-    
+
     // Collect all metrics for the organization
     for (const [key, metrics] of this.slaMetrics.entries()) {
       if (key.startsWith(`${orgId}:`)) {
-        const filtered = metrics.filter(m => 
-          m.timestamp >= period.start && m.timestamp <= period.end
+        const filtered = metrics.filter(m =>
+          m.timestamp >= period.start && m.timestamp <= period.end,
         );
         allMetrics.push(...filtered);
       }
     }
 
     // Calculate overall compliance
-    const overallCompliance = allMetrics.length > 0 
-      ? allMetrics.reduce((sum, m) => sum + m.compliance, 0) / allMetrics.length 
+    const overallCompliance = allMetrics.length > 0
+      ? allMetrics.reduce((sum, m) => sum + m.compliance, 0) / allMetrics.length
       : 100;
 
     // Get latest metrics for each type
@@ -342,11 +342,11 @@ export class SLAMonitoringService {
         uptime: latestUptime || this.createDefaultMetric(orgId, 'uptime', 100, 99.9),
         responseTime: latestResponseTime || this.createDefaultMetric(orgId, 'response_time', 1000, 5000),
         errorRate: latestErrorRate || this.createDefaultMetric(orgId, 'error_rate', 0.1, 1.0),
-        availability: latestAvailability || this.createDefaultMetric(orgId, 'availability', 99.9, 99.5)
+        availability: latestAvailability || this.createDefaultMetric(orgId, 'availability', 99.9, 99.5),
       },
       breaches,
       recommendations,
-      nextReviewDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+      nextReviewDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     };
   }
 
@@ -367,8 +367,8 @@ export class SLAMonitoringService {
 
     for (const [key, breaches] of this.breachHistory.entries()) {
       if (key.startsWith(`${orgId}:`)) {
-        const filtered = breaches.filter(b => 
-          b.startTime >= period.start && b.startTime <= period.end
+        const filtered = breaches.filter(b =>
+          b.startTime >= period.start && b.startTime <= period.end,
         );
         allBreaches.push(...filtered);
       }
@@ -414,7 +414,7 @@ export class SLAMonitoringService {
     orgId: string,
     metricType: 'uptime' | 'response_time' | 'error_rate' | 'availability',
     value: number,
-    threshold: number
+    threshold: number,
   ): SLAMetric {
     const now = new Date();
     return {
@@ -426,7 +426,7 @@ export class SLAMonitoringService {
       status: 'compliant',
       timestamp: now,
       windowStart: now,
-      windowEnd: now
+      windowEnd: now,
     };
   }
 
@@ -454,15 +454,15 @@ export class SLAMonitoringService {
   // Private helper methods
   private calculateCompliance(value: number, threshold: number, metricType: string): number {
     switch (metricType) {
-      case 'uptime':
-      case 'availability':
-        return Math.min(100, (value / threshold) * 100);
-      case 'response_time':
-        return Math.max(0, 100 - ((value - threshold) / threshold) * 100);
-      case 'error_rate':
-        return Math.max(0, 100 - (value / threshold) * 100);
-      default:
-        return 100;
+    case 'uptime':
+    case 'availability':
+      return Math.min(100, (value / threshold) * 100);
+    case 'response_time':
+      return Math.max(0, 100 - ((value - threshold) / threshold) * 100);
+    case 'error_rate':
+      return Math.max(0, 100 - (value / threshold) * 100);
+    default:
+      return 100;
     }
   }
 
@@ -476,7 +476,7 @@ export class SLAMonitoringService {
     metricType: string,
     currentValue: number,
     threshold: number,
-    status: 'warning' | 'breach'
+    status: 'warning' | 'breach',
   ): string {
     const severity = status === 'breach' ? 'CRITICAL' : 'WARNING';
     return `SLA ${severity}: ${metricType} is ${currentValue} (threshold: ${threshold})`;
@@ -488,7 +488,7 @@ export class SLAMonitoringService {
     totalAlerts: number;
     totalBreaches: number;
     activeAlerts: number;
-  } {
+    } {
     let totalMetrics = 0;
     let totalAlerts = 0;
     let totalBreaches = 0;
@@ -511,7 +511,7 @@ export class SLAMonitoringService {
       totalMetrics,
       totalAlerts,
       totalBreaches,
-      activeAlerts
+      activeAlerts,
     };
   }
 
