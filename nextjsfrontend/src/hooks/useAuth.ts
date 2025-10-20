@@ -1,4 +1,4 @@
-import { authApiService } from '@/lib/apiClient';
+import { authApiService } from '@/services/apiClient';
 import { notify } from '@/lib/notify';
 import { useAuthStore } from '@/store/authStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
