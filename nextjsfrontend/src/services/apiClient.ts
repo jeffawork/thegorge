@@ -1,6 +1,6 @@
+import { useAuthStore } from '@/store/authStore';
 import axios, {
 } from 'axios';
-import { de } from 'zod/v4/locales';
 
 
 const axiosInst = axios.create({
@@ -9,7 +9,30 @@ const axiosInst = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+axiosInst.interceptors.request.use((config) => {
+  const token = useAuthStore().accessToken;
+  if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
+axiosInst.interceptors.response.use(
+  (res) => res,
+  async (err) => {
+    const original = err.config;
+    if (err.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      try {
+        const { data } = await axios.get("/api/auth/refresh", { withCredentials: true });
+        useAuthStore().setToken(data.accessToken);
+        original.headers.Authorization = `Bearer ${data.accessToken}`;
+        return axiosInst(original);
+      } catch {
+        // useAuthStore().logout();
+      }
+    }
+    throw err;
+  }
+);
 // APIs related to authentication
 
 export const  authApiService = {
@@ -29,11 +52,6 @@ export const  authApiService = {
     return data;
   },
 
-  refreshToken: async () => {
-    const { data } = await axiosInst.post("/auth/refresh");
-    return data;
-  },
-
   getProfile: async () => {
     const { data } = await axiosInst.get("/auth/profile");
     return data;
@@ -43,6 +61,7 @@ export const  authApiService = {
     const { data } = await axiosInst.put("/auth/profile", profileData);
     return data;
   },
+
   changePassword: async (passwordData: { currentPassword: string; newPassword: string }) => {
     const { data } = await axiosInst.put("/auth/change-password", passwordData);
     return data;
@@ -52,6 +71,7 @@ export const  authApiService = {
     const { data } = await axiosInst.post("/auth/forgot-password", email);
     return data;
   },
+
   resetPassword: async (resetData: { token: string; newPassword: string }) => {
     const { data } = await axiosInst.post("/auth/reset-password", resetData);
     return data;

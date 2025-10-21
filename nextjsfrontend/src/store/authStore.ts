@@ -3,9 +3,10 @@ import { persist } from 'zustand/middleware';
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
+      accessToken: null,
 
       setUser: (user: User | null) =>
         set({
@@ -13,13 +14,10 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: !!user
         }),
 
-      logout: () => {
+      setToken: (token: string) =>
         set({
-          user: null,
-          isAuthenticated: false,
-        
-        });
-      },
+          accessToken: token
+        }),
     }),
     {
       name: 'auth-store',

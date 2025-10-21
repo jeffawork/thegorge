@@ -52,7 +52,7 @@ export const useTestRpc = (credentials: RpcTestCredentials) => {
 
 
 
-// 🟢 ADD RPC
+//  ADD RPC
 export function useAddRpc() {
   const queryClient = useQueryClient();
   const addRpcToState = useRPCStore((s) => s.addRpcToState);
@@ -106,7 +106,7 @@ export function useAddRpc() {
   });
 }
 
-// 🟡 UPDATE RPC
+//  UPDATE RPC
 export function useUpdateRpc() {
   const queryClient = useQueryClient();
   const updateRpcInState = useRPCStore((s) => s.updateRpcInState);
@@ -152,7 +152,7 @@ export function useUpdateRpc() {
   });
 }
 
-// 🔴 DELETE RPC
+//  DELETE RPC
 export function useDeleteRpc() {
   const queryClient = useQueryClient();
   const deleteRpcFromState = useRPCStore((s) => s.deleteRpcFromState);
