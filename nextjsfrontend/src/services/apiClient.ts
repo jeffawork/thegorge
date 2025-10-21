@@ -1,5 +1,6 @@
 import axios, {
 } from 'axios';
+import { de } from 'zod/v4/locales';
 
 
 const axiosInst = axios.create({
@@ -107,5 +108,32 @@ export const rpcApiService = {
     const {data} = await axiosInst.get(`/rpcs/${Id}/toggle`)
     return data;  
   },
+
+}
+
+
+// APIs related Alerts
+
+export const alertApiService = {
+
+  addAlert: async (alert: Alert) => {
+    const {data} = await axiosInst.post("/alerts", alert)
+    return data;  
+  },
+
+  getAlerts: async (Id:string) => {
+    const {data} = await axiosInst.get(`/alerts/${Id}`)
+    return data;  
+  },
+
+  resolveAlert: async (Id:string) => {
+    const {data} = await axiosInst.put(`/alerts/${Id}/resolve`)
+    return data;  
+  },
+
+  deleteAlert: async (Id:string) => {
+    const {data} = await axiosInst.delete(`/alerts/${Id}`)
+    return data;  
+  }
 
 }
