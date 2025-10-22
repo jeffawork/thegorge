@@ -1,38 +1,33 @@
-import { useAuthStore } from '@/store/authStore';
-import axios, {
-} from 'axios';
-
-
+import axios from "axios";
 const axiosInst = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
-  withCredentials: true,
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api",
+  withCredentials: true, 
+  headers: { "Content-Type": "application/json" },
 });
 
-axiosInst.interceptors.request.use((config) => {
-  const token = useAuthStore().accessToken;
-  if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
+// No need for a request interceptor now — cookies handle auth
 axiosInst.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config;
+
+    // Handle 401 -> auto refresh via the API gateway
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true;
+
       try {
-        const { data } = await axios.get("/api/auth/refresh", { withCredentials: true });
-        useAuthStore().setToken(data.token);
-        original.headers.Authorization = `Bearer ${data.token}`;
+        await axios.get("/api/auth/refresh", { withCredentials: true });
+        // After refresh, cookies are updated automatically — no manual token
         return axiosInst(original);
       } catch {
-        // useAuthStore().logout();
+        // maybe redirect to login page
       }
     }
     throw err;
   }
 );
+
+
 // APIs related to authentication
 
 export const  authApiService = {

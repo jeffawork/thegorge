@@ -22,9 +22,8 @@ declare global {
   interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  accessToken: string | null;
-  setToken: (token: string) => void;
   setUser: (user: User | null) => void;
+  logout: () => void;
 }
 
 // AuthApi types

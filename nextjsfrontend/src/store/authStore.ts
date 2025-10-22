@@ -1,29 +1,17 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
       isAuthenticated: false,
-      accessToken: null,
-
-      setUser: (user: User | null) =>
-        set({
-          user,
-          isAuthenticated: !!user
-        }),
-
-      setToken: (token: string) =>
-        set({
-          accessToken: token
-        }),
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      logout: () => set({ user: null, isAuthenticated: false }),
     }),
     {
-      name: 'auth-store',
-      partialize: (state) => ({
-        user: state.user,
-      }),
+      name: "auth-store",
+      partialize: (state) => ({ user: state.user }),
     }
   )
 );
