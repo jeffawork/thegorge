@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
           {
             status: 'failure',
             status_code: 400,
-            message: `${field} is required`,
+            message: `${String(field)} is required`,
           },
           { status: 400 }
         );
