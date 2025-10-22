@@ -1,28 +1,32 @@
 import axios from "axios";
+
 const axiosInst = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api",
-  withCredentials: true, 
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
-// No need for a request interceptor now — cookies handle auth
+// No need for a request interceptor — cookies handle auth
 axiosInst.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config;
 
-    // Handle 401 -> auto refresh via the API gateway
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true;
 
       try {
-        await axios.get("/api/auth/refresh", { withCredentials: true });
-        // After refresh, cookies are updated automatically — no manual token
+        // ✅ Use POST to trigger refresh through the API gateway
+        await axios.post("/api/auth/refresh", {}, { withCredentials: true });
+
+        // After refresh, cookies are updated automatically
         return axiosInst(original);
-      } catch {
-        // maybe redirect to login page
+      } catch (refreshErr) {
+        console.warn("Refresh failed:", refreshErr);
+        // maybe redirect to login or clear user session
       }
     }
+
     throw err;
   }
 );
