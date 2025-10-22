@@ -23,8 +23,8 @@ axiosInst.interceptors.response.use(
       original._retry = true;
       try {
         const { data } = await axios.get("/api/auth/refresh", { withCredentials: true });
-        useAuthStore().setToken(data.accessToken);
-        original.headers.Authorization = `Bearer ${data.accessToken}`;
+        useAuthStore().setToken(data.token);
+        original.headers.Authorization = `Bearer ${data.token}`;
         return axiosInst(original);
       } catch {
         // useAuthStore().logout();
