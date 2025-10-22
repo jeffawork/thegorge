@@ -9,37 +9,38 @@ export const useLogin = ( ) => {
     const QueryClient = useQueryClient()
     const router = useRouter();
     const setUser = useAuthStore((state) => state.setUser);
-
-
+    
+    
     return useMutation({
         mutationFn: authApiService.login,
         
         onSuccess: (res) => {
-            // console.log(data)
-            setUser(res.data);
+            setUser(res.data.user);
             QueryClient.invalidateQueries({ queryKey: ['me'] });
             router.push('/dashboard');
             notify.success("Logged in successfully");
 
         },
-
+        
         onError: (error: any) => {
             console.log(error);
             notify.error(error?.response?.data?.message || "Login failed");
         }
     })
-
+    
 }
 
 export const useRegister = ( ) => {
     const QueryClient = useQueryClient()
     const router = useRouter();
+    const setUser = useAuthStore((state) => state.setUser);
+
 
     return useMutation({
         mutationFn: authApiService.register,
         
         onSuccess: (res) => {
-            console.log(res.data)
+            setUser(res.data.user)
             QueryClient.invalidateQueries({ queryKey: ['me'] });
             router.push('/dashboard');
             notify.success("Registered successfully");
