@@ -24,11 +24,25 @@ declare global {
 /**
  * Authentication middleware
  */
-export const authenticate = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Try to get token from cookie first
+    const cookieToken = req.cookies?.access_token;
+
+    // Fallback to Authorization header
+    const authHeader = req.headers.authorization;
+    const headerToken = authHeader?.startsWith('Bearer ')
+      ? authHeader.substring(7)
+      : null;
+
+    const token = cookieToken || headerToken;
+
+    if (!token) {
       res.status(401).json({
         success: false,
         error: 'Access token required',
@@ -37,59 +51,45 @@ export const authenticate = async(req: Request, res: Response, next: NextFunctio
       return;
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const jwtSecret =
+      process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
-    try {
-      // Get JWT secret from environment
-      const jwtSecret = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+    // Verify JWT
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
-      // Verify JWT token
-      const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
-
-      // Check if token is expired
-      if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-        throw new Error('Token expired');
-      }
-
-      // Set user in request
-      req.user = decoded;
-      next();
-
-    } catch (error) {
-      // Fallback to demo tokens for development
-      if (token === 'demo-token' || token === 'demo-refreshed-token') {
-        const decoded: JwtPayload = {
-          userId: '00000000-0000-0000-0000-000000000001',
-          email: 'demo@example.com',
-          role: 'admin',
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + 3600,
-        };
-        req.user = decoded;
-        next();
-        return;
-      }
-
-      authLogger.error('Token verification failed', {
-        error: error instanceof Error ? error.message : String(error),
-        ip: req.ip,
-        userAgent: req.get('User-Agent'),
-      });
-
-      res.status(401).json({
-        success: false,
-        error: 'Invalid or expired token',
-        timestamp: new Date(),
-      });
+    // Check expiry
+    if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+      throw new Error('Token expired');
     }
+
+    // Attach decoded user data
+    req.user = decoded;
+    next();
   } catch (error) {
-    authLogger.error('Authentication middleware error', {
+    // Allow demo tokens for local testing
+    if (
+      req.cookies?.access_token === 'demo-token' ||
+      req.cookies?.refresh_token === 'demo-refreshed-token'
+    ) {
+      req.user = {
+        userId: '00000000-0000-0000-0000-000000000001',
+        email: 'demo@example.com',
+        role: 'admin',
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      };
+      return next();
+    }
+
+    authLogger.error('Token verification failed', {
       error: error instanceof Error ? error.message : String(error),
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
     });
 
-    res.status(500).json({
+    res.status(401).json({
       success: false,
-      error: 'Authentication service error',
+      error: 'Invalid or expired token',
       timestamp: new Date(),
     });
   }
