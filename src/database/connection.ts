@@ -178,4 +178,7 @@ const databaseConfig: DatabaseConfig = {
   connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '2000'),
 };
 
-export const database = new DatabaseConnection(databaseConfig, process.env.NODE_ENV === 'development' || process.env.MOCK_DATABASE === 'true');
+export const database = new DatabaseConnection(
+  databaseConfig,
+  process.env.MOCK_DATABASE === 'true'
+);

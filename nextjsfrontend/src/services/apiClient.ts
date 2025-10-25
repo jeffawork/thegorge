@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInst = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api",
+  baseURL:"http://localhost:4000/api",
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
@@ -17,8 +17,7 @@ axiosInst.interceptors.response.use(
 
       try {
         // ✅ Use POST to trigger refresh through the API gateway
-        await axios.post("/api/auth/refresh", {}, { withCredentials: true });
-
+        await axiosInst.post("/auth/refresh", {});
         // After refresh, cookies are updated automatically
         return axiosInst(original);
       } catch (refreshErr) {

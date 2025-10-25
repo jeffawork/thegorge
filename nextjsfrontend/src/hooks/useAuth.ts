@@ -30,7 +30,7 @@ export const useLogin = ( ) => {
     
 }
 
-export const useRegister = ( ) => {
+export const useRegister = () => {
     const QueryClient = useQueryClient()
     const router = useRouter();
     const setUser = useAuthStore((state) => state.setUser);
@@ -41,8 +41,9 @@ export const useRegister = ( ) => {
         
         onSuccess: (res) => {
             setUser(res.data.user)
+            console.log(res)
             QueryClient.invalidateQueries({ queryKey: ['me'] });
-            router.push('/dashboard');
+            router.push('/sign-in');
             notify.success("Registered successfully");
 
         },

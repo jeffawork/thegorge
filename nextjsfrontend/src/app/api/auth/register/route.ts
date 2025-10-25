@@ -28,13 +28,14 @@ export async function POST(request: NextRequest) {
 
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-      { body },
+      body ,
       {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true,
       }
     );
-
+console.log(request.url)
+    console.log(process.env.NEXT_PUBLIC_API_URL)
     const responseData = response.data;
 
     // Create clean response without tokens

@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Send it to your backend for verification & new token issuance
-    const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/refresh`, {
+    const backendRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
       method: "GET",
       headers: {
         Cookie: `refresh_token=${refreshToken}`,
