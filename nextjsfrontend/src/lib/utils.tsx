@@ -46,7 +46,7 @@ export const individualSchema = z
     email: z.email('invalid email address'),
     phone: z.string().min(8, 'Phone number required'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
+    confirm_password: z.string(),
     jobTitle: z.string().optional(),
     company: z.string().optional(),
     website: z.url().optional(),
@@ -57,7 +57,7 @@ export const individualSchema = z
     acceptTerms: z.boolean(),
     marketingConsent: z.boolean().optional(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.confirm_password, {
     message: 'Passwords must match',
     path: ['confirmPassword'],
   });
@@ -68,7 +68,7 @@ export const organizationSchema = z
     registrationType: z.literal('organization').optional(),
     email: z.email(),
     password: z.string().min(6),
-    confirmPassword: z.string(),
+    confirm_password: z.string(),
     firstName: z.string().min(2, 'Contact Person first name required'),
     lastName: z.string().min(2, 'Contact Person last name required'),
     organizationDescription: z.string().optional(),
@@ -83,7 +83,7 @@ export const organizationSchema = z
     acceptTerms: z.boolean(),
     marketingConsent: z.boolean().optional(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.confirm_password, {
     message: 'Passwords must match',
     path: ['confirmPassword'],
   });
@@ -97,14 +97,14 @@ export const joinOrgSchema = z
     email: z.email('invalid email address'),
     managerEmail: z.email('invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
+    confirm_password: z.string(),
     jobTitle: z.string().optional(),
     organizationId: z.string().min(2, 'Organization ID required'),
     invitationCode: z.string().min(2, 'Invitation Code required'),
     acceptTerms: z.boolean(),
     marketingConsent: z.boolean().optional(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.confirm_password, {
     message: 'Passwords must match',
     path: ['confirmPassword'],
   });
