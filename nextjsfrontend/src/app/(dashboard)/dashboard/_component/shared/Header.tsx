@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RpcDialogForm } from '../atoms/RpcDialogForm';
+import { useAuthStore } from '@/store/authStore';
 // import { useRPC } from '../contexts/RPCContext'
 // import { useAuth } from '../contexts/AuthContext'
 interface HeaderProps {
@@ -21,10 +22,19 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
-  // const { user, logout } = useAuth()
+  const { user, logout } = useAuthStore();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  function getInitials(name: string) {
+    if (!name) return '';
+    return name
+      .split(' ') // split into words
+      .filter(Boolean) // remove extra spaces
+      .map((word) => word[0].toUpperCase()) // take first letter, uppercase
+      .join(''); // combine
+  }
 
   return (
     <nav>
@@ -94,7 +104,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <User className="h-5 w-5 text-white" />
+              {user ? (
+                <p className="text-lg text-white">{getInitials(user.name)}</p>
+              ) : (
+                <User className="h-5 w-5 text-white" />
+              )}
             </motion.button>
 
             {showUserMenu && (
