@@ -18,7 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { Input } from '@/components/ui/input';
 import { useAddRpc } from '@/hooks/useRpcs';
-import { RPC } from '@/store/rpcSlice';
+import { useAlertStore } from '@/store/alertSlice';
+import { useAuthStore } from '@/store/authStore';
 
 interface RpcDialogFormProps {
   isOpen: boolean;
@@ -30,13 +31,15 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
   onClose,
 }) => {
   const { mutate: addRPC, isPending } = useAddRpc();
+  const { user } = useAuthStore();
+
   const form = useForm({
     resolver: zodResolver(rpcSchema),
     defaultValues: {
       name: '',
       url: '',
       network: '',
-      chainId: '',
+      chainId: 20,
       timeout: 10000,
       priority: 2,
       enabled: true,
@@ -47,7 +50,12 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
 
   const handleSubmit = (data: any) => {
     // Ensure required fields match RpcCredentials (chainId must be a number)
-    addRPC(data);
+    const payload = {
+      userId: user?.id,
+      ...data,
+      chainId: data.chainId ? Number(data.chainId) : undefined,
+    };
+    addRPC(payload);
   };
 
   // const testConnection = async () => {

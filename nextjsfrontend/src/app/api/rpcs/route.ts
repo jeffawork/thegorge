@@ -4,35 +4,25 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body: RpcCredentials = await request.json();
-    
-    if (!body.url || !body.network) {
-      return NextResponse.json(
-        {
-          status: 'failure',
-          status_code: 400,
-          message: 'URL and network are required',
-        },
-        { status: 400 }
-      );
-    }
+
+    // Extract cookies from incoming client request
+    const cookies = request.headers.get('cookie');
 
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/rpcs`,
       body,
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cookies ? { Cookie: cookies } : {}), // <-- Forward cookies
+        },
         withCredentials: true,
       }
     );
 
-    const responseData = response.data;
-   
-      // Set cookies with consistent settings
-        const nextResponse = NextResponse.json(responseData, { status: 200 });
-      return nextResponse;
-
-    } catch (error) {
-    console.error('Login error:', error);
+    return NextResponse.json(response.data, { status: 200 });
+  } catch (error) {
+    console.error("Add RPC error:", error);
 
     if (error instanceof AxiosError && error.response) {
       return NextResponse.json(error.response.data, {
@@ -42,9 +32,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        status: 'error',
-        status_code: 500,
-        message: 'An unexpected error occurred. Please try again later.',
+        status: "error",
+        message: "Unexpected error occurred while adding RPC",
       },
       { status: 500 }
     );

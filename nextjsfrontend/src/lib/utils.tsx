@@ -119,9 +119,9 @@ export const registerSchema = z.discriminatedUnion('type', [
 
 export const rpcSchema = z.object({
   name: z.string().min(2, 'RPC name is required'),
-  url: z.string().url('Enter a valid URL'),
+  url: z.url(),
   network: z.string().min(1, 'Select a network'),
-  chainId: z.string().optional(),
+  chainId: z.number().optional(),
   timeout: z.coerce.number().min(1000).max(60000).optional(),
   priority: z.coerce.number().optional(),
   enabled: z.boolean().default(true),
