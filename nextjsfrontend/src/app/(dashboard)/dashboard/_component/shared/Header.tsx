@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { RpcDialogForm } from '../atoms/RpcDialogForm';
 import { useAuthStore } from '@/store/authStore';
+import { useLogout } from '@/hooks/useAuth';
 // import { useRPC } from '../contexts/RPCContext'
 // import { useAuth } from '../contexts/AuthContext'
 interface HeaderProps {
@@ -23,6 +24,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
   const { user, logout } = useAuthStore();
+  const { mutate: logoutMutate } = useLogout();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -127,7 +129,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
                 </button>
                 <button
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/20"
-                  onClick={() => setShowUserMenu(false)}
+                  onClick={() => {
+                    logoutMutate();
+                    logout();
+                    setShowUserMenu(false);
+                  }}
                 >
                   <LogOut className="h-4 w-4" />
                   Logout

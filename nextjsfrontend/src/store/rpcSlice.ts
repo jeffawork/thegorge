@@ -11,12 +11,12 @@ export interface RPC {
   timeout: number
   priority: number
   enabled: boolean
-  status: 'online' | 'offline' | 'testing'
+  status?: 'online' | 'offline' | 'testing'
   responseTime?: number
   uptime?: number
   lastChecked?: Date
-  createdAt: Date
-  updatedAt: Date
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 interface RPCSlice {

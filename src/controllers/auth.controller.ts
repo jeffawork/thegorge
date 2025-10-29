@@ -190,6 +190,18 @@ export class AuthController extends BaseController {
     try {
       const userId = this.getUserId(req);
       await this.authService.logout(userId);
+        res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: false,
+      path: '/',
+    });
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: false,
+      path: '/',
+    });
       this.sendSuccess(res, null, 'Logged out successfully');
     } catch (error) {
       this.handleError(error, req, res);

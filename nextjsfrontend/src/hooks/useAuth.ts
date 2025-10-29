@@ -38,6 +38,9 @@ export const useRegister = () => {
 
     return useMutation({
         mutationFn: authApiService.register,
+        onMutate: () => {
+            notify.info("Registering...");
+        },
         
         onSuccess: (res) => {
             setUser(res.data.user)
@@ -59,18 +62,18 @@ export const useRegister = () => {
 export const useLogout = ( ) => {
     const QueryClient = useQueryClient()
     const router = useRouter();
-    const setUser = useAuthStore((state) => state.setUser);
+    const logout = useAuthStore((state) => state.logout);
 
 
     return useMutation({
-        mutationFn: authApiService.login,
-        
+        mutationFn: authApiService.logout,
+
         onSuccess: (res) => {
             // console.log(data)
-            setUser(res.data);
+            logout();
             QueryClient.invalidateQueries({ queryKey: ['me'] });
-            router.push('/dashboard');
-            notify.success("Logged in successfully");
+            router.push('/sign-in');
+            notify.success("Logged  out successfully");
 
         },
 

@@ -11,29 +11,14 @@ import {
   ToggleRight,
   Zap,
 } from 'lucide-react';
-import { useRPCStore } from '@/store/rpcSlice';
 import { rpcSchema } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form';
-
 import { Checkbox } from '@radix-ui/react-checkbox';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@radix-ui/react-select';
 import { Input } from '@/components/ui/input';
+import { useAddRpc } from '@/hooks/useRpcs';
+import { RPC } from '@/store/rpcSlice';
 
 interface RpcDialogFormProps {
   isOpen: boolean;
@@ -44,9 +29,7 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addRPC } = useRPCStore();
-  // const [showChainId, setShowChainId] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate: addRPC, isPending } = useAddRpc();
   const form = useForm({
     resolver: zodResolver(rpcSchema),
     defaultValues: {
@@ -62,7 +45,10 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
 
   const showChainId = form.watch('network') === 'custom';
 
-  const handleSubmit = (data: any) => {};
+  const handleSubmit = (data: any) => {
+    // Ensure required fields match RpcCredentials (chainId must be a number)
+    addRPC(data);
+  };
 
   // const testConnection = async () => {
   //   if (!formData.url) return
@@ -247,10 +233,9 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
 
                   <Button
                     type="submit"
-                    disabled={isSubmitting}
                     className="flex flex-1 items-center justify-center gap-2"
                   >
-                    {isSubmitting ? (
+                    {isPending ? (
                       <>
                         <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
                         Adding...

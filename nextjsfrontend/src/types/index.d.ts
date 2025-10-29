@@ -10,7 +10,7 @@ declare global {
 
 
   // Registeration Types
-
+  
 // Authentication Store tyoes
  interface User {
   id:string
