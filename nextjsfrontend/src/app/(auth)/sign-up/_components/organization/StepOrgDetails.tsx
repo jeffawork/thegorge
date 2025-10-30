@@ -134,19 +134,19 @@ function StepOrgDetails() {
         <div>
           <Label
             className="text-primary-foreground/45"
-            htmlFor="confirmPassword"
+            htmlFor="confirm_password"
           >
             Confirm Password
           </Label>
           <Input
-            {...register('confirmPassword')}
+            {...register('confirm_password')}
             placeholder="Confirm Password"
             type="password"
             variant="password"
           />
-          {errors.confirmPassword && (
+          {errors.confirm_password && (
             <p className="text-sm text-red-500">
-              {errors.confirmPassword.message as string}
+              {errors.confirm_password.message as string}
             </p>
           )}
         </div>

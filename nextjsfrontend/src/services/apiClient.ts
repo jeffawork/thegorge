@@ -1,12 +1,50 @@
-import axios, {
-} from 'axios';
+import axios from "axios";
 
-
-const axiosInst = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+// Create the Axios instance
+export const axiosInst = axios.create({
+  baseURL: "/api", // ✅ Let Next.js handle the proxying to backend
   withCredentials: true,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { "Content-Type": "application/json" },
 });
+
+// Response interceptor for automatic token refresh
+axiosInst.interceptors.response.use(
+  (res) => res,
+  async (err) => {
+    const original = err.config;
+
+    // Only trigger refresh once per failed request
+    if (err.response?.status === 401 && !original._retry) {
+      original._retry = true;
+
+      try {
+        // ✅ Call the Next.js API route, not the backend directly
+        const refreshResponse = await axios.get("/api/auth/refresh", {
+          withCredentials: true,
+        });
+
+        if (refreshResponse.status === 200) {
+          console.info("Token refreshed successfully.");
+          // Retry the original request — cookies now updated
+          return axiosInst(original);
+        }
+
+        console.warn("Refresh attempt failed:", refreshResponse.status);
+      } catch (refreshErr) {
+        console.warn("Refresh failed:", refreshErr);
+        // Optionally trigger logout or redirect
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      }
+    }
+
+    // If refresh also failed, rethrow the error
+    throw err;
+  }
+);
+
+export default axiosInst;
 
 
 // APIs related to authentication
@@ -28,11 +66,6 @@ export const  authApiService = {
     return data;
   },
 
-  refreshToken: async () => {
-    const { data } = await axiosInst.post("/auth/refresh");
-    return data;
-  },
-
   getProfile: async () => {
     const { data } = await axiosInst.get("/auth/profile");
     return data;
@@ -42,6 +75,7 @@ export const  authApiService = {
     const { data } = await axiosInst.put("/auth/profile", profileData);
     return data;
   },
+
   changePassword: async (passwordData: { currentPassword: string; newPassword: string }) => {
     const { data } = await axiosInst.put("/auth/change-password", passwordData);
     return data;
@@ -51,6 +85,7 @@ export const  authApiService = {
     const { data } = await axiosInst.post("/auth/forgot-password", email);
     return data;
   },
+
   resetPassword: async (resetData: { token: string; newPassword: string }) => {
     const { data } = await axiosInst.post("/auth/reset-password", resetData);
     return data;
@@ -107,5 +142,32 @@ export const rpcApiService = {
     const {data} = await axiosInst.get(`/rpcs/${Id}/toggle`)
     return data;  
   },
+
+}
+
+
+// APIs related Alerts
+
+export const alertApiService = {
+
+  addAlert: async (alert: Alert) => {
+    const {data} = await axiosInst.post("/alerts", alert)
+    return data;  
+  },
+
+  getAlerts: async (Id:string) => {
+    const {data} = await axiosInst.get(`/alerts/${Id}`)
+    return data;  
+  },
+
+  resolveAlert: async (Id:string) => {
+    const {data} = await axiosInst.put(`/alerts/${Id}/resolve`)
+    return data;  
+  },
+
+  deleteAlert: async (Id:string) => {
+    const {data} = await axiosInst.delete(`/alerts/${Id}`)
+    return data;  
+  }
 
 }

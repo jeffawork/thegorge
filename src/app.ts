@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import { Server } from 'socket.io';
 import { MonitoringService } from './services/monitoringService';
 import createApiRoutes from './routes';
@@ -22,6 +24,13 @@ const io = new Server(server, {
 // Middleware
 app.use(express.json());
 app.use(express.static('public'));
+app.use(cookieParser());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN,
+  credentials: true, // This is a MUST for cookies
+   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 // Make database available to routes
 app.locals.database = database;
@@ -307,3 +316,4 @@ async function startServer() {
 initializeApp();
 
 export default app;
+

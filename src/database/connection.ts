@@ -59,7 +59,7 @@ export class DatabaseConnection {
           database: this.config.database,
           host: this.config.host,
           port: this.config.port,
-        },
+        },  
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -168,7 +168,7 @@ export class DatabaseConnection {
 // Create default database connection
 const databaseConfig: DatabaseConfig = {
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
+  port: parseInt(process.env.DB_PORT || '5433'),
   database: process.env.DB_NAME || 'the_gorge',
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
@@ -178,4 +178,7 @@ const databaseConfig: DatabaseConfig = {
   connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '2000'),
 };
 
-export const database = new DatabaseConnection(databaseConfig, process.env.NODE_ENV === 'development' || process.env.MOCK_DATABASE === 'true');
+export const database = new DatabaseConnection(
+  databaseConfig,
+  process.env.MOCK_DATABASE === 'true'
+);

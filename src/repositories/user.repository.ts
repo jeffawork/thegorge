@@ -150,7 +150,7 @@ export class UserRepository extends BaseRepository<User> {
 
     const query = `INSERT INTO ${this.tableName} (${fields.join(', ')}) VALUES (${placeholders}) RETURNING *`;
     const result = await this.pool.query(query, values);
-
+    console.log(result)
     return this.mapRowToModel(result.rows[0]);
   }
 

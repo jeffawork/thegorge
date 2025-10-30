@@ -10,7 +10,7 @@ declare global {
 
 
   // Registeration Types
-
+  
 // Authentication Store tyoes
  interface User {
   id:string
@@ -22,7 +22,6 @@ declare global {
   interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-
   setUser: (user: User | null) => void;
   logout: () => void;
 }
@@ -60,6 +59,20 @@ interface UpdateRpcCredentials {
   url: string
   priority: number
 }
+
+// Alert Types
+interface Alert {
+ id: string
+  title: string
+  message: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  rpcId?: string
+  resolved: boolean
+  createdAt: Date
+  resolvedAt?: Date
+}
+
 
 // Dashboard
 interface ActivePanelProps {

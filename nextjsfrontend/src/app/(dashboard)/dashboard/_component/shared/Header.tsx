@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RpcDialogForm } from '../atoms/RpcDialogForm';
+import { useAuthStore } from '@/store/authStore';
+import { useLogout } from '@/hooks/useAuth';
 // import { useRPC } from '../contexts/RPCContext'
 // import { useAuth } from '../contexts/AuthContext'
 interface HeaderProps {
@@ -21,10 +23,20 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
-  // const { user, logout } = useAuth()
+  const { user } = useAuthStore();
+  const { mutate: logoutMutate, isPending } = useLogout();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  function getInitials(name: string) {
+    if (!name) return '';
+    return name
+      .split(' ') // split into words
+      .filter(Boolean) // remove extra spaces
+      .map((word) => word[0].toUpperCase()) // take first letter, uppercase
+      .join(''); // combine
+  }
 
   return (
     <nav>
@@ -94,7 +106,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <User className="h-5 w-5 text-white" />
+              {user ? (
+                <p className="text-lg text-white">{getInitials(user.name)}</p>
+              ) : (
+                <User className="h-5 w-5 text-white" />
+              )}
             </motion.button>
 
             {showUserMenu && (
@@ -113,9 +129,16 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
                 </button>
                 <button
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/20"
-                  onClick={() => setShowUserMenu(false)}
+                  onClick={() => {
+                    logoutMutate();
+                    setShowUserMenu(false);
+                  }}
                 >
-                  <LogOut className="h-4 w-4" />
+                  {isPending ? (
+                    <span className="loader-border h-4 w-4"></span>
+                  ) : (
+                    <LogOut className="h-4 w-4" />
+                  )}{' '}
                   Logout
                 </button>
               </motion.div>

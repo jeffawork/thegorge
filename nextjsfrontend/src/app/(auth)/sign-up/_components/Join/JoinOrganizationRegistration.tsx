@@ -10,10 +10,12 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import StepJoinInfo from './StepJoinInfo';
 import MoreJoinInfo from './MoreJoinInfo';
+import { useRegister } from '@/hooks/useAuth';
 
 export const JoinOrganizationRegistration = () => {
   const { step, registrationType, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
+  const { mutate: register } = useRegister();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof joinOrgSchema>>({
@@ -41,13 +43,12 @@ export const JoinOrganizationRegistration = () => {
   ];
 
   const handleFinalSubmit = (data: any) => {
-    console.log('Submitting Individual Registration:', {
-      ...data,
-      registrationType,
-    });
-    if (data) {
+    const payload = { ...data, registrationType };
+    register(payload);
+    console.log('Submitting Join Organization Registration:', payload);
+    if (payload) {
       router.push('/sign-in');
-      reset();
+      // reset();
     }
     // POST to API...
 

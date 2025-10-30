@@ -1,6 +1,8 @@
 import { rpcApiService } from "@/services/apiClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RPC, useRPCStore } from "@/store/rpcSlice";
+import { useRouter } from "next/navigation";
+import { notify } from "@/lib/notify";
 export const useGetRpcs = () => {
   return useQuery({
     queryKey: ["rpcs"], // Unique cache key
@@ -52,10 +54,11 @@ export const useTestRpc = (credentials: RpcTestCredentials) => {
 
 
 
-// 🟢 ADD RPC
+//  ADD RPC
 export function useAddRpc() {
   const queryClient = useQueryClient();
   const addRpcToState = useRPCStore((s) => s.addRpcToState);
+  const router = useRouter();
 
   return useMutation({
     mutationFn: rpcApiService.addRpc,
@@ -98,6 +101,8 @@ export function useAddRpc() {
 
       // Push result into Zustand store
       addRpcToState(data.data);
+      router.push('/dashboard');
+      notify.success("RPC added successfully!");
     },
 
     onSettled: () => {
@@ -106,7 +111,7 @@ export function useAddRpc() {
   });
 }
 
-// 🟡 UPDATE RPC
+//  UPDATE RPC
 export function useUpdateRpc() {
   const queryClient = useQueryClient();
   const updateRpcInState = useRPCStore((s) => s.updateRpcInState);
@@ -152,7 +157,7 @@ export function useUpdateRpc() {
   });
 }
 
-// 🔴 DELETE RPC
+//  DELETE RPC
 export function useDeleteRpc() {
   const queryClient = useQueryClient();
   const deleteRpcFromState = useRPCStore((s) => s.deleteRpcFromState);

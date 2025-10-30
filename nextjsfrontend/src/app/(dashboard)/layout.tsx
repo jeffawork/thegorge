@@ -8,8 +8,8 @@ export default function DashboardLayout({
 }>) {
   return (
     <main className="bg-foreground">
-      {/* <AuthProvider>{children}</AuthProvider> */}
-      {children}
+      <AuthProvider>{children}</AuthProvider>
+      {/* {children} */}
     </main>
   );
 }

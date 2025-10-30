@@ -16,6 +16,7 @@ import { ValidationException } from '../exceptions';
 // AuthenticationException removed - not currently used
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { authLogger } from '../utils/logger';
 
 export class AuthController extends BaseController {
   private authService: AuthService;
@@ -92,21 +93,20 @@ export class AuthController extends BaseController {
     }
   }
 
-  async refreshToken(req: Request, res: Response): Promise<void> {
-    try {
-      const refreshDto = plainToClass(RefreshTokenDto, req.body);
-      const validationErrors = await validate(refreshDto);
-
-      if (validationErrors.length > 0) {
-        throw new ValidationException('Invalid refresh token data', validationErrors);
-      }
-
-      const result = await this.authService.refreshToken(refreshDto.refreshToken);
-      this.sendSuccess(res, result, 'Token refreshed successfully');
-    } catch (error) {
-      this.handleError(error, req, res);
+async refreshToken(req: Request, res: Response): Promise<void> {
+  try {
+    // ✅ Get refresh token from cookie
+    const refreshToken = req.cookies.refresh_token;
+    if (!refreshToken) {
+      throw new ValidationException('Missing refresh token');
     }
+
+    const result = await this.authService.refreshToken(refreshToken);
+    this.sendSuccess(res, result, 'Token refreshed successfully');
+  } catch (error) {
+    this.handleError(error, req, res);
   }
+}
 
   async getProfile(req: Request, res: Response): Promise<void> {
     try {
@@ -186,13 +186,37 @@ export class AuthController extends BaseController {
     }
   }
 
-  async logout(req: Request, res: Response): Promise<void> {
+async logout(req: Request, res: Response): Promise<void> {
+  try {
+    let userId: string | null = null;
+
     try {
-      const userId = this.getUserId(req);
-      await this.authService.logout(userId);
-      this.sendSuccess(res, null, 'Logged out successfully');
-    } catch (error) {
-      this.handleError(error, req, res);
+      userId = this.getUserId(req);
+      if (userId) {
+        await this.authService.logout(userId);
+      }
+    } catch {
+      // Ignore token extraction failure – we’ll still clear cookies
+      authLogger.warn('No valid token found during logout');
     }
+
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
+
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
+
+    this.sendSuccess(res, null, 'Logged out successfully');
+  } catch (error) {
+    this.handleError(error, req, res);
   }
+}
 }

@@ -99,18 +99,18 @@ function StepJoinInfo() {
             Confirm Password
           </Label>
           <Input
-            {...register('confirmPassword')}
+            {...register('confirm_password')}
             placeholder="Confirm Password"
             type="password"
             variant="password"
             onChange={(e) => {
               // Update field and validate in real time
-              trigger('confirmPassword');
+              trigger('confirm_password');
             }}
           />
-          {errors.confirmPassword && (
+          {errors.confirm_password && (
             <p className="text-sm text-red-500">
-              {errors.confirmPassword.message as string}
+              {errors.confirm_password.message as string}
             </p>
           )}
         </div>

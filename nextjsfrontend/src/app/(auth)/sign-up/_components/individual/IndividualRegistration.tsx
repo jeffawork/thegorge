@@ -12,11 +12,13 @@ import StepProfessionalInfo from './StepProfessionalInfo';
 import { individualSchema } from '@/lib/utils';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
+import { useRegister } from '@/hooks/useAuth';
 
 export const IndividualRegistration = () => {
-  const { step, registrationType, reset } = useRegistrationStore();
+  const { step, registrationType } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
-  const router = useRouter();
+  const { mutate: register } = useRegister();
+  // const router = useRouter();
 
   const form = useForm<z.infer<typeof individualSchema>>({
     resolver: zodResolver(individualSchema),
@@ -31,14 +33,12 @@ export const IndividualRegistration = () => {
   ];
 
   const handleFinalSubmit = (data: any) => {
-    console.log('Submitting Individual Registration:', {
-      ...data,
-      registrationType,
-    });
-    if (data) {
-      router.push('/sign-in');
-      reset();
-    }
+    const payload = { ...data, registrationType };
+    register(payload);
+    console.log('Submitting Individual Registration:', payload);
+    // if (payload) {
+    //   router.push('/sign-in');
+    // }
     // POST to API...
 
     // console.log('like');
