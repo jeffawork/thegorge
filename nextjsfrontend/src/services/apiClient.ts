@@ -1,34 +1,50 @@
 import axios from "axios";
 
-const axiosInst = axios.create({
-  baseURL:"http://localhost:4000/api",
+// Create the Axios instance
+export const axiosInst = axios.create({
+  baseURL: "/api", // ✅ Let Next.js handle the proxying to backend
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
-// No need for a request interceptor — cookies handle auth
+// Response interceptor for automatic token refresh
 axiosInst.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config;
 
+    // Only trigger refresh once per failed request
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true;
 
       try {
-        // ✅ Use POST to trigger refresh through the API gateway
-        await axiosInst.post("/auth/refresh", {});
-        // After refresh, cookies are updated automatically
-        return axiosInst(original);
+        // ✅ Call the Next.js API route, not the backend directly
+        const refreshResponse = await axios.get("/api/auth/refresh", {
+          withCredentials: true,
+        });
+
+        if (refreshResponse.status === 200) {
+          console.info("Token refreshed successfully.");
+          // Retry the original request — cookies now updated
+          return axiosInst(original);
+        }
+
+        console.warn("Refresh attempt failed:", refreshResponse.status);
       } catch (refreshErr) {
         console.warn("Refresh failed:", refreshErr);
-        // maybe redirect to login or clear user session
+        // Optionally trigger logout or redirect
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
       }
     }
 
+    // If refresh also failed, rethrow the error
     throw err;
   }
 );
+
+export default axiosInst;
 
 
 // APIs related to authentication

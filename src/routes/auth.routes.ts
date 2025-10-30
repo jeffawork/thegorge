@@ -16,7 +16,7 @@ router.use(generalRateLimit);
 // Public routes
 router.post('/login', authRateLimit, authController.login.bind(authController));
 router.post('/register', authRateLimit, authController.register.bind(authController));
-router.post('/refresh', authRateLimit, authController.refreshToken.bind(authController));
+router.get('/refresh', authRateLimit, authController.refreshToken.bind(authController));
 router.post('/forgot-password', authRateLimit, authController.forgotPassword.bind(authController));
 router.post('/reset-password', authRateLimit, authController.resetPassword.bind(authController));
 
