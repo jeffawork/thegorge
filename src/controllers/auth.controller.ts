@@ -92,21 +92,20 @@ export class AuthController extends BaseController {
     }
   }
 
-  async refreshToken(req: Request, res: Response): Promise<void> {
-    try {
-      const refreshDto = plainToClass(RefreshTokenDto, req.body);
-      const validationErrors = await validate(refreshDto);
-
-      if (validationErrors.length > 0) {
-        throw new ValidationException('Invalid refresh token data', validationErrors);
-      }
-
-      const result = await this.authService.refreshToken(refreshDto.refreshToken);
-      this.sendSuccess(res, result, 'Token refreshed successfully');
-    } catch (error) {
-      this.handleError(error, req, res);
+async refreshToken(req: Request, res: Response): Promise<void> {
+  try {
+    // ✅ Get refresh token from cookie
+    const refreshToken = req.cookies.refresh_token;
+    if (!refreshToken) {
+      throw new ValidationException('Missing refresh token');
     }
+
+    const result = await this.authService.refreshToken(refreshToken);
+    this.sendSuccess(res, result, 'Token refreshed successfully');
+  } catch (error) {
+    this.handleError(error, req, res);
   }
+}
 
   async getProfile(req: Request, res: Response): Promise<void> {
     try {
