@@ -2,6 +2,7 @@ import { rpcApiService } from "@/services/apiClient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RPC, useRPCStore } from "@/store/rpcSlice";
 import { useRouter } from "next/navigation";
+import { notify } from "@/lib/notify";
 export const useGetRpcs = () => {
   return useQuery({
     queryKey: ["rpcs"], // Unique cache key
@@ -101,6 +102,7 @@ export function useAddRpc() {
       // Push result into Zustand store
       addRpcToState(data.data);
       router.push('/dashboard');
+      notify.success("RPC added successfully!");
     },
 
     onSettled: () => {

@@ -28,6 +28,8 @@ app.use(cookieParser());
 app.use(cors({
   origin: process.env.CORS_ORIGIN,
   credentials: true, // This is a MUST for cookies
+   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 // Make database available to routes

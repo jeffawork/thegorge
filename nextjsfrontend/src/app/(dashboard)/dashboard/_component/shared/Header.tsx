@@ -23,8 +23,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
-  const { user, logout } = useAuthStore();
-  const { mutate: logoutMutate } = useLogout();
+  const { user } = useAuthStore();
+  const { mutate: logoutMutate, isPending } = useLogout();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -131,11 +131,14 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/20"
                   onClick={() => {
                     logoutMutate();
-                    logout();
                     setShowUserMenu(false);
                   }}
                 >
-                  <LogOut className="h-4 w-4" />
+                  {isPending ? (
+                    <span className="loader-border h-4 w-4"></span>
+                  ) : (
+                    <LogOut className="h-4 w-4" />
+                  )}{' '}
                   Logout
                 </button>
               </motion.div>

@@ -20,11 +20,13 @@ router.get('/refresh', authRateLimit, authController.refreshToken.bind(authContr
 router.post('/forgot-password', authRateLimit, authController.forgotPassword.bind(authController));
 router.post('/reset-password', authRateLimit, authController.resetPassword.bind(authController));
 
+
+router.post('/logout', authController.logout.bind(authController));
+
 // Protected routes
 router.use(authenticate);
 router.get('/profile', authController.getProfile.bind(authController));
 router.put('/profile', authController.updateProfile.bind(authController));
 router.put('/change-password', authController.changePassword.bind(authController));
-router.post('/logout', authController.logout.bind(authController));
 
 export default router;

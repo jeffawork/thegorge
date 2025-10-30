@@ -67,6 +67,9 @@ export const useLogout = ( ) => {
 
     return useMutation({
         mutationFn: authApiService.logout,
+        onMutate: () => {
+            notify.info("Logging out...");
+        },
 
         onSuccess: (res) => {
             // console.log(data)

@@ -16,6 +16,7 @@ import { ValidationException } from '../exceptions';
 // AuthenticationException removed - not currently used
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { authLogger } from '../utils/logger';
 
 export class AuthController extends BaseController {
   private authService: AuthService;
@@ -185,25 +186,37 @@ async refreshToken(req: Request, res: Response): Promise<void> {
     }
   }
 
-  async logout(req: Request, res: Response): Promise<void> {
+async logout(req: Request, res: Response): Promise<void> {
+  try {
+    let userId: string | null = null;
+
     try {
-      const userId = this.getUserId(req);
-      await this.authService.logout(userId);
-        res.clearCookie('access_token', {
+      userId = this.getUserId(req);
+      if (userId) {
+        await this.authService.logout(userId);
+      }
+    } catch {
+      // Ignore token extraction failure – we’ll still clear cookies
+      authLogger.warn('No valid token found during logout');
+    }
+
+    res.clearCookie('access_token', {
       httpOnly: true,
       sameSite: 'strict',
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
     });
+
     res.clearCookie('refresh_token', {
       httpOnly: true,
       sameSite: 'strict',
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       path: '/',
     });
-      this.sendSuccess(res, null, 'Logged out successfully');
-    } catch (error) {
-      this.handleError(error, req, res);
-    }
+
+    this.sendSuccess(res, null, 'Logged out successfully');
+  } catch (error) {
+    this.handleError(error, req, res);
   }
+}
 }
