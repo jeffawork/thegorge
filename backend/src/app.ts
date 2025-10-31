@@ -81,10 +81,9 @@ async function initializeApp() {
 
 // API routes will be set up after services are initialized
 
-// Serve the main dashboard
-// app.get('/', (req, res) => {
-//   res.sendFile('public/index.html', { root: '.' });
-// });
+app.get("/", (req, res) => {
+  res.send("The Gorge API is running ");
+});
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
