@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useFormContext } from 'react-hook-form';
 import { useRegistrationStore } from '../_store/useRegistrationStore';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   total: number;
@@ -12,6 +13,7 @@ interface Props {
 export const StepNavigation = ({ total, onNavigate, stepFields }: Props) => {
   const { step, prevStep, nextStep } = useRegistrationStore();
   const { trigger } = useFormContext();
+  const router = useRouter();
 
   const handleNextStep = async () => {
     const currentFields = stepFields[step] || [];
@@ -35,9 +37,18 @@ export const StepNavigation = ({ total, onNavigate, stepFields }: Props) => {
       )}
 
       {step < total - 1 ? (
-        <Button variant="secondary" type="button" onClick={handleNextStep}>
-          Next
-        </Button>
+        <div className="ml-auto flex gap-2">
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => router.push('/sign-in')}
+          >
+            Login Instead
+          </Button>
+          <Button variant="secondary" type="button" onClick={handleNextStep}>
+            Next
+          </Button>
+        </div>
       ) : (
         <Button type="submit">Register</Button>
       )}
