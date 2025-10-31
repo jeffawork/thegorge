@@ -5,6 +5,7 @@
 "scripts": {
   "dev": "next dev",            
   "build": "next build",
+  "lint": "eslint .",
   "start": "next start -p 4000",
   "format": "prettier --write .",
   "type-check": "tsc --noEmit",
