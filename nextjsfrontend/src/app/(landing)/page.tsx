@@ -5,7 +5,7 @@ export default function Home() {
   const router = useRouter();
 
   const handleSignIn = () => {
-    router.push('/signin'); // 👈 change this to your actual sign-in route if different
+    router.push('/sign-in'); // 👈 change this to your actual sign-in route if different
   };
 
   return (
