@@ -8,7 +8,6 @@ import {
   Activity,
   Clock,
   RefreshCw,
-  Eye,
   Settings,
   BarChart3,
   PieChart,
@@ -34,7 +33,7 @@ interface Anomaly {
   deviation: number;
   status: 'active' | 'investigating' | 'resolved' | 'false_positive';
   source: string;
-  metadata?: Record<string, any>;
+  // metadata?: Record<string, any>;
 }
 
 interface AnomalyStats {
@@ -347,10 +346,10 @@ export const AnomalyDetection: React.FC = () => {
 
       {/* Filters */}
       <div className="flex space-x-2">
-        {['all', 'active', 'critical', 'high'].map((filterType) => (
+        {(['all', 'active', 'critical', 'high'] as const).map((filterType) => (
           <button
             key={filterType}
-            onClick={() => setFilter(filterType as any)}
+            onClick={() => setFilter(filterType)}
             className={`rounded-lg px-3 py-1 text-sm transition-colors ${
               filter === filterType
                 ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400'

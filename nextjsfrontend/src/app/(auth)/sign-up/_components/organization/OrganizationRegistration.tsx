@@ -46,7 +46,7 @@ export const OrganizationRegistration = () => {
     ['industry', 'useCase', 'blockchainExperience'],
     ['acceptTerms', 'marketingConsent'], // final step
   ];
-  const handleFinalSubmit = (data: any) => {
+  const handleFinalSubmit = (data: z.infer<typeof organizationSchema>) => {
     console.log('Submitting Organization Registration:', {
       ...data,
       registrationType,
@@ -85,7 +85,6 @@ export const OrganizationRegistration = () => {
         <StepNavigation
           total={steps.length}
           onNavigate={setDirection}
-          onSubmit={handleFinalSubmit}
           stepFields={stepFields}
         />
       </form>

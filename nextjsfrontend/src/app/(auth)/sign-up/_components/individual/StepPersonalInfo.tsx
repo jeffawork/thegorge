@@ -9,7 +9,6 @@ function StepPersonalInfo() {
     register,
     formState: { errors },
     trigger,
-    getValues,
   } = useFormContext();
 
   // Personal Information Step for Individual Registration
@@ -97,7 +96,7 @@ function StepPersonalInfo() {
             placeholder="Confirm Password"
             type="password"
             variant="password"
-            onChange={(e) => {
+            onChange={() => {
               // Update field and validate in real time
               trigger('confirm_password');
             }}

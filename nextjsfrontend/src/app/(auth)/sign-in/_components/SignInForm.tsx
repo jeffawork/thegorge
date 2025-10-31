@@ -29,10 +29,7 @@ const SignInForm = () => {
       password: '',
     },
   });
-  const {
-    handleSubmit,
-    formState: { errors },
-  } = form;
+  const { handleSubmit } = form;
 
   const onSubmit = (data: loginCredentials) => {
     login(data);

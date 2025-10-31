@@ -9,9 +9,6 @@ import {
   AlertTriangle,
   RefreshCw,
   Download,
-  Settings,
-  Calendar,
-  Filter,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -198,7 +195,9 @@ export const CostAnalytics: React.FC = () => {
         <div className="flex items-center space-x-2">
           <select
             value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value as any)}
+            onChange={(e) =>
+              setSelectedPeriod(e.target.value as '7d' | '30d' | '90d' | '1y')
+            }
             className="rounded border border-white/10 bg-black/20 px-3 py-1 text-sm text-white focus:border-blue-500/50 focus:outline-none"
           >
             <option value="7d">Last 7 days</option>
@@ -392,7 +391,7 @@ export const CostAnalytics: React.FC = () => {
           Monthly Cost Trend
         </h5>
         <div className="flex h-48 items-end justify-between space-x-2">
-          {monthlyData.map((month, index) => {
+          {monthlyData.map((month) => {
             const maxTotal = Math.max(...monthlyData.map((m) => m.total));
             const height = (month.total / maxTotal) * 100;
             return (

@@ -297,7 +297,11 @@ export const RealTimeAlerts: React.FC = () => {
         </div>
         <select
           value={filter}
-          onChange={(e) => setFilter(e.target.value as any)}
+          onChange={(e) =>
+            setFilter(
+              e.target.value as 'all' | 'unacknowledged' | 'critical' | 'high'
+            )
+          }
           className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white focus:border-blue-500/50 focus:outline-none"
         >
           <option value="all">All Alerts</option>

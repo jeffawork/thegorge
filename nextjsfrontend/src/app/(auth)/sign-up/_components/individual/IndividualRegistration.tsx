@@ -11,7 +11,6 @@ import StepPersonalInfo from './StepPersonalInfo';
 import StepProfessionalInfo from './StepProfessionalInfo';
 import { individualSchema } from '@/lib/utils';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 import { useRegister } from '@/hooks/useAuth';
 
 export const IndividualRegistration = () => {
@@ -25,14 +24,16 @@ export const IndividualRegistration = () => {
     mode: 'onChange',
   });
 
-  const stepFields = [
+  type StepField = string[];
+
+  const stepFields: StepField[] = [
     ['firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword'],
     ['jobTitle', 'company', 'website', 'bio'],
     ['industry', 'useCase', 'blockchainExperience'],
     ['acceptTerms', 'marketingConsent'], // final step
   ];
 
-  const handleFinalSubmit = (data: any) => {
+  const handleFinalSubmit = (data: z.infer<typeof individualSchema>) => {
     const payload = { ...data, registrationType };
     register(payload);
     console.log('Submitting Individual Registration:', payload);

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -18,8 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { Input } from '@/components/ui/input';
 import { useAddRpc } from '@/hooks/useRpcs';
-import { useAlertStore } from '@/store/alertSlice';
 import { useAuthStore } from '@/store/authStore';
+import z from 'zod';
 
 interface RpcDialogFormProps {
   isOpen: boolean;
@@ -48,14 +48,14 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
 
   const showChainId = form.watch('network') === 'custom';
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: z.infer<typeof rpcSchema>) => {
     // Ensure required fields match RpcCredentials (chainId must be a number)
     const payload = {
       userId: user?.id,
       ...data,
       chainId: data.chainId ? Number(data.chainId) : undefined,
     };
-    addRPC(payload);
+    addRPC(payload as any);
   };
 
   // const testConnection = async () => {

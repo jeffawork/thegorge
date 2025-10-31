@@ -6,7 +6,6 @@
   "dev": "next dev",            
   "build": "next build",
   "start": "next start -p 4000",
-  "lint": "eslint",
   "format": "prettier --write .",
   "type-check": "tsc --noEmit",
   "prepare": "husky"

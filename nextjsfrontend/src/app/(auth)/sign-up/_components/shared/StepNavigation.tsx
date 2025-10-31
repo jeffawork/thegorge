@@ -6,8 +6,7 @@ import { useRegistrationStore } from '../_store/useRegistrationStore';
 interface Props {
   total: number;
   onNavigate?: (dir: number) => void;
-  onSubmit?: (data: any) => void;
-  stepFields: string[][]; // each array = fields in that step
+  stepFields: string[][];
 }
 
 export const StepNavigation = ({ total, onNavigate, stepFields }: Props) => {
