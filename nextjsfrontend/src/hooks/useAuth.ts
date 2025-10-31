@@ -53,7 +53,7 @@ export const useRegister = () => {
 
         onError: (error: any) => {
             console.log(error);
-            notify.error(error?.response?.data?.message || "Login failed");
+            notify.error(error?.response?.data?.message || "Registeration failed");
         }
     })
 
@@ -79,10 +79,10 @@ export const useLogout = ( ) => {
             notify.success("Logged  out successfully");
 
         },
-
+        
         onError: (error: any) => {
             console.log(error);
-            notify.error(error?.response?.data?.message || "Login failed");
+            notify.error(error?.response?.data?.message || "Logout failed");
         }
     })
 
