@@ -23,7 +23,7 @@ export default function Home() {
           onClick={handleSignIn}
           className="rounded-xl bg-emerald-500 px-6 py-3 text-lg font-medium text-white shadow-lg transition-transform duration-200 hover:scale-105 hover:bg-emerald-600"
         >
-          Go to Sign In
+          Sign In
         </Button>
       </div>
 
