@@ -8,21 +8,14 @@ import {
   User,
   LogOut,
   Settings,
-  PanelRightClose,
-  PanelLeftClose,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { RpcDialogForm } from '../atoms/RpcDialogForm';
 import { useAuthStore } from '@/store/authStore';
 import { useLogout } from '@/hooks/useAuth';
 // import { useRPC } from '../contexts/RPCContext'
 // import { useAuth } from '../contexts/AuthContext'
-interface HeaderProps {
-  onMenuToggle: () => void;
-  collapsed: boolean;
-}
 
-export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
+export const Header = () => {
   const { user } = useAuthStore();
   const { mutate: logoutMutate, isPending } = useLogout();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -49,17 +42,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
         {/* Left Section — Menu + Brand */}
         <div className="flex items-center gap-4">
           {/* Sidebar Toggle */}
-          <Button
-            onClick={onMenuToggle}
-            className="rounded-lg p-2 text-gray-300 transition hover:bg-gray-800 hover:text-white"
-          >
-            {collapsed ? (
-              <PanelRightClose className="h-5 w-5" />
-            ) : (
-              <PanelLeftClose className="h-5 w-5" />
-            )}
-          </Button>
-
           {/* Logo + Title */}
           <motion.div
             className="flex items-center gap-3"
@@ -70,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
               <h1 className="text-gradient text-xl font-bold lg:text-2xl">
                 The Gorge
               </h1>
-              <p className="text-xs text-gray-400 lg:text-sm">
+              <p className="hidden text-xs text-gray-400 md:block lg:text-sm">
                 Real-time blockchain infrastructure monitoring
               </p>
             </div>
@@ -80,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
         {/* Right Section — Actions */}
         <div className="flex items-center gap-3">
           <motion.button
-            className="glass-button flex items-center gap-2 px-3 py-2 text-sm font-medium text-white"
+            className="glass-button hidden items-center gap-2 px-3 py-2 text-sm font-medium text-white md:flex"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -89,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, collapsed }) => {
           </motion.button>
 
           <motion.button
-            className="btn-primary flex items-center gap-2 px-4 py-2"
+            className="btn-primary flex items-center gap-1 px-2 py-1 md:gap-2 md:px-4 md:py-2"
             onClick={() => setShowAddModal(true)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

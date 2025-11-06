@@ -1,10 +1,23 @@
 'use client';
+import { Button } from '@/components/ui/button';
 import { navigationItems, settingsItems } from '@/lib/constants';
 import { motion } from 'framer-motion';
-import { Activity, ChevronDown, ChevronRight, Settings } from 'lucide-react';
-import React, { useState } from 'react';
+import {
+  Activity,
+  ChevronDown,
+  ChevronRight,
+  PanelLeftClose,
+  PanelRightClose,
+  Settings,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
-const SidePanel = ({ activeTab, onTabChange, collapsed }: ActivePanelProps) => {
+const SidePanel = ({
+  activeTab,
+  onTabChange,
+  collapsed,
+  onMenuToggle,
+}: ActivePanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const isSettingsActive =
@@ -18,16 +31,28 @@ const SidePanel = ({ activeTab, onTabChange, collapsed }: ActivePanelProps) => {
       transition={{ duration: 0.4 }}
     >
       <section>
-        <div className="mb-6 flex items-center justify-center space-x-3 pt-4">
-          <div className="blockchain-pulse flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#00D4FF] to-[#00FFFF]">
-            <Activity className="h-4 w-4 text-[#0A0E27]" />
-          </div>
-          {!collapsed && (
-            <div>
-              <h1 className="text-gradient text-lg font-bold">The Gorge</h1>
-              <p className="text-xs text-[#B0B3C8]">RPC Monitor</p>
+        <div className="mb-6 flex items-center justify-center px-3 pt-4 md:items-center md:justify-between md:space-x-3">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="blockchain-pulse flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#00D4FF] to-[#00FFFF]">
+              <Activity className="h-4 w-4 text-[#0A0E27]" />
             </div>
-          )}
+            {!collapsed && (
+              <div>
+                <h1 className="text-gradient text-lg font-bold">The Gorge</h1>
+                <p className="text-xs text-[#B0B3C8]">RPC Monitor</p>
+              </div>
+            )}
+          </div>
+          <div
+            className="hidden cursor-pointer md:block"
+            onClick={onMenuToggle}
+          >
+            {collapsed ? (
+              <PanelRightClose className="h-4 w-4 text-white" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4 text-white" />
+            )}
+          </div>
         </div>
         <div className="w-fullflex flex-col items-center justify-center space-y-1">
           {navigationItems.map((item) => {
@@ -54,7 +79,9 @@ const SidePanel = ({ activeTab, onTabChange, collapsed }: ActivePanelProps) => {
                   }`}
                 />
                 {!collapsed && (
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <span className="hidden text-sm font-medium md:block">
+                    {item.label}
+                  </span>
                 )}
               </motion.button>
             );
@@ -81,7 +108,9 @@ const SidePanel = ({ activeTab, onTabChange, collapsed }: ActivePanelProps) => {
                   }`}
                 />
                 {!collapsed && (
-                  <span className="text-sm font-medium">Setting</span>
+                  <span className="hidden text-sm font-medium md:block">
+                    Setting
+                  </span>
                 )}
               </div>
 
@@ -121,7 +150,7 @@ const SidePanel = ({ activeTab, onTabChange, collapsed }: ActivePanelProps) => {
                     >
                       <Icon className="h-3.5 w-3.5" />
                       {!collapsed && (
-                        <span className="text-xs font-medium">
+                        <span className="hidden text-xs font-medium md:block">
                           {item.label}
                         </span>
                       )}
