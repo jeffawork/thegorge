@@ -31,15 +31,18 @@ import {
   BlockchainPulse,
   NetworkTopology,
 } from '../atoms/DataStreamVisualization';
+import { useGetRpcs } from '@/hooks/useRpcs';
 
 const OverviewDisplay = () => {
   const { rpcs, loading } = useRPCStore();
   const { alerts } = useAlertStore();
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const { data, isLoading, error } = useGetRpcs();
+  const queryRpcs = data?.data || [];
 
   // Calculate summary statistics
   const onlineRPCs = rpcs.filter((rpc) => rpc.status === 'online').length;
-  const totalRPCs = rpcs.length;
+  const totalRPCs = queryRpcs.length;
   const criticalAlerts = alerts.filter(
     (alert) => alert.severity === 'critical' && !alert.resolved
   ).length;

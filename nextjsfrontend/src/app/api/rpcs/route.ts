@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
 
     // Unknown error
     return NextResponse.json(
-      { status: "error", message: "Unexpected error fetching profile" },
+      { status: "error", message: "Unexpected error fetching Rpcs" },
       { status: 500 }
     );
   }
