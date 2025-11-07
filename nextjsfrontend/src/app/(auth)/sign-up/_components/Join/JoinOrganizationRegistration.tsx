@@ -13,7 +13,7 @@ import MoreJoinInfo from './MoreJoinInfo';
 import { useRegister } from '@/hooks/useAuth';
 
 export const JoinOrganizationRegistration = () => {
-  const { step, registrationType } = useRegistrationStore();
+  const { step, registrationType, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
   const { mutate: register } = useRegister();
   const router = useRouter();
@@ -45,14 +45,7 @@ export const JoinOrganizationRegistration = () => {
   const handleFinalSubmit = (data: z.infer<typeof joinOrgSchema>) => {
     const payload = { ...data, registrationType };
     register(payload);
-    console.log('Submitting Join Organization Registration:', payload);
-    if (payload) {
-      router.push('/sign-in');
-      // reset();
-    }
-    // POST to API...
-
-    // console.log('like');
+    reset();
   };
 
   const steps = [<StepJoinInfo key={0} />, <MoreJoinInfo key={1} />];

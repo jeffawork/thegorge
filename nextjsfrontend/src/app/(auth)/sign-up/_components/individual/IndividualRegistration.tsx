@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { useRegister } from '@/hooks/useAuth';
 
 export const IndividualRegistration = () => {
-  const { step, registrationType } = useRegistrationStore();
+  const { step, registrationType, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
   const { mutate: register } = useRegister();
   // const router = useRouter();
@@ -36,7 +36,7 @@ export const IndividualRegistration = () => {
   const handleFinalSubmit = (data: z.infer<typeof individualSchema>) => {
     const payload = { ...data, registrationType };
     register(payload);
-    console.log('Submitting Individual Registration:', payload);
+    reset();
     // if (payload) {
     //   router.push('/sign-in');
     // }

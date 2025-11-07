@@ -12,11 +12,12 @@ import { organizationSchema } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useRegister } from '@/hooks/useAuth';
 
 export const OrganizationRegistration = () => {
   const { step, registrationType, reset } = useRegistrationStore();
   const [direction, setDirection] = useState(1);
-  const router = useRouter();
+  const { mutate: register } = useRegister();
 
   const form = useForm<z.infer<typeof organizationSchema>>({
     resolver: zodResolver(organizationSchema),
@@ -47,14 +48,10 @@ export const OrganizationRegistration = () => {
     ['acceptTerms', 'marketingConsent'], // final step
   ];
   const handleFinalSubmit = (data: z.infer<typeof organizationSchema>) => {
-    console.log('Submitting Organization Registration:', {
-      ...data,
-      registrationType,
-    });
-    if (data) {
-      router.push('/sign-in');
-      reset();
-    }
+    const payload = { ...data, registrationType };
+    register(payload);
+    reset();
+    // POST to API...
   };
 
   const steps = [
