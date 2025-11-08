@@ -1,21 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import {
-  Server,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  XCircle,
-  TrendingUp,
-  Activity,
-  Zap,
-  RefreshCw,
-} from 'lucide-react';
-import {
-  getHealthColor,
-  getStatusIcon,
-  getSyncStateStatusColor,
-} from '@/lib/utils';
+import { getHealthColor } from '@/lib/utils';
 import { useGetRpcs } from '@/hooks/useRpcs';
 
 export const RPCSyncOverview: React.FC = () => {

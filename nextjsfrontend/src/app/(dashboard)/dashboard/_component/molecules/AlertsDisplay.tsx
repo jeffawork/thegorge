@@ -24,10 +24,10 @@ const AlertsDisplay = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="mb-2 text-3xl font-bold text-white">
+          <h1 className="mb-2 text-2xl font-bold text-white md:text-3xl">
             Alert Management
           </h1>
-          <p className="text-gray-400">
+          <p className="hidden text-gray-400 md:block">
             Monitor and manage alerts across all your RPC endpoints
           </p>
         </div>

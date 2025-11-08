@@ -3,23 +3,14 @@ import { motion } from 'framer-motion';
 import {
   Server,
   Wallet,
-  Activity,
   AlertTriangle,
-  TrendingUp,
   Shield,
-  DollarSign,
-  Users,
   BarChart3,
-  Zap,
-  Globe,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Eye,
   Settings,
-  Filter,
-  Download,
   RefreshCw,
   ArrowRight,
   ArrowUp,
@@ -33,7 +24,11 @@ import {
 } from '../atoms/DataStreamVisualization';
 import { useGetRpcs } from '@/hooks/useRpcs';
 
-const OverviewDisplay = () => {
+interface Props {
+  setActiveTab: () => void;
+}
+
+const OverviewDisplay = ({ setActiveTab }: Props) => {
   const { rpcs, loading } = useRPCStore();
   const { alerts } = useAlertStore();
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -41,6 +36,7 @@ const OverviewDisplay = () => {
   const queryRpcs = data?.data || [];
 
   // Calculate summary statistics
+
   const onlineRPCs = rpcs.filter((rpc) => rpc.status === 'online').length;
   const totalRPCs = queryRpcs.length;
   const criticalAlerts = alerts.filter(
@@ -51,12 +47,12 @@ const OverviewDisplay = () => {
 
   // Mock data for demonstration
   const systemStats = {
-    totalRequests: 1250000,
-    avgResponseTime: 245,
-    successRate: 99.8,
-    uptime: 99.9,
-    dataTransfer: 2.4, // GB
-    costSavings: 15.2, // %
+    totalRequests: 0,
+    avgResponseTime: 0,
+    successRate: 0,
+    uptime: 0,
+    dataTransfer: 0, // GB
+    costSavings: 0, // %
   };
 
   const recentActivity = [
@@ -179,24 +175,24 @@ const OverviewDisplay = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="flex items-center justify-between"
+        className="flex flex-col items-center justify-between md:flex-row"
       >
         <div>
-          <h1 className="text-gradient mb-2 text-3xl font-bold">
+          <h1 className="text-gradient mb-2 text-2xl font-bold md:text-3xl">
             Dashboard Overview
           </h1>
-          <p className="text-[#B0B3C8]">
+          <p className="hidden text-[#B0B3C8] md:block">
             Welcome to The Gorge - Your RPC Monitoring Command Center
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="text-sm text-gray-400">
-            Last updated: {lastUpdated.toLocaleTimeString()}
-          </div>
+        <div className="flex items-center justify-between space-x-4">
           <button className="btn-primary flex items-center gap-2 px-4 py-2">
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
+          <div className="text-sm text-gray-400">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </div>
         </div>
       </motion.div>
 
@@ -248,12 +244,9 @@ const OverviewDisplay = () => {
             <h3 className="text-lg font-semibold text-white">Success Rate</h3>
             <CheckCircle className="h-5 w-5 text-green-400" />
           </div>
-          <div className="mb-2 text-3xl font-bold text-white">
-            {systemStats.successRate}%
-          </div>
+          <div className="mb-2 text-3xl font-bold text-white">0%</div>
           <div className="flex items-center text-sm text-green-400">
             <ArrowUp className="mr-1 h-4 w-4" />
-            +0.2% from last week
           </div>
         </div>
 
@@ -262,18 +255,15 @@ const OverviewDisplay = () => {
             <h3 className="text-lg font-semibold text-white">Avg Response</h3>
             <Clock className="h-5 w-5 text-purple-400" />
           </div>
-          <div className="mb-2 text-3xl font-bold text-white">
-            {systemStats.avgResponseTime}ms
-          </div>
+          <div className="mb-2 text-3xl font-bold text-white">0ms</div>
           <div className="flex items-center text-sm text-green-400">
             <ArrowDown className="mr-1 h-4 w-4" />
-            -12% from last week
           </div>
         </div>
       </motion.div>
 
       {/* Quick Actions */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
@@ -303,7 +293,7 @@ const OverviewDisplay = () => {
             );
           })}
         </div>
-      </motion.div>
+      </motion.div> */}
 
       {/* Network Topology Visualization */}
       <motion.div
@@ -339,7 +329,8 @@ const OverviewDisplay = () => {
             </button>
           </div>
           <div className="space-y-3">
-            {recentActivity.map((activity) => {
+            <p className="text-white">No Recent Activity</p>
+            {/* {recentActivity.map((activity) => {
               const Icon = getStatusIcon(activity.status);
               return (
                 <div
@@ -355,7 +346,7 @@ const OverviewDisplay = () => {
                   </div>
                 </div>
               );
-            })}
+            })} */}
           </div>
         </motion.div>
 
@@ -392,7 +383,7 @@ const OverviewDisplay = () => {
             <div className="h-2 w-full rounded-full bg-gray-700">
               <div
                 className="h-2 rounded-full bg-blue-400"
-                style={{ width: '60%' }}
+                style={{ width: '0%' }}
               ></div>
             </div>
 
@@ -419,9 +410,7 @@ const OverviewDisplay = () => {
         transition={{ duration: 0.6, delay: 0.6 }}
         className="glass-card p-6"
       >
-        <h3 className="mb-4 text-lg font-semibold text-white">
-          Detailed Monitoring
-        </h3>
+        <h3 className="mb-4 text-lg font-semibold text-white">Services</h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <div className="cursor-pointer rounded-lg bg-gray-800/30 p-4 transition-colors hover:bg-gray-800/50">
             <div className="mb-2 flex items-center space-x-3">
@@ -432,8 +421,8 @@ const OverviewDisplay = () => {
               Monitor synchronization status across all your RPC endpoints
             </p>
             <div className="flex items-center text-sm text-blue-400">
-              <span>View Details</span>
-              <ArrowRight className="ml-1 h-4 w-4" />
+              {/* <span>View Details</span> */}
+              {/* <ArrowRight className="ml-1 h-4 w-4" /> */}
             </div>
           </div>
 
@@ -446,8 +435,8 @@ const OverviewDisplay = () => {
               Track wallet balances and transactions across all chains
             </p>
             <div className="flex items-center text-sm text-green-400">
-              <span>View Details</span>
-              <ArrowRight className="ml-1 h-4 w-4" />
+              {/* <span>View Details</span> */}
+              {/* <ArrowRight className="ml-1 h-4 w-4" /> */}
             </div>
           </div>
 
@@ -460,8 +449,8 @@ const OverviewDisplay = () => {
               Comprehensive analytics and performance insights
             </p>
             <div className="flex items-center text-sm text-purple-400">
-              <span>View Details</span>
-              <ArrowRight className="ml-1 h-4 w-4" />
+              {/* <span>View Details</span> */}
+              {/* <ArrowRight className="ml-1 h-4 w-4" /> */}
             </div>
           </div>
 
@@ -474,8 +463,8 @@ const OverviewDisplay = () => {
               Monitor and manage alerts across all your RPC endpoints
             </p>
             <div className="flex items-center text-sm text-red-400">
-              <span>View Details</span>
-              <ArrowRight className="ml-1 h-4 w-4" />
+              {/* <span>View Details</span> */}
+              {/* <ArrowRight className="ml-1 h-4 w-4" /> */}
             </div>
           </div>
 
@@ -488,8 +477,8 @@ const OverviewDisplay = () => {
               Monitor security threats and suspicious activities
             </p>
             <div className="flex items-center text-sm text-orange-400">
-              <span>View Details</span>
-              <ArrowRight className="ml-1 h-4 w-4" />
+              {/* <span>View Details</span> */}
+              {/* <ArrowRight className="ml-1 h-4 w-4" /> */}
             </div>
           </div>
 
@@ -504,8 +493,8 @@ const OverviewDisplay = () => {
               Manage your application preferences and configuration
             </p>
             <div className="flex items-center text-sm text-gray-400">
-              <span>View Details</span>
-              <ArrowRight className="ml-1 h-4 w-4" />
+              {/* <span>View Details</span> */}
+              {/* <ArrowRight className="ml-1 h-4 w-4" /> */}
             </div>
           </div>
         </div>

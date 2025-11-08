@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -18,8 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { Input } from '@/components/ui/input';
 import { useAddRpc } from '@/hooks/useRpcs';
+import { useAlertStore } from '@/store/alertSlice';
 import { useAuthStore } from '@/store/authStore';
-import z from 'zod';
 
 interface RpcDialogFormProps {
   isOpen: boolean;
@@ -39,23 +39,30 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
       name: '',
       url: '',
       network: '',
-      chainId: 20,
+      chainId: 2,
       timeout: 10000,
       priority: 2,
       enabled: true,
     },
   });
 
-  const showChainId = form.watch('network') === 'custom';
+  const { reset } = form;
 
-  const handleSubmit = (data: z.infer<typeof rpcSchema>) => {
+  // const showChainId = form.watch('network') === 'custom';
+
+  const handleSubmit = (data: any) => {
+    console.log('I got clicked');
     // Ensure required fields match RpcCredentials (chainId must be a number)
     const payload = {
       userId: user?.id,
       ...data,
       chainId: data.chainId ? Number(data.chainId) : undefined,
     };
-    addRPC(payload as any);
+    addRPC(payload);
+    if (!isPending) {
+      reset();
+      onClose();
+    }
   };
 
   // const testConnection = async () => {
@@ -166,25 +173,18 @@ export const RpcDialogForm: React.FC<RpcDialogFormProps> = ({
                 </div>
 
                 {/* Chain ID */}
-                <AnimatePresence>
-                  {showChainId && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
-                        <Hash className="text-gradient h-4 w-4" /> Chain ID *
-                      </label>
-                      <Input
-                        type="number"
-                        placeholder="1 for Ethereum Mainnet"
-                        {...form.register('chainId')}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* {showChainId && ( */}
+                <div>
+                  <label className="text-gradient mb-1 flex items-center gap-2 font-medium">
+                    <Hash className="text-gradient h-4 w-4" /> Chain ID *
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="1 for Ethereum Mainnet"
+                    {...form.register('chainId', { valueAsNumber: true })}
+                  />
+                </div>
+                {/* )} */}
 
                 {/* Timeout */}
                 <div>

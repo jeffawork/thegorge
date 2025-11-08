@@ -12,10 +12,10 @@ const AnalyticsDisplay: React.FC = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="mb-2 text-3xl font-bold text-white">
+          <h1 className="mb-2 text-2xl font-bold text-white md:text-3xl">
             Analytics & Insights
           </h1>
-          <p className="text-gray-400">
+          <p className="hidden text-gray-400 md:block">
             Comprehensive analytics and performance insights
           </p>
         </div>
@@ -59,10 +59,9 @@ const AnalyticsDisplay: React.FC = () => {
                 </h3>
                 <BarChart3 className="h-5 w-5 text-blue-400" />
               </div>
-              <div className="mb-1 text-2xl font-bold text-white">245ms</div>
+              <div className="mb-1 text-2xl font-bold text-white">0ms</div>
               <div className="flex items-center text-sm text-green-400">
                 <TrendingUp className="mr-1 h-4 w-4" />
-                -12% from last week
               </div>
             </div>
 
@@ -73,10 +72,9 @@ const AnalyticsDisplay: React.FC = () => {
                 </h3>
                 <TrendingUp className="h-5 w-5 text-green-400" />
               </div>
-              <div className="mb-1 text-2xl font-bold text-white">99.8%</div>
+              <div className="mb-1 text-2xl font-bold text-white">0</div>
               <div className="flex items-center text-sm text-green-400">
                 <TrendingUp className="mr-1 h-4 w-4" />
-                +0.2% from last week
               </div>
             </div>
 
@@ -87,7 +85,7 @@ const AnalyticsDisplay: React.FC = () => {
                 </h3>
                 <BarChart3 className="h-5 w-5 text-purple-400" />
               </div>
-              <div className="mb-1 text-2xl font-bold text-white">1.2M</div>
+              <div className="mb-1 text-2xl font-bold text-white">0</div>
               <div className="text-sm text-gray-400">Last 24 hours</div>
             </div>
 
@@ -98,7 +96,7 @@ const AnalyticsDisplay: React.FC = () => {
                 </h3>
                 <BarChart3 className="h-5 w-5 text-orange-400" />
               </div>
-              <div className="mb-1 text-2xl font-bold text-white">12</div>
+              <div className="mb-1 text-2xl font-bold text-white">0</div>
               <div className="text-sm text-gray-400">Online endpoints</div>
             </div>
           </div>
