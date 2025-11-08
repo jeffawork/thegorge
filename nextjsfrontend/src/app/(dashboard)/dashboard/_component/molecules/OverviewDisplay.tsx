@@ -24,11 +24,7 @@ import {
 } from '../atoms/DataStreamVisualization';
 import { useGetRpcs } from '@/hooks/useRpcs';
 
-interface Props {
-  setActiveTab: () => void;
-}
-
-const OverviewDisplay = ({ setActiveTab }: Props) => {
+const OverviewDisplay = () => {
   const { rpcs, loading } = useRPCStore();
   const { alerts } = useAlertStore();
   const [lastUpdated, setLastUpdated] = useState(new Date());
