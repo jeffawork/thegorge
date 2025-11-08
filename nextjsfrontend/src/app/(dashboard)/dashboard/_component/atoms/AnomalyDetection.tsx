@@ -8,6 +8,7 @@ import {
   Activity,
   Clock,
   RefreshCw,
+  Eye,
   Settings,
   BarChart3,
   PieChart,
@@ -33,7 +34,7 @@ interface Anomaly {
   deviation: number;
   status: 'active' | 'investigating' | 'resolved' | 'false_positive';
   source: string;
-  // metadata?: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 
 interface AnomalyStats {
@@ -53,114 +54,6 @@ export const AnomalyDetection: React.FC = () => {
     'all'
   );
   const [viewMode, setViewMode] = useState<'list' | 'chart'>('list');
-
-  useEffect(() => {
-    fetchAnomalyData();
-    const interval = setInterval(fetchAnomalyData, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchAnomalyData = async () => {
-    setLoading(true);
-    try {
-      // Simulate API call
-      const mockAnomalies: Anomaly[] = [
-        {
-          id: '1',
-          type: 'response_time',
-          severity: 'high',
-          title: 'Response Time Spike Detected',
-          description:
-            'Average response time increased by 300% compared to baseline',
-          detectedAt: new Date(Date.now() - 5 * 60 * 1000),
-          confidence: 94.5,
-          metric: 'avg_response_time_ms',
-          expectedValue: 245,
-          actualValue: 980,
-          deviation: 300.0,
-          status: 'active',
-          source: 'Ethereum Mainnet RPC',
-        },
-        {
-          id: '2',
-          type: 'error_rate',
-          severity: 'critical',
-          title: 'Error Rate Anomaly',
-          description: 'Error rate spiked to 15% from normal 0.1%',
-          detectedAt: new Date(Date.now() - 10 * 60 * 1000),
-          confidence: 98.2,
-          metric: 'error_rate_percent',
-          expectedValue: 0.1,
-          actualValue: 15.2,
-          deviation: 15200.0,
-          status: 'investigating',
-          source: 'Polygon RPC',
-        },
-        {
-          id: '3',
-          type: 'throughput',
-          severity: 'medium',
-          title: 'Throughput Drop Detected',
-          description: 'Request throughput dropped by 40% from expected levels',
-          detectedAt: new Date(Date.now() - 15 * 60 * 1000),
-          confidence: 87.3,
-          metric: 'requests_per_second',
-          expectedValue: 1250,
-          actualValue: 750,
-          deviation: -40.0,
-          status: 'resolved',
-          source: 'BSC RPC',
-        },
-        {
-          id: '4',
-          type: 'unusual_pattern',
-          severity: 'low',
-          title: 'Unusual Request Pattern',
-          description:
-            'Detected unusual request pattern with 80% GET requests vs normal 60%',
-          detectedAt: new Date(Date.now() - 30 * 60 * 1000),
-          confidence: 72.1,
-          metric: 'request_type_distribution',
-          expectedValue: 60,
-          actualValue: 80,
-          deviation: 33.3,
-          status: 'false_positive',
-          source: 'Arbitrum RPC',
-        },
-        {
-          id: '5',
-          type: 'security',
-          severity: 'critical',
-          title: 'Suspicious Activity Pattern',
-          description: 'Multiple failed authentication attempts from single IP',
-          detectedAt: new Date(Date.now() - 45 * 60 * 1000),
-          confidence: 96.8,
-          metric: 'failed_auth_attempts',
-          expectedValue: 0,
-          actualValue: 25,
-          deviation: 2500.0,
-          status: 'active',
-          source: 'API Gateway',
-        },
-      ];
-
-      const mockStats: AnomalyStats = {
-        totalAnomalies: 156,
-        activeAnomalies: 8,
-        resolvedAnomalies: 142,
-        falsePositives: 6,
-        avgConfidence: 89.2,
-        detectionAccuracy: 94.5,
-      };
-
-      setAnomalies(mockAnomalies);
-      setStats(mockStats);
-    } catch (error) {
-      console.error('Failed to fetch anomaly data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -232,27 +125,22 @@ export const AnomalyDetection: React.FC = () => {
     return deviation > 0 ? 'text-red-400' : 'text-green-400';
   };
 
-  const filteredAnomalies = anomalies.filter((anomaly) => {
-    switch (filter) {
-      case 'active':
-        return anomaly.status === 'active';
-      case 'critical':
-        return anomaly.severity === 'critical';
-      case 'high':
-        return anomaly.severity === 'high';
-      default:
-        return true;
-    }
-  });
-
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
-        <span className="ml-2 text-gray-400">Loading anomaly data...</span>
+        <AlertTriangle className="h-6 w-6 text-orange-400" />
+        <span className="ml-2 text-gray-400">No anomaly data...</span>
       </div>
     );
   }
+
+  const filteredAnomalies = anomalies.filter((anomaly) => {
+    if (filter === 'all') return true;
+    if (filter === 'active') return anomaly.status === 'active';
+    if (filter === 'critical') return anomaly.severity === 'critical';
+    if (filter === 'high') return anomaly.severity === 'high';
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -346,10 +234,10 @@ export const AnomalyDetection: React.FC = () => {
 
       {/* Filters */}
       <div className="flex space-x-2">
-        {(['all', 'active', 'critical', 'high'] as const).map((filterType) => (
+        {['all', 'active', 'critical', 'high'].map((filterType) => (
           <button
             key={filterType}
-            onClick={() => setFilter(filterType)}
+            onClick={() => setFilter(filterType as any)}
             className={`rounded-lg px-3 py-1 text-sm transition-colors ${
               filter === filterType
                 ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400'
@@ -363,7 +251,7 @@ export const AnomalyDetection: React.FC = () => {
 
       {/* Anomalies List */}
       <div className="max-h-96 space-y-3 overflow-y-auto">
-        {filteredAnomalies.map((anomaly, index) => (
+        {filteredAnomalies?.map((anomaly, index) => (
           <motion.div
             key={anomaly.id}
             initial={{ opacity: 0, y: 20 }}

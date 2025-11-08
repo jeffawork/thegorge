@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useAuthStore } from '@/store/authStore';
+import { User } from 'lucide-react';
 
 interface SettingsPageProps {
   activeTab?: string;
@@ -7,6 +9,8 @@ interface SettingsPageProps {
 const SettingsDisplay: React.FC<SettingsPageProps> = ({
   activeTab = 'general',
 }) => {
+  const { user } = useAuthStore();
+
   // const { user, updateProfile } = useAuth()
 
   const getSettingTitle = (tab: string) => {
@@ -128,7 +132,7 @@ const SettingsDisplay: React.FC<SettingsPageProps> = ({
             <div className="glass-card p-6">
               <div className="mb-6 flex items-center space-x-4">
                 <div className="blockchain-pulse flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#00D4FF] to-[#00FFFF]">
-                  {/* {user?.avatar ? (
+                  {user?.avatar ? (
                     <img
                       src={user.avatar}
                       alt={user.name}
@@ -147,7 +151,7 @@ const SettingsDisplay: React.FC<SettingsPageProps> = ({
                   </p>
                   <span className="mt-1 inline-block rounded-full bg-blue-600/20 px-2 py-1 text-xs text-blue-400">
                     {user?.role || 'Admin'}
-                  </span> */}
+                  </span>
                 </div>
               </div>
             </div>
@@ -275,6 +279,7 @@ const SettingsDisplay: React.FC<SettingsPageProps> = ({
                     Current Password
                   </label>
                   <input
+                    title="currentPassword"
                     type="password"
                     className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
@@ -284,6 +289,7 @@ const SettingsDisplay: React.FC<SettingsPageProps> = ({
                     New Password
                   </label>
                   <input
+                    title="newPassword"
                     type="password"
                     className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
@@ -293,6 +299,7 @@ const SettingsDisplay: React.FC<SettingsPageProps> = ({
                     Confirm New Password
                   </label>
                   <input
+                    title="confirmNewPassword"
                     type="password"
                     className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                   />
