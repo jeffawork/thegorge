@@ -7,7 +7,7 @@ export const useGetRpcs = () => {
   return useQuery({
     queryKey: ["rpcs"], // Unique cache key
     queryFn: rpcApiService.getRpc, // The GET request
-    staleTime: 1000 * 60, // 1 minute caching (optional)
+    // staleTime: 1000 * 60, // 1 minute caching (optional)
   });
 };
 
