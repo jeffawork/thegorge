@@ -13,10 +13,10 @@ const WalletPorfolioDisplay: React.FC = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="mb-2 text-3xl font-bold text-white">
+          <h1 className="mb-2 text-2xl font-bold text-white md:text-3xl">
             Wallet Portfolio
           </h1>
-          <p className="text-gray-400">
+          <p className="hidden text-gray-400 md:block">
             Monitor wallet balances and transactions across all chains
           </p>
         </div>
@@ -47,10 +47,9 @@ const WalletPorfolioDisplay: React.FC = () => {
             <h3 className="text-lg font-semibold text-white">Total Value</h3>
             <DollarSign className="h-5 w-5 text-green-400" />
           </div>
-          <div className="mb-1 text-2xl font-bold text-white">$12,456.78</div>
+          <div className="mb-1 text-2xl font-bold text-white">0</div>
           <div className="flex items-center text-sm text-green-400">
             <TrendingUp className="mr-1 h-4 w-4" />
-            +5.2% (24h)
           </div>
         </div>
 
@@ -59,7 +58,7 @@ const WalletPorfolioDisplay: React.FC = () => {
             <h3 className="text-lg font-semibold text-white">Wallets</h3>
             <Wallet className="h-5 w-5 text-blue-400" />
           </div>
-          <div className="mb-1 text-2xl font-bold text-white">8</div>
+          <div className="mb-1 text-2xl font-bold text-white">0</div>
           <div className="text-sm text-gray-400">Active wallets</div>
         </div>
 
@@ -68,7 +67,7 @@ const WalletPorfolioDisplay: React.FC = () => {
             <h3 className="text-lg font-semibold text-white">Chains</h3>
             <Eye className="h-5 w-5 text-purple-400" />
           </div>
-          <div className="mb-1 text-2xl font-bold text-white">5</div>
+          <div className="mb-1 text-2xl font-bold text-white">0</div>
           <div className="text-sm text-gray-400">Supported chains</div>
         </div>
 
@@ -77,7 +76,7 @@ const WalletPorfolioDisplay: React.FC = () => {
             <h3 className="text-lg font-semibold text-white">Transactions</h3>
             <TrendingUp className="h-5 w-5 text-orange-400" />
           </div>
-          <div className="mb-1 text-2xl font-bold text-white">1,234</div>
+          <div className="mb-1 text-2xl font-bold text-white">0</div>
           <div className="text-sm text-gray-400">Last 24h</div>
         </div>
       </motion.div>

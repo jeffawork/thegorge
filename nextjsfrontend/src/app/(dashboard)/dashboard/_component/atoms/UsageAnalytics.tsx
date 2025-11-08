@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import {
   BarChart3,
   TrendingUp,
+  AlertTriangle,
   Users,
   Activity,
   RefreshCw,
@@ -40,137 +41,6 @@ export const UsageAnalytics: React.FC = () => {
   const [viewMode, setViewMode] = useState<'overview' | 'users' | 'detailed'>(
     'overview'
   );
-
-  useEffect(() => {
-    fetchUsageData();
-    const interval = setInterval(fetchUsageData, 300000); // Refresh every 5 minutes
-    return () => clearInterval(interval);
-  }, [selectedPeriod]);
-
-  const fetchUsageData = async () => {
-    setLoading(true);
-    try {
-      // Simulate API call
-      const mockUsageData: UsageData[] = [
-        {
-          period: '2024-01-01',
-          apiCalls: 125000,
-          rpcCalls: 850000,
-          dataTransfer: 2.4,
-          activeUsers: 45,
-          cost: 2450,
-        },
-        {
-          period: '2024-01-02',
-          apiCalls: 132000,
-          rpcCalls: 920000,
-          dataTransfer: 2.8,
-          activeUsers: 48,
-          cost: 2630,
-        },
-        {
-          period: '2024-01-03',
-          apiCalls: 118000,
-          rpcCalls: 780000,
-          dataTransfer: 2.1,
-          activeUsers: 42,
-          cost: 2280,
-        },
-        {
-          period: '2024-01-04',
-          apiCalls: 145000,
-          rpcCalls: 1050000,
-          dataTransfer: 3.2,
-          activeUsers: 52,
-          cost: 2847,
-        },
-        {
-          period: '2024-01-05',
-          apiCalls: 138000,
-          rpcCalls: 980000,
-          dataTransfer: 2.9,
-          activeUsers: 49,
-          cost: 2720,
-        },
-        {
-          period: '2024-01-06',
-          apiCalls: 152000,
-          rpcCalls: 1120000,
-          dataTransfer: 3.5,
-          activeUsers: 55,
-          cost: 2950,
-        },
-        {
-          period: '2024-01-07',
-          apiCalls: 148000,
-          rpcCalls: 1080000,
-          dataTransfer: 3.3,
-          activeUsers: 53,
-          cost: 3100,
-        },
-      ];
-
-      const mockUserActivity: UserActivity[] = [
-        {
-          userId: 'user-1',
-          name: 'John Doe',
-          role: 'Admin',
-          lastActive: new Date(Date.now() - 5 * 60 * 1000),
-          apiCalls: 12500,
-          rpcCalls: 85000,
-          dataTransfer: 0.8,
-          status: 'active',
-        },
-        {
-          userId: 'user-2',
-          name: 'Jane Smith',
-          role: 'Developer',
-          lastActive: new Date(Date.now() - 15 * 60 * 1000),
-          apiCalls: 8900,
-          rpcCalls: 62000,
-          dataTransfer: 0.6,
-          status: 'active',
-        },
-        {
-          userId: 'user-3',
-          name: 'Mike Johnson',
-          role: 'Viewer',
-          lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          apiCalls: 2100,
-          rpcCalls: 15000,
-          dataTransfer: 0.2,
-          status: 'active',
-        },
-        {
-          userId: 'user-4',
-          name: 'Sarah Wilson',
-          role: 'Developer',
-          lastActive: new Date(Date.now() - 24 * 60 * 60 * 1000),
-          apiCalls: 0,
-          rpcCalls: 0,
-          dataTransfer: 0,
-          status: 'inactive',
-        },
-        {
-          userId: 'user-5',
-          name: 'David Brown',
-          role: 'Billing Manager',
-          lastActive: new Date(Date.now() - 3 * 60 * 60 * 1000),
-          apiCalls: 3200,
-          rpcCalls: 22000,
-          dataTransfer: 0.3,
-          status: 'active',
-        },
-      ];
-
-      setUsageData(mockUsageData);
-      setUserActivity(mockUserActivity);
-    } catch (error) {
-      console.error('Failed to fetch usage data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -223,8 +93,8 @@ export const UsageAnalytics: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
-        <span className="ml-2 text-gray-400">Loading usage data...</span>
+        <AlertTriangle className="h-6 w-6 text-orange-400" />
+        <span className="ml-2 text-gray-400">No usage data...</span>
       </div>
     );
   }

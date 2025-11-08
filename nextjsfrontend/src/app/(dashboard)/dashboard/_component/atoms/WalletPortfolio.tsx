@@ -12,6 +12,7 @@ import {
   Wallet,
   Coins,
   ExternalLink,
+  AlertTriangle,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
@@ -20,111 +21,6 @@ export const WalletPortfolio: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showBalances, setShowBalances] = useState(true);
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchWalletData();
-    const interval = setInterval(fetchWalletData, 300000); // Refresh every 5 minutes
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchWalletData = async () => {
-    setLoading(true);
-    try {
-      // Simulate API call
-      const mockData: WalletData[] = [
-        {
-          id: '1',
-          name: 'Main Trading Wallet',
-          address: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
-          chainId: 1,
-          totalValueUSD: 125847.32,
-          change24h: 5.2,
-          tokens: [
-            {
-              symbol: 'ETH',
-              name: 'Ethereum',
-              balance: '12.5',
-              balanceUSD: 25000,
-              percentage: 19.9,
-              priceUSD: 2000,
-              change24h: 2.1,
-            },
-            {
-              symbol: 'USDC',
-              name: 'USD Coin',
-              balance: '50000',
-              balanceUSD: 50000,
-              percentage: 39.7,
-              priceUSD: 1,
-              change24h: 0.1,
-            },
-            {
-              symbol: 'WBTC',
-              name: 'Wrapped Bitcoin',
-              balance: '2.5',
-              balanceUSD: 50847.32,
-              percentage: 40.4,
-              priceUSD: 20338.93,
-              change24h: 8.3,
-            },
-          ],
-          nfts: [
-            {
-              contractAddress: '0x...',
-              tokenId: '1234',
-              name: 'Cool NFT #1234',
-              valueUSD: 500,
-            },
-          ],
-          lastUpdated: new Date(),
-        },
-        {
-          id: '2',
-          name: 'DeFi Wallet',
-          address: '0x8ba1f109551bD432803012645Hac136c',
-          chainId: 1,
-          totalValueUSD: 45632.18,
-          change24h: -2.1,
-          tokens: [
-            {
-              symbol: 'ETH',
-              name: 'Ethereum',
-              balance: '8.2',
-              balanceUSD: 16400,
-              percentage: 35.9,
-              priceUSD: 2000,
-              change24h: 2.1,
-            },
-            {
-              symbol: 'UNI',
-              name: 'Uniswap',
-              balance: '1000',
-              balanceUSD: 12000,
-              percentage: 26.3,
-              priceUSD: 12,
-              change24h: -5.2,
-            },
-            {
-              symbol: 'AAVE',
-              name: 'Aave Token',
-              balance: '500',
-              balanceUSD: 17232.18,
-              percentage: 37.8,
-              priceUSD: 34.46,
-              change24h: 1.8,
-            },
-          ],
-          nfts: [],
-          lastUpdated: new Date(),
-        },
-      ];
-      setWallets(mockData);
-    } catch (error) {
-      console.error('Failed to fetch wallet data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const totalPortfolioValue = wallets.reduce(
     (sum, wallet) => sum + wallet.totalValueUSD,
@@ -139,7 +35,7 @@ export const WalletPortfolio: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
+        <AlertTriangle className="h-6 w-6 text-orange-400" />
         <span className="ml-2 text-gray-400">Loading wallet data...</span>
       </div>
     );

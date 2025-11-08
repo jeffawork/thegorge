@@ -13,8 +13,10 @@ const UsageAndCosts = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="mb-2 text-3xl font-bold text-white">Usage & Costs</h1>
-          <p className="text-gray-400">
+          <h1 className="mb-2 text-2xl font-bold text-white md:text-3xl">
+            Usage & Costs
+          </h1>
+          <p className="hidden text-gray-400 md:block">
             Comprehensive analytics on usage and costs
           </p>
         </div>

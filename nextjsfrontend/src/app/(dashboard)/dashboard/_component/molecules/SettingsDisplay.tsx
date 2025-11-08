@@ -1,15 +1,4 @@
 import { motion } from 'framer-motion';
-import {
-  FileText,
-  User,
-  Bell,
-  Shield,
-  Database,
-  Palette,
-  Users,
-  DollarSign,
-} from 'lucide-react';
-// import { useAuth } from '../contexts/AuthContext'
 
 interface SettingsPageProps {
   activeTab?: string;
