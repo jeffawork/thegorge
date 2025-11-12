@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create the Axios instance
 export const axiosInst = axios.create({
-  baseURL: "/api", // ✅ Let Next.js handle the proxying to backend
+  baseURL: "/api/v1", // ✅ Let Next.js handle the proxying to backend
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
