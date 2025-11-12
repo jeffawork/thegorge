@@ -68,7 +68,7 @@ async function initializeApp() {
     logger.info('All services initialized successfully');
     
     // Set up API routes after services are initialized
-    app.use('/api', createApiRoutes(monitoringService));
+    app.use('/api/v1', createApiRoutes(monitoringService));
     
     // Start the server
     await startServer();
